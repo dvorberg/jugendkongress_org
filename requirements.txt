@@ -1,0 +1,6 @@
+Flask
+icecream
+psycopg2
+Pillow
+Chameleon
+ll-xist
