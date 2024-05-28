@@ -23,10 +23,11 @@
 ##  I have added a copy of the GPL in the file LICENSE
 
 
+cd $HOME/jugendkongress
 . $HOME/jugendkongress/virtualenv/bin/activate
 
 export FLASK_ENV=development
-export FLASK_APP=pabap.app_factory:create_app
+export FLASK_APP=juko.app_factory:create_app
 
 export YOURAPPLICATION_SETTINGS=$HOME/jugendkongress/etc/config-development.py
 
