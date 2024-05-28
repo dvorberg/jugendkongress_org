@@ -15,8 +15,6 @@ from ..upload_manager import UploadManager, make_image_versions
 from ..skinning import get_site_url
 from ..utils import rget
 
-from ..app_factory import skin
-
 class UserResult(Result):
     def card_view(self, **kw):
         return prediger_view_macros.card_view(result=self, **kw)

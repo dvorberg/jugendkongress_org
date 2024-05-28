@@ -35,7 +35,6 @@ from t4.passwords import apple_style_random_password, password_good_enough
 
 from .form_feedback import FormFeedback, NullFeedback
 from .db import Result, cursor, commit, execute
-from .app_factory import skin
 from .email import sendmail_template
 
 from . import authentication, model
@@ -55,7 +54,7 @@ def login(login=None, password=None, redirect_to=None,
         # and must not come from the request.
         raise ValueError()
 
-    template = skin.load_template("skin/authentication/login.pt")
+    template = g.skin.load_template("skin/authentication/login.pt")
 
     if request.method == "POST":
         feedback = FormFeedback()
@@ -99,7 +98,7 @@ def logout():
 @bp.route("/forgott.py", methods=('GET', 'POST'))
 @gets_parameters_from_request
 def forgott(login=None):
-    template = skin.load_template("skin/authentication/forgott.pt")
+    template = g.skin.load_template("skin/authentication/forgott.pt")
 
     if request.method == "POST":
         feedback = FormFeedback()
@@ -152,7 +151,7 @@ def send_forgotten_email(dbuser):
         commit()
 
         # Send the email
-        site_url = skin.site_url
+        site_url = g.skin.site_url
         link = "%s/authentication/reset_password.py/%s" % ( site_url, slug, )
 
         login = dbuser.login
@@ -173,7 +172,7 @@ Sonderzeichen. Wenn eines von den vieren fehlt, meckert der Computer.
 @bp.route("/reset_password.py/<slug>", methods=("GET", "POST",))
 @gets_parameters_from_request
 def reset_password(slug, password1=None, password2=None):
-    template = skin.load_template("skin/authentication/reset_password.pt")
+    template = g.skin.load_template("skin/authentication/reset_password.pt")
 
     with cursor() as cc:
         # Remove stale links.
@@ -217,7 +216,7 @@ def reset_password(slug, password1=None, password2=None):
 @bp.route("/users.py", methods=("POST", "GET"))
 @authentication.role_required("User Manager")
 def users():
-    template = skin.load_template("skin/authentication/users.pt")
+    template = g.skin.load_template("skin/authentication/users.pt")
 
     def delete_onclick(user):
         tmpl = ('return confirm("Möchten Sie den Eintrag von " + '
@@ -327,7 +326,7 @@ def user_form(request_login=None, feedback:FormFeedback=None):
         cc.execute("SELECT name FROM users.user_roles ORDER BY name")
         roles = [ role for role, in cc.fetchall() ]
 
-    template = skin.load_template("skin/authentication/user_form.pt")
+    template = g.skin.load_template("skin/authentication/user_form.pt")
     return template(dbuser=user,
                     feedback=feedback,
                     roles=roles)
@@ -335,7 +334,7 @@ def user_form(request_login=None, feedback:FormFeedback=None):
 @bp.route("/users/<user_name>.html")
 @authentication.login_required
 def profile_preview(user_name):
-    template = skin.load_template("skin/authentication/profile_preview.pt")
+    template = g.skin.load_template("skin/authentication/profile_preview.pt")
 
     result = model.users.User.select(
         sql.where("firstname || ' ' || lastname = ",
@@ -350,7 +349,7 @@ def profile_preview(user_name):
 @authentication.login_required
 @gets_parameters_from_request
 def dashboard(request_login=None):
-    template = skin.load_template("skin/authentication/dashboard.pt")
+    template = g.skin.load_template("skin/authentication/dashboard.pt")
 
     if request_login is not None:
         assert authentication.get_user().has_role("User Manager"), Unauthorized

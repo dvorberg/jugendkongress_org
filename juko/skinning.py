@@ -35,13 +35,11 @@ class TemplateWithCustomRenderMethod:
 
     def render(self, **kw):
         from . import authentication
-        from .einspielungen_blueprint import get_menu_konzerte
 
         extras = {"session": session,
                   "request": request,
                   "rget": rget,
-                  "user": authentication.get_user(),
-                  "menu_konzerte": get_menu_konzerte(), }
+                  "user": authentication.get_user() }
 
         if hasattr(self, "filename") and self.filename != "<string>":
             extras["template_mtime"] = datetime.datetime.fromtimestamp(
@@ -190,7 +188,7 @@ class Skin(object):
 
     @property
     def main_template(self):
-        return self.load_template("skin/main_template.pt")
+        return self.load_template("skin/jugendkongress/main_template.pt")
 
     def macros_from(self, template_path):
         return MacrosFrom(self.load_template(template_path))

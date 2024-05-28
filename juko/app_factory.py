@@ -20,17 +20,15 @@
 ##
 ##  I have added a copy of the GPL in the file LICENSE
 
-import sys, os, os.path as op, re, runpy, inspect, threading, glob, subprocess
-import urllib.parse, shutil, psycopg2.pool
+import sys, os, os.path as op, re, runpy, inspect, threading, glob
+import urllib.parse, psycopg2.pool
 from wsgiref.handlers import format_date_time
 
 import flask
 from werkzeug.exceptions import Unauthorized
 
-from . import config, resource_path
+from . import config
 from . import skinning
-skin = skinning.Skin(config["WWW_PATH"])
-from .db_sessions import DbSessionInterface
 
 # Es ist zwar offensichtlich, was hier passiert, aber ich schreibe trotzdem
 # mal einen Kommentar untendrunter.
@@ -58,20 +56,14 @@ module_cache = {}
 module_load_lock = threading.Lock()
 
 def create_app(test_config=None):
-    from . import db
-    from .utils import call_from_request, selected_elkg
-
-    from . import authentication
+    from . import config
+    from . import db, authentication
+    from .utils import call_from_request
 
     # create and configure the app
     app = flask.Flask(__name__, instance_relative_config=True)
 
-    app.config.from_pyfile(os.getenv("APPLICATION_SETTINGS"), silent=False)
-
-    from . import authentication_blueprint
-    app.register_blueprint(authentication_blueprint.bp)
-
-    app.session_interface = DbSessionInterface()
+    app.config.from_mapping(config)
 
     app.db_connection_pool = psycopg2.pool.ThreadedConnectionPool(
         5, 50, **app.config["DATASOURCE"])
@@ -89,129 +81,32 @@ def create_app(test_config=None):
             flask.g.session_dbconn.rollback()
             app.db_connection_pool.putconn(flask.g.session_dbconn)
 
+    skin = skinning.Skin(config["WWW_PATH"])
+    @app.before_request
+    def make_skin():
+        flask.g.skin = skin
 
-    # This is the default action that makes page template (.html) files
-    # work in this app.
-    template_path_re = re.compile("([a-z0-9][/a-z0-9_]*)\.([a-z]{2,3})")
+    from . import markdown
+    app.add_url_rule("/markdown/<path:infile_path>",
+                     view_func=markdown.view_func)
 
-    @app.route("/www/<path:template_path>", methods=['GET', 'POST'])
-    def html_files(template_path):
-        if ".." in template_path:
-            raise ValueError(template_path)
+    from . import authentication_blueprint
+    app.register_blueprint(authentication_blueprint.bp)
 
-        if not skin.resource_exists(template_path):
-            found = False
-            parts = template_path.split("/")
-            filename = parts[-1]
-            if filename == "index.py" and len(parts) > 1:
-                parts[-1] = parts[-2]
-                newpath = "/".join(parts)
-                if skin.resource_exists(newpath + ".py"):
-                    template_path = newpath + ".py"
-                    found = True
-                elif skin.resource_exists(newpath + ".html"):
-                    template_path = newpath + ".html"
-                    found = True
+    from .scss import compile_scss
+    app.add_url_rule("/scss/<path:template_path>",
+                     view_func=compile_scss)
 
-            if not found:
-                d = f"{skin.resource_path(template_path)} not found."
-                return flask.abort(404, description=d)
+    from .archive import archive_cgi
+    app.add_url_rule("/archive.cgi", view_func=archive_cgi)
 
-        if template_path.endswith(".html"):
-            # HTML files are static.
-            try:
-                template = skin.load_template(template_path)
-            except ValueError:
-                err = f"{template_path} not found by loader."
-                flask.abort( 404, description=err)
+    from .model.congress import Congresses
+    congresses = Congresses()
 
-            response = flask.Response(template())
-            if not app.debug:
-                response.headers["Cache-Control"] = "max-age=604800"
-                response.headers["Last-Modified"] = format_date_time(
-                    skinning.startup_time)
-            return response
-        elif template_path.endswith(".py"):
-            match = template_path_re.match(template_path)
-            if match is None:
-                raise ValueError(f"Illegal template name {template_path}.")
-            else:
-                py_path = skin.resource_path(template_path)
-                # Is there a default template?
-                # A .pt file with the same name at the same
-                # location?
-                pt_path = template_path[:-3] + ".pt"
-                if skin.resource_exists(pt_path):
-                    template = skin.load_template(pt_path)
-                else:
-                    template = None
-
-                module_name, suffix = match.groups()
-
-                with module_load_lock:
-                    if py_path in module_cache:
-                        module = module_cache[py_path]
-                    else:
-                        module = runpy.run_path(
-                            py_path, run_name=module_name)
-                        if not app.debug:
-                            module_cache[py_path] = module
-
-                function_name = module_name.rsplit("/", 1)[-1]
-                if function_name in module:
-                    function = module[function_name]
-                elif "main" in module:
-                    function = module["main"]
-                else:
-                    raise ValueError(f"No function in {module_name}")
-
-                if inspect.isclass(function):
-                    function = function()
-
-                if template is None:
-                    return call_from_request(function)
-                else:
-                    return call_from_request(function, template)
-        else:
-            raise ValueError(template_path)
-
-    scss_cache = {}
-
-    @app.route("/scss/<path:template_path>")
-    def compile_scss(template_path):
-        if template_path in scss_cache:
-            result = scss_cache[template_path]
-        else:
-            rp = skin.resource_path(template_path)
-
-            sassc = shutil.which("sassc")
-
-            if app.debug:
-                style = "expanded"
-            else:
-                style = "compressed"
-
-            cmd = [sassc, "--style", style, rp]
-
-            result = subprocess.run(
-                cmd,
-                capture_output=True, encoding="utf-8",
-                check=True)
-
-            result = result.stdout
-
-            if not app.debug:
-                scss_cache[template_path] = result
-
-        response = flask.Response(result)
-        response.headers["Content-Type"] = "text/css; charset=UTF-8"
-
-        if app.debug:
-            response.headers["Pragma"] = "no-cache"
-        else:
-            response.headers["Cache-Control"] = "max-age=6048000" # 10 weeks
-
-        return response
+    @app.route("/root")
+    def root():
+        # Forward the visitor to the youngest Kongress folder.
+        return flask.redirect(congresses.current.href)
 
     @app.errorhandler(Unauthorized)
     def redirect_to_login(exception):
