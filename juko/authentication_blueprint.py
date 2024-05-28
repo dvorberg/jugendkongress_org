@@ -40,8 +40,7 @@ from .email import sendmail_template
 
 from . import authentication, model
 from .utils import (get_site_url, gets_parameters_from_request, redirect,
-                    improve_typography, attr_dict, rget, rchecked,
-                    OrderByHandler)
+                    rget, rchecked, OrderByHandler)
 from .ptutils import js_string_literal
 
 
@@ -237,15 +236,6 @@ def users():
           ("lower(lastname), lower(firstname)", "Nachname",),
          ], "users_orderby")
 
-
-    filter = attr_dict(session.get("users_filter", {}))
-    if request.method == "POST":
-        # Update the filter
-        filter.filter_search = rget("filter_search")
-        filter.role = rget("role", "")
-        filter.active_only = rchecked("active_only")
-
-        session["users_filter"] = filter
 
     where = None
     if filter.get("filter_search"):
@@ -564,22 +554,3 @@ def save(request_login, firstname, lastname, email, phone,
                 firstname, lastname))
     else:
         return user_form(request_login=request_login, feedback=feedback)
-
-
-@bp.route("/change_user_flag.py", methods=("GET",))
-@gets_parameters_from_request
-@authentication.role_required("User Manager")
-def change_user_flag(user_login, flag, state):
-    state = ( state == "true")
-
-    # Checking the values of user_login and state is performed in-database:
-    # The first is a foreign key to the users table, the latter a enum type.
-    execute("DELETE FROM users.user_flags WHERE user_login = %s AND flag = %s",
-            ( user_login, flag, ))
-    if state is True:
-        execute("INSERT INTO users.user_flags VALUES (%s, %s)",
-                ( user_login, flag, ))
-
-    commit()
-
-    return make_response("Ok")
