@@ -46,7 +46,9 @@ def view_func(infile_path:str):
     if entry is not None and entry.mtime == mtime:
         html = entry.html
     else:
-        html = markdown.markdown(abspath.read_text())
+        html = markdown.markdown(abspath.read_text(),
+                                 extensions=["extra", "meta", "nl2br"])
+        html = '<div class="markdown">' + html + '</div>'
         markdown_cache[abspath] = CacheEntry(mtime, html)
 
     template = g.skin.load_template("skin/jugendkongress/congress_view.pt")
