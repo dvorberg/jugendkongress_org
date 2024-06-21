@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+
+<html xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      metal:define-macro="master"
+      lang="de">
+  
+  <tal:block tal:replace="nothing">
+    This file is part of the business logic for
+    
+      Jugendkongress
+    
+    Copyright 2014–24 by Diedrich Vorberg (diedrich@tux4web.de)
+    Copyricht 2014–24 Jugendwerk der SELK (jugendwerk@selk.de)
+    
+    All Rights Reserved.
+  </tal:block>
+  
+  <head>
+    <title>
+      <metal:block metal:define-slot="site-title">
+        Lutherischer Jugendkongress
+      </metal:block>
+    </title>
+        
+    <metal:block metal:define-slot="base" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <link rel="stylesheet" type="text/css"
+          href="/skin/bootstrap/css/bootstrap.min.css" />
+    
+    <link rel="stylesheet" type="text/css"
+	      href="/skin/jugendkongress/homepage.scss" />
+
+    <script src="/skin/jugendkongress/layout.js"></script>
+    
+    <metal:block metal:define-slot="head_slot" tal:replace="nothing">
+    </metal:block>
+  </head>
+  
+  <body>
+    <header>
+      <nav class="navbar navbar-expand-lg bg-body-tertiary fixed-top">
+        <div class="container">
+          <button class="navbar-toggler" type="button"
+                  data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                  aria-controls="navbarNav" aria-expanded="false"
+                  aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <a class="navbar-brand" href="/">
+            <img src="/skin/jugendkongress/selk-jugend-kreuz.png"
+                 alt="Jugendwerk der SELK"
+                 width="50" height="36" />
+          </a>
+          <div class="collapse navbar-collapse">
+            <metal:block metal:define-slot="congress-menu" />
+          </div>
+        </div>
+      </nav>      
+    </header>
+
+    <div style="height: 60px">
+    </div>
+    
+    <tal:block tal:define="site_message rget('site_message');
+                           cls rget('site_message_class', 'primary');">
+      <div class="container for-site-message" tal:condition="site_message">
+        <div class="row">
+          <div class="col">
+            <div tal:attributes="class string:alert alert-dismissible fade show alert-${cls}"
+                 role="alert">
+              <span tal:content="site_message" />
+              <button type="button" class="btn-close" data-bs-dismiss="alert"
+                      aria-label="Close"></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </tal:block>
+
+    <main role="main" class="container">
+      <metal:block metal:define-slot="main">
+      </metal:block>
+    </main>
+
+    <footer class="container">
+      <div class="row my-4 pt-4 border-top">
+        <div class="col">
+          <strong>Impressum</strong>
+          <address>
+            Jugendreferent <br />
+            Karsten Schreiner
+            ‹<a href="mailto:schreiner@selk.de">schreiner@selk.de</a>›<br/>
+            Bergstraße 17, 34576 Homberg/Efze
+          </address>
+        </div>
+        <div class="col">
+          <div>
+            <a href="/datenschutzerklaerung.html">
+              Datenschutzerklärung
+            </a>
+          </div>
+          <div>
+            <a href="https://www.facebook.com/lutherischerjugendkongress">
+              Facebook Seite
+            </a>
+          </div>
+          <div>
+            <a href="mailto:anmeldung@jugendkongress.org">
+              anmeldung@jugendkongress.org
+              </a><br />
+          </div>
+          <div>
+            <a href="mailto:webmaster@jugendkongress.org">
+              webmaster@jugendkongress.org
+              </a><br />
+          </div>
+        </div>
+        <div class="col">
+          <a href="http://www.selk-jugend.de" target="_new">
+            <img src="/skin/jugendkongress/selk-jugend.png"
+                 width="250" height="102" alt="SELK Jugendwerk" />
+          </a>
+        </div>
+      </div>
+    </footer>    
+  </body>
+</html>

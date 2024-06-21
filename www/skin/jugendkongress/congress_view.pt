@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+
+<html xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      metal:use-macro="skin.main_template.macros.master">  
+      lang="de">
+
+  <tal:block tal:replace="nothing">
+    This file is part of the business logic for
+    
+      Jugendkongress
+    
+    Copyright 2014–24 by Diedrich Vorberg (diedrich@tux4web.de)
+    Copyricht 2014–24 Jugendwerk der SELK (jugendwerk@selk.de)
+    
+    All Rights Reserved
+  </tal:block>
+
+  <head>
+    <tal:block metal:fill-slot="head_slot">
+    </tal:block>
+  </head>
+
+  <body>
+    <metal:block metal:fill-slot="congress-menu"
+                 tal:define="in_archive python:False">
+
+      <span class="navbar-text" tal:condition="in_archive">
+        <a class="nav-link" href="/archive.cgi">
+          <i class="icon icon-white icon-arrow-left"></i>
+          Zurück zum Archiv
+        </a> |
+      </span>
+      
+      <ul class="navbar-nav">
+      </ul>
+      
+      <div class="navbar-text ms-auto" tal:condition="not:in_archive">
+        <a class="nav-link" href="/archive.cgi">
+          <strong>Archiv </strong>
+        </a>
+      </div>
+    </metal:block>
+
+    <metal:block metal:fill-slot="main">
+      <div class="mt-4 congress" tal:content="structure html" />
+    </metal:block>
+  </body>
+</html>
