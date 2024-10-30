@@ -14,3 +14,40 @@ footer
 {
     font-size: 80%;
 }
+
+div.ablauf
+{
+    margin-bottom: 1rem;
+
+    h4
+    {
+        margin-top: 0.7rem;
+        maring-bottom: 0.5rem;
+    }    
+    
+    div.item
+    {
+        time
+        {
+            display: block;
+            width: 3rem;
+            float: left;
+        }
+        
+        div.title
+        {
+            margin-left: 3.7rem;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+    }
+}
+
+// When displayed on large (lg) displays, blank items are hidden.
+@media (max-width: 992px)
+{
+    div.ablauf div.item.blank
+    {
+        display: none;
+    }
+}
