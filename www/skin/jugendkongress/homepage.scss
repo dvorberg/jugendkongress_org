@@ -10,6 +10,36 @@ All Rights Reserved
 
 */
 
+div.titelbild
+{
+    margin-bottom: 2rem;
+    
+    h1, div.datum
+    {
+        display: none;
+        visibility: hidden;
+        
+        small
+        {
+            display: block;
+            font-size: 70%;
+            font-weight: normal;
+        }
+    }
+        
+    picture, img
+    {
+        max-width: 100%;
+    }
+
+    div.datum
+    {
+        font-weight: bold;
+        font-size: 120%;
+        margin-top: 0.25em;
+    }
+}
+
 footer
 {
     font-size: 80%;
@@ -46,8 +76,17 @@ div.ablauf
 // When displayed on large (lg) displays, blank items are hidden.
 @media (max-width: 992px)
 {
+    div.titelbild
+    {
+        h1, div.datum
+        {
+            display: block;
+            visibility: visible;
+        }
+    }
+    
     div.ablauf div.item.blank
     {
         display: none;
-    }
+    }    
 }
