@@ -30,8 +30,7 @@ from markdown.extensions import Extension
 from markdown.blockprocessors import BlockProcessor
 
 from . import config, debug
-from .macros import MacroContext, ablauf_einsetzen
-
+from . import macros
 
 # https://python-markdown.github.io/extensions/api/#blockprocessors
 class FunctionCallProcessor(BlockProcessor):
@@ -74,8 +73,9 @@ class FunctionCallProcessor(BlockProcessor):
     \s*(\n|$)          # End-of-line or end-of-input.
     ''', re.VERBOSE)
 
-    def __init__(self, parser, context):
-        super().__init__(parser)
+    def __init__(self, md, context):
+        super().__init__(md.parser)
+        self.md = md
         self.context = context
 
     def test(self, parent: etree.Element, block: str) -> bool:
@@ -109,13 +109,13 @@ class FunctionCallProcessor(BlockProcessor):
         function_name = groups["name"]
         params = groups["params"]
 
-        macro_class = globals()[function_name]
+        macro_class = getattr(macros, function_name)
 
         my_globals = globals().copy()
         my_globals["__builtins__"] = __builtins__
 
         my_locals = { "__retval": None,
-                      function_name: macro_class(self.context) }
+                      function_name: macro_class(self.md, self.context) }
 
         try:
             exec(f"__retval = {function_name}({params})",
@@ -158,7 +158,7 @@ class FunctionCallExtension(Extension):
         md.registerExtension(self)
 
         md.parser.blockprocessors.register(
-            FunctionCallProcessor(md.parser, self.context),
+            FunctionCallProcessor(md, self.context),
             "function_call", 105)
 
 
@@ -211,8 +211,11 @@ def view_func(infile_path:str):
     else:
         paths = { abspath }
         html = markdown_to_html(abspath.read_text(),
-                                MacroContext(markdown_file_path=abspath,
-                                             dependent_files=paths))
+                                macros.MacroContext(markdown_file_path=abspath,
+                                                    dependent_files=paths,
+                                                    www_root=www_root,
+                                                    infile_path=infile_path
+                                                    ))
         html = '<div class="markdown">' + html + '</div>'
         markdown_cache[abspath] = CacheEntry(paths, html)
 

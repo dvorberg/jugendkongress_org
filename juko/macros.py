@@ -1,5 +1,7 @@
-import re, dataclasses, pathlib
+import re, dataclasses, pathlib, mimetypes
 import xml.etree.ElementTree as etree
+
+from markdown.core import Markdown
 
 @dataclasses.dataclass
 class MacroContext:
@@ -7,15 +9,28 @@ class MacroContext:
     dependent_files: dict
 
 class Macro(object):
-    def __init__(self, context):
+    def __init__(self, md:Markdown, context:MacroContext):
+        self.md = md
         self.context = context
 
     def register_dependent_file(self, path):
         """
         Add a filepath to be checked for modifications.
         """
-        assert path.is_absolute, ValueError
+        if type(path) == str:
+            path = pathlib.Path(self.context.markdown_file_path.parent, path)
+
+        path = path.absolute()
         self.context.dependent_files.add(path)
+
+    def get_md_meta(self, name):
+        l = self.md.Meta.get(name, [])
+        if len(l) == 0:
+            return ""
+        if len(l) == 1:
+            return l[0]
+        else:
+            return l
 
     def __call__(self):
         raise NotImplemented()
@@ -118,8 +133,6 @@ class ablauf_einsetzen(Macro):
         # view_func.
         abspath = pathlib.Path(self.context.markdown_file_path.parent,
                                filename)
-        abspath = abspath.absolute()
-
         self.register_dependent_file(abspath)
 
         current_day = None
@@ -165,3 +178,56 @@ class ablauf_einsetzen(Macro):
         for day in items_by_day.values():
             div.append(day.create_dom(times))
         return div
+
+class titelbild_einsetzen(Macro):
+    def __call__(self, fn, fn_mobil):
+        self.register_dependent_file(fn)
+        self.register_dependent_file(fn_mobil)
+
+        ret = etree.Element("div")
+        ret.set("class", "titelbild")
+
+        h1 = etree.Element("h1")
+        h1.text = self.get_md_meta("titel")
+
+        st = etree.Element("small")
+        st.set("class", "text-muted")
+        st.text = self.get_md_meta("untertitel")
+        h1.append(st)
+
+        ret.append(h1)
+
+        picture = etree.Element("picture")
+
+        def add_source(src, media):
+            source = etree.Element("source")
+            mtype, encoding = mimetypes.guess_type(fn)
+
+            source.set("srcset", src)
+            source.set("type", mtype)
+            source.set("media", media)
+            source.text = ""
+
+            picture.append(source)
+
+        add_source(fn, "(min-width: 992px)")
+        add_source(fn_mobil, "(max-width: 992px)")
+
+        img = etree.Element("img")
+        img.set("src", fn)
+        picture.append(img)
+
+        ret.append(picture)
+
+        datum = etree.Element("div")
+        datum.set("class", "datum text-muted")
+        datum.text = self.get_md_meta("datum") + " • Jugendburg Ludwigstein"
+
+        no = etree.Element("small")
+        no.set("class", "text-muted")
+        no.text = self.get_md_meta("nummer") + ". Lutherischer Jugendkongress"
+        datum.append(no)
+
+        ret.append(datum)
+
+        return ret
