@@ -1,4 +1,3 @@
-Interne ID: Focusing
 Titel: Focusing
 Referenten: Sabine Plaschke
 Workshopphasen: 
