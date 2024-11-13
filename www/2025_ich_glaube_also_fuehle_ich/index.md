@@ -63,4 +63,6 @@ Viele Gemeinden und Kirchenbezirke unterstützen die Teilnahme durch Zuschüsse 
 
 Herzlich Willkommen!
 
+## Die Workshops
 
+!workshops_einsetzen()
