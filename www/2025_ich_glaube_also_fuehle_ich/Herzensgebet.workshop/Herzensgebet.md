@@ -1,4 +1,3 @@
-Interne ID: Herzensgebet
 Titel: Herzensgebet (Beten ohne Worte)
 Referenten: Ursula Wendt
 Workshopphasen: 
