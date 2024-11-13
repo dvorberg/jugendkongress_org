@@ -19,7 +19,7 @@
 ##  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 ##
 ##  I have added a copy of the GPL in the file LICENSE
-import re, io, traceback
+import re, io, traceback, threading
 from pathlib import Path
 
 import xml.etree.ElementTree as etree
@@ -29,7 +29,7 @@ import markdown
 from markdown.extensions import Extension
 from markdown.blockprocessors import BlockProcessor
 
-from . import config, debug
+from .. import config, debug
 from . import macros
 
 # https://python-markdown.github.io/extensions/api/#blockprocessors
@@ -115,7 +115,7 @@ class FunctionCallProcessor(BlockProcessor):
         my_globals["__builtins__"] = __builtins__
 
         my_locals = { "__retval": None,
-                      function_name: macro_class(self.md, self.context) }
+                      function_name: macro_class(self.context) }
 
         try:
             exec(f"__retval = {function_name}({params})",
@@ -161,15 +161,64 @@ class FunctionCallExtension(Extension):
             FunctionCallProcessor(md, self.context),
             "function_call", 105)
 
+class MarkdownResult(object):
+    def __init__(self, source:str, context:macros.MacroContext):
+        context.result = self
 
-def markdown_to_html(source, context):
-    return markdown.markdown(
-        source,
-        extensions=["extra", "meta", "nl2br",
-                    FunctionCallExtension(context)])
+        self.md = markdown.Markdown(
+            extensions=["extra", "meta", "nl2br",
+                        FunctionCallExtension(context)])
 
-class CacheEntry:
-    def __init__(self, paths, html):
+        self._original_serializer = self.md.serializer
+        self.md.serializer = self._serializer
+
+        self.md.convert(source)
+
+    def _serializer(self, root_element:etree.Element):
+        self.root_element = root_element
+        return "<div />"
+
+    def get_meta(self, name):
+        l = self.md.Meta.get(name, [])
+        if len(l) == 0:
+            return ""
+        if len(l) == 1:
+            return l[0]
+        else:
+            return l
+
+    @property
+    def html(self):
+        # We have aborted markdown.code.Markdown.convert() by returning
+        # an empty string above. We now perform the remainder of convert()’s
+        # job:
+        # - running the actual serializer
+        # - stripping the doc_tag
+        # - running the post processors.
+        html = self._original_serializer(self.root_element)
+
+        start = f"<{self.md.doc_tag}>"
+        end = f"</{self.md.doc_tag}>"
+
+        if html.startswith(start) and html.endswith(end):
+            html = html[len(start):-len(end)]
+        elif html == f"<{self.md.doc_tag} />":
+            # Empty document
+            html = ""
+
+        # Run the text post-processors.
+        # I didn’t design this.
+        for pp in self.md.postprocessors:
+            html = pp.run(html)
+
+        return html.strip()
+
+
+    def __str__(self):
+        return self.html
+
+class CacheEntry(object):
+    def __init__(self, paths:set, result:MarkdownResult):
         if debug:
             # In development mode we make sure all the paths are absolute
             # paths.
@@ -178,7 +227,7 @@ class CacheEntry:
                     raise ValueError("All paths must be absolute.")
 
         self.paths = paths
-        self.html = html
+        self.result = result
         self.ctime = self.mtime
 
     @property
@@ -196,28 +245,37 @@ class CacheEntry:
         """
         return self.ctime == self.mtime
 
-markdown_cache = {}
+    @property
+    def html(self):
+        return self.result.html
+
+markdown_cache_lock = threading.Lock()
+class MarkdownCache(object):
+    def __init__(self):
+        self._cache = {}
+
+    def get_or_render(self, abspath:Path, force_render=False):
+        with markdown_cache_lock:
+            if ( force_render
+                 or abspath not in self._cache
+                 or (not self._cache[abspath].valid)
+                ):
+                paths = { abspath }
+                result = MarkdownResult(
+                    abspath.open().read(),
+                    macros.MacroContext(markdown_file_path=abspath,
+                                        dependent_files=paths))
+                self._cache[abspath] = CacheEntry(paths, result)
+
+        return self._cache[abspath]
+
+markdown_cache = MarkdownCache()
 
 def view_func(infile_path:str):
     infile_path = Path(infile_path)
     www_root = Path(config["WWW_PATH"])
 
     abspath = Path(www_root, infile_path)
-
-    entry = markdown_cache.get(abspath, None)
-
-    if entry is not None and entry.valid:
-        html = entry.html
-    else:
-        paths = { abspath }
-        html = markdown_to_html(abspath.read_text(),
-                                macros.MacroContext(markdown_file_path=abspath,
-                                                    dependent_files=paths,
-                                                    www_root=www_root,
-                                                    infile_path=infile_path
-                                                    ))
-        html = '<div class="markdown">' + html + '</div>'
-        markdown_cache[abspath] = CacheEntry(paths, html)
-
+    entry = markdown_cache.get_or_render(abspath)
     template = g.skin.load_template("skin/jugendkongress/congress_view.pt")
-    return template(html=html)
+    return template(html=entry.html)

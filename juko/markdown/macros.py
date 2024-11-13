@@ -1,7 +1,7 @@
 import re, dataclasses, pathlib, mimetypes
 import xml.etree.ElementTree as etree
 
-from markdown.core import Markdown
+from . import html
 
 @dataclasses.dataclass
 class MacroContext:
@@ -9,8 +9,7 @@ class MacroContext:
     dependent_files: dict
 
 class Macro(object):
-    def __init__(self, md:Markdown, context:MacroContext):
-        self.md = md
+    def __init__(self, context:MacroContext):
         self.context = context
 
     def register_dependent_file(self, path):
@@ -23,14 +22,8 @@ class Macro(object):
         path = path.absolute()
         self.context.dependent_files.add(path)
 
-    def get_md_meta(self, name):
-        l = self.md.Meta.get(name, [])
-        if len(l) == 0:
-            return ""
-        if len(l) == 1:
-            return l[0]
-        else:
-            return l
+    def get_meta(self, name):
+        return self.result.get_meta(name)
 
     def __call__(self):
         raise NotImplemented()
@@ -79,19 +72,9 @@ class AblaufItem:
 
     @property
     def dom(self):
-        div = etree.Element("div")
-        div.set("class", "item")
-
-        time = etree.Element("time")
-        time.text = self.time
-        div.append(time)
-
-        item = etree.Element("div")
-        item.set("class", "title")
-        item.text = self.title
-        div.append(item)
-
-        return div
+        return html.div(html.time(self.time),
+                        html.div(self.title, class_="title"),
+                        class_="item")
 
 
 @dataclasses.dataclass
@@ -181,6 +164,8 @@ class ablauf_einsetzen(Macro):
 
 class titelbild_einsetzen(Macro):
     def __call__(self, fn, fn_mobil):
+        get_meta = self.context.result.get_meta
+
         self.register_dependent_file(fn)
         self.register_dependent_file(fn_mobil)
 
@@ -188,11 +173,11 @@ class titelbild_einsetzen(Macro):
         ret.set("class", "titelbild")
 
         h1 = etree.Element("h1")
-        h1.text = self.get_md_meta("titel")
+        h1.text = get_meta("titel")
 
         st = etree.Element("small")
         st.set("class", "text-muted")
-        st.text = self.get_md_meta("untertitel")
+        st.text = get_meta("untertitel")
         h1.append(st)
 
         ret.append(h1)
@@ -221,13 +206,17 @@ class titelbild_einsetzen(Macro):
 
         datum = etree.Element("div")
         datum.set("class", "datum text-muted")
-        datum.text = self.get_md_meta("datum") + " • Jugendburg Ludwigstein"
+        datum.text = get_meta("datum") + " • Jugendburg Ludwigstein"
 
         no = etree.Element("small")
         no.set("class", "text-muted")
-        no.text = self.get_md_meta("nummer") + ". Lutherischer Jugendkongress"
+        no.text = get_meta("nummer") + ". Lutherischer Jugendkongress"
         datum.append(no)
 
         ret.append(datum)
 
         return ret
+
+class workshops_einsetzen(Macro):
+    def __call__(self):
+        return None
