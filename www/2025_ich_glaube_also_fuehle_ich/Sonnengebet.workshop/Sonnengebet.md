@@ -1,8 +1,6 @@
-Titel: Sonnengebet mit Körperübungen
-Referenten: Matthias Forchheim
+Titel: (Mein) Beten in Bewegung?
+Untertitel: Beten mit Leib und Seele
+Referent: Matthias Forchheim
+Referent-Info: Pfarrer in Scharnebeck
 Workshopphasen: 
-Bilder: 
 
-### Überschrift
-
-Beschreibung

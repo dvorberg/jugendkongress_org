@@ -1,8 +1,7 @@
-Titel: Musik
-Referenten: Elisabeth Schwarz-Gangel
+Titel: Raum – Bewegung – Klang
+Untertitel: Wenn Worte lebendig werden
+Referent: Elisabeth Schwarz-Gangel
+Referent-Info: Kirchenmusikerin
 Workshopphasen: 
-Bilder: 
 
-### Überschrift
 
-Beschreibung
