@@ -73,6 +73,51 @@ div.ablauf
     }
 }
 
+div.workshops
+{
+    div.referenten
+    {
+        max-width: 300px;
+        img
+        {
+        }
+    }
+    
+    div.collapse
+    {
+        min-height: 250px;
+        max-height: 250px;
+        display: block ! important;
+        overflow: hidden;
+
+        &.show
+        {
+            max-height: none;
+        }
+    }
+
+    div.collapsing
+    {
+        min-height: 250px;
+        max-height: none;
+    }
+
+    button
+    {
+        text-decoration: none;
+    }
+
+    div.referenten > div
+    {
+        margin-bottom: 1rem;
+
+        > p
+        {
+            font-size: 90%;
+        }
+    }
+}
+
 // When displayed on large (lg) displays, blank items are hidden.
 @media (max-width: 992px)
 {

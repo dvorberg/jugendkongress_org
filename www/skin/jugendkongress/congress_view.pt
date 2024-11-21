@@ -18,6 +18,12 @@
 
   <head>
     <tal:block metal:fill-slot="head_slot">
+      <tal:block tal:condition="congress.registration_is_open">
+        <script>
+          const controller_url = '${congress.controller_url}';
+        </script>
+        <script src="/skin/jugendkongress/booking.js"></script>
+      </tal:block>
     </tal:block>
   </head>
 
@@ -35,15 +41,113 @@
       <ul class="navbar-nav">
       </ul>
       
+      <ul class="navbar-nav ms-2" tal:condition="congress.registration_is_open">
+        <li class="nav-item">
+          <button type="button" class="btn btn-primary"
+                  data-bs-toggle="modal"
+                  data-bs-target="#anmelden-dialog">
+            Anmelden
+          </button>
+        </li>
+      </ul>
+      
       <div class="navbar-text ms-auto" tal:condition="not:in_archive">
-        <a class="nav-link" href="/archive.cgi">
+        <a class="nav-link" href="/archive.cgi" tal:replace="nothing">
           <strong>Archiv </strong>
         </a>
       </div>
     </metal:block>
 
     <metal:block metal:fill-slot="main">
-      <div class="mt-4 congress" tal:content="structure html" />
+      <div class="mt-4 congress" tal:content="structure congress.html" />
+
+      <button type="button" class="btn btn-link p-0" 
+              data-bs-toggle="modal"
+              data-bs-target="#anmelden-dialog"
+              tal:condition="congress.registration_is_open">
+        Anmelden
+      </button>
+
+      <div class="modal" tabindex="-1" id="anmelden-dialog"
+           tal:condition="congress.registration_is_open">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Anmeldung</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"
+                      aria-label="Schließen"></button>
+            </div>
+            <div class="modal-body">
+              <form class="needs-validation">
+                <div class="mb-3">
+                  <label for="email"
+                         class="form-label">e-Mail Adresse</label>
+                  <input type="email" class="form-control"
+                         id="email" aria-describedby="email-help" />
+                  <div id="email-help" class="form-text">
+                    Mit einer e-Mail Adresse kann sich genau eine Person
+                    anmelden.
+                  </div>
+                  <div class="invalid-feedback" data-for="email">
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label for="firstname" class="form-label">Vorname</label>
+                  <input type="text" class="form-control"
+                         id="firstname" aria-describedby="firstname-help" />
+                  <div id="firstname-help">
+                    Bitte gib deinen Vornamen ein.
+                  </div>                  
+                  <div class="invalid-feedback" data-for="firstname">
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label for="lastname" class="form-label">Nachname</label>
+                  <input type="text" class="form-control"
+                         id="lastname" aria-describedby="lastname-help" />
+                  <div id="lastname-help" class="form-text">
+                  </div>
+                  <div class="invalid-feedback">
+                    Bitte gib deinen Nachnamen ein.
+                  </div>                  
+                  <div class="invalid-feedback" data-for="firstname">
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary"
+                      data-bs-dismiss="modal">Abbruch</button>
+              <button type="button" id="anmelde-button"
+                      class="btn btn-primary">Anmelden</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal" tabindex="-1" id="angemeldet-dialog"
+           tal:condition="congress.registration_is_open">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5" id="exampleModalLabel">
+                Du bist angemeldet!
+              </h1>
+              <button type="button" class="btn-close"
+                      data-bs-dismiss="modal" aria-label="Schließen"></button>
+            </div>
+            <div class="modal-body">
+              Schau in deinem e-Mail Postfach nach. Du bekommst
+              gleich eine e-Mail, mit der du deine Angaben vervollständigen
+              und eine Vorauswahl der Workshops treffen kannst. 
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary"
+                      data-bs-dismiss="modal">Schlißen</button>
+            </div>
+          </div>
+        </div>
+      </div>        
     </metal:block>
   </body>
 </html>

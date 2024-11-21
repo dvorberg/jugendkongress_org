@@ -33,6 +33,7 @@
     <link rel="stylesheet" type="text/css"
 	      href="/skin/jugendkongress/homepage.scss" />
 
+    <script src="/skin/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="/skin/jugendkongress/layout.js"></script>
     
     <metal:block metal:define-slot="head_slot" tal:replace="nothing">
@@ -54,7 +55,7 @@
                  alt="Jugendwerk der SELK"
                  width="50" height="36" />
           </a>
-          <div class="collapse navbar-collapse">
+          <div class="collapse navbar-collapse" id="navbarNav">
             <metal:block metal:define-slot="congress-menu" />
           </div>
         </div>
