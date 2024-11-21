@@ -19,8 +19,9 @@
 ##  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 ##
 ##  I have added a copy of the GPL in the file LICENSE
-import re, io, traceback, threading
+import re, io, traceback, threading, copy
 from pathlib import Path
+from functools import cached_property
 
 import xml.etree.ElementTree as etree
 from flask import g
@@ -30,7 +31,8 @@ from markdown.extensions import Extension
 from markdown.blockprocessors import BlockProcessor
 
 from .. import config, debug
-from . import macros
+from ..utils import PathSet
+from . import macros, html
 
 # https://python-markdown.github.io/extensions/api/#blockprocessors
 class FunctionCallProcessor(BlockProcessor):
@@ -161,33 +163,66 @@ class FunctionCallExtension(Extension):
             FunctionCallProcessor(md, self.context),
             "function_call", 105)
 
+class CiteProcessor(BlockProcessor):
+    cite_re = re.compile(r"(^|\n)[–—] (?P<source>.*?)(\n|$)")
+
+    def test(self, parent:etree.Element, block:str) -> bool:
+        match = self.cite_re.match(block)
+        after_blockquote = (len(parent) > 0 and parent[-1].tag == "blockquote")
+        return (match is not None and after_blockquote)
+
+    def run(self, parent:etree.Element, blocks:list[str]) -> None:
+        block = blocks.pop(0)
+        groups = self.cite_re.match(block).groupdict()
+
+        blockquote = parent[-1]
+        del parent[-1]
+        blockquote.set("class", "blockquote")
+
+        parent.append(html.figure(blockquote,
+                                  html.figcaption(groups["source"],
+                                                  class_="blockquote-footer")))
+
+class CiteExtension(Extension):
+    def extendMarkdown(self, md):
+        """ Add Admonition to Markdown instance. """
+        md.registerExtension(self)
+        md.parser.blockprocessors.register(
+            CiteProcessor(md.parser), "cite", 105)
+
 class MarkdownResult(object):
     def __init__(self, source:str, context:macros.MacroContext):
         context.result = self
 
         self.md = markdown.Markdown(
             extensions=["extra", "meta", "nl2br",
-                        FunctionCallExtension(context)])
+                        FunctionCallExtension(context),
+                        CiteExtension()])
 
+        self.md.treeprocessors.deregister("prettify")
         self._original_serializer = self.md.serializer
         self.md.serializer = self._serializer
 
+        self._source = source
         self.md.convert(source)
 
     def _serializer(self, root_element:etree.Element):
-        self.root_element = root_element
+        self._root_element = copy.deepcopy(root_element)
         return "<div />"
 
-    def get_meta(self, name):
+    def get_meta(self, name, default="", as_list=False):
         l = self.md.Meta.get(name, [])
         if len(l) == 0:
-            return ""
-        if len(l) == 1:
+            if as_list:
+                return []
+            else:
+                return default
+        if len(l) == 1 and (not as_list):
             return l[0]
         else:
             return l
 
-    @property
+    @cached_property
     def html(self):
         # We have aborted markdown.code.Markdown.convert() by returning
         # an empty string above. We now perform the remainder of convert()’s
@@ -195,8 +230,7 @@ class MarkdownResult(object):
         # - running the actual serializer
         # - stripping the doc_tag
         # - running the post processors.
-        html = self._original_serializer(self.root_element)
-
+        html = self._original_serializer(self._root_element)
         start = f"<{self.md.doc_tag}>"
         end = f"</{self.md.doc_tag}>"
 
@@ -213,9 +247,16 @@ class MarkdownResult(object):
 
         return html.strip()
 
+    @property
+    def root_element(self) -> etree.Element:
+        return self._root_element
 
     def __str__(self):
         return self.html
+
+class NeverMatch(object):
+    def __eq__(self):
+        return False
 
 class CacheEntry(object):
     def __init__(self, paths:set, result:MarkdownResult):
@@ -235,7 +276,10 @@ class CacheEntry(object):
         """
         Return the time of the youngest modification in the file set.
         """
-        return max([ path.stat().st_mtime for path in self.paths ])
+        try:
+            return max([ path.stat().st_mtime for path in self.paths ])
+        except FileNotFoundError:
+            return NeverMatch()
 
     @property
     def valid(self):
@@ -249,6 +293,10 @@ class CacheEntry(object):
     def html(self):
         return self.result.html
 
+    def register_dependent_files(self, *paths):
+        for path in paths:
+            self.paths.add(path)
+
 markdown_cache_lock = threading.Lock()
 class MarkdownCache(object):
     def __init__(self):
@@ -260,14 +308,15 @@ class MarkdownCache(object):
                  or abspath not in self._cache
                  or (not self._cache[abspath].valid)
                 ):
-                paths = { abspath }
+                paths = PathSet(abspath)
                 result = MarkdownResult(
                     abspath.open().read(),
-                    macros.MacroContext(markdown_file_path=abspath,
-                                        dependent_files=paths))
+                    macros.MacroContext(
+                        markdown_file_path=abspath,
+                        pathset=paths))
                 self._cache[abspath] = CacheEntry(paths, result)
 
-        return self._cache[abspath]
+        return self._cache[abspath].result
 
 markdown_cache = MarkdownCache()
 
@@ -277,5 +326,5 @@ def view_func(infile_path:str):
 
     abspath = Path(www_root, infile_path)
     entry = markdown_cache.get_or_render(abspath)
-    template = g.skin.load_template("skin/jugendkongress/congress_view.pt")
+    template = g.skin.load_template("skin/jugendkongress/markdown_view.pt")
     return template(html=entry.html)

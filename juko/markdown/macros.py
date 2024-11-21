@@ -1,26 +1,30 @@
-import re, dataclasses, pathlib, mimetypes
+import re, dataclasses, pathlib, mimetypes, copy
 import xml.etree.ElementTree as etree
 
+import flask
+
 from . import html
+from ..utils import PathSet
 
 @dataclasses.dataclass
 class MacroContext:
     markdown_file_path: pathlib.Path
-    dependent_files: dict
+    pathset: PathSet
 
 class Macro(object):
     def __init__(self, context:MacroContext):
         self.context = context
 
-    def register_dependent_file(self, path):
+    def register_dependent_files(self, *paths):
         """
         Add a filepath to be checked for modifications.
         """
-        if type(path) == str:
-            path = pathlib.Path(self.context.markdown_file_path.parent, path)
+        for path in paths:
+            if type(path) == str:
+                path = pathlib.Path(
+                    self.context.markdown_file_path.parent, path)
 
-        path = path.absolute()
-        self.context.dependent_files.add(path)
+            self.context.pathset.register(path)
 
     def get_meta(self, name):
         return self.result.get_meta(name)
@@ -116,7 +120,7 @@ class ablauf_einsetzen(Macro):
         # view_func.
         abspath = pathlib.Path(self.context.markdown_file_path.parent,
                                filename)
-        self.register_dependent_file(abspath)
+        self.register_dependent_files(abspath)
 
         current_day = None
         items_by_day = {}
@@ -166,8 +170,7 @@ class titelbild_einsetzen(Macro):
     def __call__(self, fn, fn_mobil):
         get_meta = self.context.result.get_meta
 
-        self.register_dependent_file(fn)
-        self.register_dependent_file(fn_mobil)
+        self.register_dependent_files(fn, fn_mobil)
 
         ret = etree.Element("div")
         ret.set("class", "titelbild")
@@ -188,7 +191,7 @@ class titelbild_einsetzen(Macro):
             source = etree.Element("source")
             mtype, encoding = mimetypes.guess_type(fn)
 
-            source.set("srcset", src)
+            source.set("srcset", flask.g.congress.href + src)
             source.set("type", mtype)
             source.set("media", media)
             source.text = ""
@@ -199,7 +202,7 @@ class titelbild_einsetzen(Macro):
         add_source(fn_mobil, "(max-width: 992px)")
 
         img = etree.Element("img")
-        img.set("src", fn)
+        img.set("src", flask.g.congress.href + fn)
         picture.append(img)
 
         ret.append(picture)
@@ -219,4 +222,65 @@ class titelbild_einsetzen(Macro):
 
 class workshops_einsetzen(Macro):
     def __call__(self):
-        return None
+        congress = flask.g.congress
+
+        ret = html.div(class_="workshops row")
+
+        for no, workshop in enumerate(congress.workshops):
+            referenten = html.div(class_="col-md-4 referenten")
+
+            for referent, info in workshop.referenten_info:
+                div = html.div()
+
+                for picture in workshop.pictures:
+                    if picture.stem.lower() == referent.lower():
+                        div.append(html.img(src=picture.href,
+                                            class_="img-fluid"))
+                        break
+
+                p = html.p(referent)
+                if info:
+                    p.append(html.br(),
+                             html.small(info, class_="text-muted"))
+                div.append(p)
+
+                referenten.append(div)
+
+
+            colname = f"text{no}"
+
+            if workshop.untertitel:
+                untertitel = html.small(workshop.untertitel,
+                                        class_="text-muted")
+            else:
+                untertitel = None
+
+            main_text = html.div(html.h5(workshop.titel,
+                                         html.br(),
+                                         untertitel,
+                                         class_="card-title"),
+                                 workshop.root_element,
+                                 class_="collapse" ,
+                                 id=colname)
+
+            more_button = html.button("Mehr …",
+                                      class_="btn btn-link ps-0",
+                                      type="button",
+                                      data_bs_toggle="collapse",
+                                      data_bs_target="#" + colname)
+
+            texts = html.div(html.div(html.div(main_text,
+                                               more_button,
+                                               class_="card-text"),
+                                      class_="card-body"),
+                             class_="col-md-8")
+
+            card = html.div(html.h5("Workshop",
+                                    class_="card-header"),
+                            html.div(texts, referenten,
+                                     class_="row g-0"),
+                            class_="workshop card mb-4")
+
+            ret.append(html.div(card, class_="col-md-6"))
+
+        return ret

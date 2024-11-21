@@ -20,15 +20,17 @@
 ##
 ##  I have added a copy of the GPL in the file LICENSE
 
-import sys, os, os.path as op, re, runpy, inspect, threading, glob
+import sys, os, os.path as op, re, runpy, inspect, threading, json
 import urllib.parse, psycopg2.pool
 from wsgiref.handlers import format_date_time
+from pathlib import Path
 
 import flask
 from werkzeug.exceptions import Unauthorized
 
 from . import config
 from . import skinning
+from . import controllers
 
 # Es ist zwar offensichtlich, was hier passiert, aber ich schreibe trotzdem
 # mal einen Kommentar untendrunter.
@@ -81,6 +83,7 @@ def create_app(test_config=None):
             flask.g.session_dbconn.rollback()
             app.db_connection_pool.putconn(flask.g.session_dbconn)
 
+    www_root = Path(config["WWW_PATH"])
     skin = skinning.Skin(config["WWW_PATH"])
     @app.before_request
     def make_skin():
@@ -102,6 +105,42 @@ def create_app(test_config=None):
 
     from .model.congress import Congresses
     congresses = Congresses()
+
+    @app.before_request
+    def set_congresses():
+        flask.g.congresses = congresses
+
+    @app.route("/congress/<path:congress_path>")
+    def congress_view(congress_path):
+        congress_path = Path(congress_path)
+        if congress_path.name == "index.md":
+            congress_path = congress_path.parent
+        congress = congresses.by_path(congress_path)
+        if congress is None:
+            return flask.abort(404)
+
+        flask.g.congress = congress
+        template = skin.load_template("skin/jugendkongress/congress_view.pt")
+        return template(congress=congress, booking=None)
+
+    @app.route("/booking/<int:year>/<command>", methods=("POST",))
+    def booking(year, command):
+        ic(year, command)
+
+        congress = congresses.by_year(year)
+
+        match command:
+            case "create":
+                ret = controllers.create_booking(congress)
+            case "modify":
+                ret = controllers.modify_booking(congress)
+            case _:
+                return flask.abort(404)
+
+        response = flask.make_response(json.dumps(ret), 200)
+        response.headers["Content-Type"] = "application/json"
+        return response
+
 
     @app.route("/root")
     def root():

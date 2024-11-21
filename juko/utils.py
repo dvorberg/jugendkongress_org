@@ -329,3 +329,23 @@ class ViewOption(FormParamOption):
 
 class ViewsHandler(FormParamHandler):
     option_class = ViewOption
+
+class NeverMatch(object):
+    def __eq__(self, other):
+        return False
+
+class PathSet(set):
+    def __init__(self, *paths):
+        super().__init__()
+        self.register(*paths)
+
+    def register(self, *paths):
+        for path in paths:
+            self.add(path.absolute())
+
+    @property
+    def mtime(self):
+        try:
+            return max([ path.stat().st_mtime for path in self ])
+        except FileNotFoundError:
+            return NeverMatch()
