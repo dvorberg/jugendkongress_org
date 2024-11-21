@@ -25,6 +25,8 @@ import urllib.parse, psycopg2.pool
 from wsgiref.handlers import format_date_time
 from pathlib import Path
 
+from sqlclasses import sql
+
 import flask
 from werkzeug.exceptions import Unauthorized
 
@@ -60,7 +62,7 @@ module_load_lock = threading.Lock()
 def create_app(test_config=None):
     from . import config
     from . import db, authentication
-    from .utils import call_from_request
+    from .utils import call_from_request, rget
 
     # create and configure the app
     app = flask.Flask(__name__, instance_relative_config=True)
@@ -103,7 +105,7 @@ def create_app(test_config=None):
     from .archive import archive_cgi
     app.add_url_rule("/archive.cgi", view_func=archive_cgi)
 
-    from .model.congress import Congresses
+    from .model.congress import Congresses, Booking
     congresses = Congresses()
 
     @app.before_request
@@ -119,14 +121,23 @@ def create_app(test_config=None):
         if congress is None:
             return flask.abort(404)
 
+        key = rget("key", None)
+        if key:
+            booking = Booking.select_one(congress.where(
+                "slug = ", sql.string_literal(key)))
+            error_message = "Ungültige Registrierungs-Mail!"
+        else:
+            booking = None
+            error_message = None
+
         flask.g.congress = congress
         template = skin.load_template("skin/jugendkongress/congress_view.pt")
-        return template(congress=congress, booking=None)
+        return template(congress=congress,
+                        booking=booking,
+                        error_message=error_message)
 
     @app.route("/booking/<int:year>/<command>", methods=("POST",))
     def booking(year, command):
-        ic(year, command)
-
         congress = congresses.by_year(year)
 
         match command:
@@ -134,6 +145,8 @@ def create_app(test_config=None):
                 ret = controllers.create_booking(congress)
             case "modify":
                 ret = controllers.modify_booking(congress)
+            case "resend":
+                ret = controllers.resend_welcome(congress)
             case _:
                 return flask.abort(404)
 

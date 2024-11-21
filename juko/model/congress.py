@@ -2,9 +2,12 @@ import pathlib, dataclasses, re, datetime
 from functools import cached_property
 
 from .. import config
+from ..db import dbobject
 from ..markdown import MarkdownResult
 from ..markdown.macros import MacroContext
 from ..utils import PathSet
+
+from sqlclasses import sql
 
 import flask
 
@@ -170,6 +173,13 @@ class Congress(DocumentFolder):
     def controller_url(self):
         return config["SITE_URL"] + "/" + str(self.year)
 
+    def where(self, *args):
+        return sql.where("congress_year = %i" % self.year).and_(
+            sql.where(*args))
+
+    def booking_href(self, key):
+        return "%s/%i?key=%s" % ( config["SITE_URL"], self.year, key)
+
 congress_directory_re = re.compile(r"(\d{4}).*")
 class Congresses(object):
     def __init__(self):
@@ -233,6 +243,10 @@ class Congresses(object):
     @validate_congress
     def by_year(self, year:int):
         return self.congresses.get(year, None)
+
+class Booking(dbobject):
+    __relation__ = "booking"
+
 
 if __name__ == "__main__":
     # Test this.

@@ -41,7 +41,8 @@
       <ul class="navbar-nav">
       </ul>
       
-      <ul class="navbar-nav ms-2" tal:condition="congress.registration_is_open">
+      <ul class="navbar-nav ms-2"
+          tal:condition="congress.registration_is_open and not booking">
         <li class="nav-item">
           <button type="button" class="btn btn-primary"
                   data-bs-toggle="modal"
@@ -59,17 +60,30 @@
     </metal:block>
 
     <metal:block metal:fill-slot="main">
+      <div class="booking-welcome text-success mt-4" tal:condition="booking">
+        <h3>
+          Willkommgen
+          ${booking.firstname}
+          ${booking.lastname}!
+        </h3>
+        
+        <p>
+          <a href="#booking">Hier</a>
+          findest du die Details zu deiner Anmeldung.
+        </p>
+      </div>
+      
       <div class="mt-4 congress" tal:content="structure congress.html" />
 
       <button type="button" class="btn btn-link p-0" 
               data-bs-toggle="modal"
               data-bs-target="#anmelden-dialog"
-              tal:condition="congress.registration_is_open">
+              tal:condition="congress.registration_is_open and not booking">
         Anmelden
       </button>
 
       <div class="modal" tabindex="-1" id="anmelden-dialog"
-           tal:condition="congress.registration_is_open">
+           tal:condition="congress.registration_is_open and not booking">
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header">
@@ -90,13 +104,19 @@
                   </div>
                   <div class="invalid-feedback" data-for="email">
                   </div>
+                  <div id="resend-email" class="form-text" style="display:none">
+                    Möchtest du deine Anmelde-e-Mail noch einmal erhalten?
+                    <button class="btn btn-sm btn-success"
+                            type="button">
+                      Senden
+                    </button>
+                  </div>
                 </div>
                 <div class="mb-3">
                   <label for="firstname" class="form-label">Vorname</label>
                   <input type="text" class="form-control"
                          id="firstname" aria-describedby="firstname-help" />
-                  <div id="firstname-help">
-                    Bitte gib deinen Vornamen ein.
+                  <div id="firstname-help" class="form-text">
                   </div>                  
                   <div class="invalid-feedback" data-for="firstname">
                   </div>
@@ -108,7 +128,6 @@
                   <div id="lastname-help" class="form-text">
                   </div>
                   <div class="invalid-feedback">
-                    Bitte gib deinen Nachnamen ein.
                   </div>                  
                   <div class="invalid-feedback" data-for="firstname">
                   </div>
@@ -119,7 +138,7 @@
               <button type="button" class="btn btn-secondary"
                       data-bs-dismiss="modal">Abbruch</button>
               <button type="button" id="anmelde-button"
-                      class="btn btn-primary">Anmelden</button>
+                      class="btn btn-primary disabled">Anmelden</button>
             </div>
           </div>
         </div>

@@ -31,5 +31,6 @@ export FLASK_APP=juko.app_factory:create_app
 
 export YOURAPPLICATION_SETTINGS=$HOME/jugendkongress/etc/config-development.py
 
+export DEBUG_SQL=true
 flask run -p 5001 --debug
 

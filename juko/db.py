@@ -41,7 +41,8 @@ class DbUsageException(Exception): pass
 
 sql_backend = sql.Backend(psycopg2, None)
 def rollup_sql(*query):
-    #debsql, params, = sql.rollup(sql_backend, *query, debug=True)
+    if debug_sql:
+        debsql, params, = sql.rollup(sql_backend, *query, debug=True)
     return sql.rollup(sql_backend, *query)
 
 def get_dbconn():

@@ -15,7 +15,7 @@ class BookingController
 		return input.value;
 	}
 	
-	fetch_from_form(command, fields)
+	fetch_from_form(command, fields, on_json_f=null, extra={})
 	{
 		const url = controller_url + "/" + command + "booking",
 			  data = new FormData();
@@ -24,9 +24,36 @@ class BookingController
 			data.append(field, this.input_value(field));
 		});
 
-		fetch(url, { method: "post", body: data }).then(
-			response => response.json()).then(
-				this.on_fetched.bind(this));
+		for (var field in extra)
+		{
+			data.append(field, extra[field]);
+		};
+
+		if (on_json_f === null)
+		{
+			on_json_f = this.on_fetched.bind(this);
+		}
+		
+		fetch(
+			url, { method: "post", body: data }
+		).then(
+			response => {
+				if (response.ok)
+				{
+					return response.json()
+				}
+				else
+				{
+					throw new Error(
+						`Server Fehler! ${response.status} `
+						`${response.statusText}`);
+				}
+			}
+		).then(
+			on_json_f
+		).catch(err => {
+			alert(err);
+		});
 	}
 
 	inputs()
@@ -51,22 +78,29 @@ class AnmeldenDialogController extends BookingController
 			"blur", this.on_email_blur.bind(this));
 		this.anmelde_button = div.querySelector("#anmelde-button");
 		this.anmelde_button.addEventListener(
-			"click", this.on_anmeldung_click.bind(this));		
+			"click", this.on_anmeldung_click.bind(this));
+
+		this.resend_help = div.querySelector("div#resend-email");
+		this.resend_welcome_button = this.resend_help.querySelector("button");
+		this.resend_welcome_button.addEventListener(
+			"click", this.on_resend_welcome_button_click.bind(this));
+
+		this.register_button = div.querySelector("#anmelde-button");
 	}
 
 	on_email_blur(event)
 	{
-		this.fetch_from_form("create", [ "email" ]);
+		this.fetch_from_form("create", [ "email" ], null, {"checkmail": true});
 	}
 
 	on_anmeldung_click(event)
 	{
-		console.log("ok");
+		this.fetch_from_form("create", [ "email", "firstname", "lastname" ]);
 	}
 
 	on_fetched(result)
 	{		
-		if (result.status == "ok")
+		if ( ! result.errors )
 		{
 			this.div.classList.add("was-validated");
 		}
@@ -93,14 +127,45 @@ class AnmeldenDialogController extends BookingController
 					{
 						help.innerText = message;
 					}
+
+					if (id == "email")
+					{
+						this.register_button.classList.add("disabled");
+					}					
 				}
 				else
 				{
 					input.classList.add("is-valid");
 					input.classList.remove("is-invalid");
+
+					if (id == "email")
+					{
+						this.register_button.classList.remove("disabled");
+					}
 				}
 			}
 		}
+
+		if ("reveal-resend" in result)
+		{
+			this.resend_help.setAttribute("style", null);
+		}
+
+		if ("resent" in result)
+		{
+			alert("Die e-Mail mit deiner Buchung wurde erneut versendet." +
+				  " Prüfe den Postfach.");
+		}
+
+		if("created" in result)
+		{
+			window.location.href = result.href;
+		}
+	}
+
+	on_resend_welcome_button_click(event)
+	{
+		this.fetch_from_form("resend", [ "email" ]);
 	}
 }
 
