@@ -111,6 +111,9 @@ def create_app(test_config=None):
     @app.before_request
     def set_congresses():
         flask.g.congresses = congresses
+        parts = flask.request.path.split("/")
+        if len(parts) >= 2 and parts[1] in { "congress", "booking"}:
+            flask.g.congress = congresses.by_path(parts[2])
 
     @app.route("/congress/<path:congress_path>")
     def congress_view(congress_path):
@@ -122,32 +125,47 @@ def create_app(test_config=None):
             return flask.abort(404)
 
         key = rget("key", None)
+        booking = None
+        site_message = None
         if key:
             booking = Booking.select_one(congress.where(
                 "slug = ", sql.string_literal(key)))
-            error_message = "Ungültige Registrierungs-Mail!"
-        else:
-            booking = None
-            error_message = None
+            if booking is None:
+                site_message = "Ungültige Registrierungs-Mail!"
 
-        flask.g.congress = congress
         template = skin.load_template("skin/jugendkongress/congress_view.pt")
         return template(congress=congress,
                         booking=booking,
-                        error_message=error_message)
+                        site_message=site_message,
+                        site_message_class = "danger")
 
-    @app.route("/booking/<int:year>/<command>", methods=("POST",))
+    slug_re = re.compile(r".*/\d{4}(?:/\w+)?\?key=(.{9})$")
+    @app.route("/booking/<int:year>/<command>", methods=("POST", "GET",))
     def booking(year, command):
         congress = congresses.by_year(year)
+
+        match = slug_re.match(flask.request.referrer)
+        if match is not None:
+            slug = match.group(1)
+        else:
+            slug = None
 
         match command:
             case "create":
                 ret = controllers.create_booking(congress)
             case "modify":
-                ret = controllers.modify_booking(congress)
+                ret = controllers.modify_booking(congress, slug)
             case "resend":
-                ret = controllers.resend_welcome(congress)
+                ret = controllers.resend_booking_email(congress)
+            case "delete":
+                # This is a redirect.
+                return controllers.delete_booking(congress, slug)
+            case "select-workshop-on-":
+                ret = controllers.select_workshop(congress, slug)
+            case "drop-workshop-on-":
+                ret = controllers.drop_workshop(congress, slug)
             case _:
+                # This is an error message.
                 return flask.abort(404)
 
         response = flask.make_response(json.dumps(ret), 200)
