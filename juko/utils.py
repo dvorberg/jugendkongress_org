@@ -1,4 +1,4 @@
-import sys, functools, inspect, collections
+import sys, functools, inspect, collections, re
 from flask import current_app, request, redirect as flask_redirect
 from urllib.parse import urlencode, quote_plus
 
@@ -349,3 +349,11 @@ class PathSet(set):
             return max([ path.stat().st_mtime for path in self ])
         except FileNotFoundError:
             return NeverMatch()
+
+subsitution_re = re.compile(r"\$\{([^\}]+)\}")
+def process_template(template, **kw):
+    def replacer(match):
+        expression = match.group(1)
+        return str(eval(expression, kw))
+
+    return subsitution_re.sub(replacer, template)
