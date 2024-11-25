@@ -279,7 +279,8 @@ class workshops_einsetzen(Macro):
                                     class_="card-header"),
                             html.div(texts, referenten,
                                      class_="row g-0"),
-                            class_="workshop card mb-4")
+                            class_="workshop card mb-4",
+                            **{"data-workshop-id": workshop.id})
 
             ret.append(html.div(card, class_="col-md-6"))
 
