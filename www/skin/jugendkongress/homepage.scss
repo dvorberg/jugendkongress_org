@@ -10,6 +10,10 @@ All Rights Reserved
 
 */
 
+body.wait, body.wait * {
+    cursor: wait !important;
+}
+
 div.titelbild
 {
     margin-bottom: 2rem;
@@ -75,6 +79,14 @@ div.ablauf
 
 div.workshops
 {
+    h5.card-header
+    {
+        &.bg-success, &.bg-primary
+        {
+            color: white;
+        }
+    }
+    
     div.referenten
     {
         max-width: 300px;
@@ -134,4 +146,28 @@ div.workshops
     {
         display: none;
     }    
+}
+
+div.card.booking
+{
+    border-color: var(--bs-success);
+    background-color: var(--bs-success-bg-subtle);
+    
+    > div.card-header
+    {
+        background-color: var(--bs-success-border-subtle);
+
+        > h5
+        {
+            color: var(--bs-success-text-emphasis);
+        }
+    }
+
+    > div.card-body
+    {
+        div.name a.pencil
+        {
+            text-decoration: none;
+        }
+    }
 }
