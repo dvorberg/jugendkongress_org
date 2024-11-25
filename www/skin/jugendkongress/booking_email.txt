@@ -1,0 +1,47 @@
+Liebe/r ${booking.firstname} ${booking.lastname},
+
+wie schön, dass Du zum ${congress.nummer} Luterischen Jugenskongress
+
+  ${congress.titel}
+  (${congress.untertitel})
+
+kommen möchtest!
+
+Bitte heb diesen Link gut auf:
+
+  ${congress.booking_href(booking.slug)}
+
+Mit diesem Link kannst du:
+
+  - Deine persönlichen Informationen nachtragen und ändern.
+  - Deine Präferenzen bezüglich der Unterbringung, des Essens usw. ändern.
+  - Workshops vorauswählen
+  - Deine Buchung stornieren, wenn es gar nicht anders geht.
+
+Gib den Link nicht weiter. Wer ihn hat, kann deine Buchung ändern und löschen! 
+
+Noch folgende Informationen für Dich:
+
+Der Teilnahmebeitrag ist vorab zu überweisen. Bitte beachte, dass
+deine Anmeldung erst nach Eingang deines Teilnahmebetrages wirksam
+wird.
+ 
+Bankverbindung:'
+Jugendwerk der SELK
+IBAN: DE66 5206 2601 0104 6006 30
+VR PartnerBank eG Chattengau-Schwalm-Eder
+
+Verwendungszweck:
+${congress.nummer} Kongress ${booking.firstname} ${booking.lastname}
+
+Eine Quittung über den Teilnahmebetrag erhältst du beim Kongress.
+
+Viele Gemeinden und Kirchenbezirke unterstützen die Teilnahme durch
+Zuschüsse zu den Tagungs- oder Fahrtkosten. Finanzielle
+Unterstützung kann auch bei der S.T.A.A.K.-Stiftung über den
+Veranstalter angefragt werden.
+
+Das Team freut sich auf Dich!
+
+Mit freundlichen Grüßen
+Der Anmeldungs-Robotter
