@@ -1,8 +1,8 @@
-import pathlib, dataclasses, re, datetime
+import pathlib, dataclasses, re, datetime, json
 from functools import cached_property
 
 from .. import config
-from ..db import dbobject
+from ..db import dbobject, execute
 from ..markdown import MarkdownResult
 from ..markdown.macros import MacroContext
 from ..utils import PathSet
@@ -157,6 +157,18 @@ class Congress(DocumentFolder):
         except (ValueError, TypeError):
             return None
 
+    @property
+    def titel(self):
+        return self.md.get_meta("titel") or self.id
+
+    @property
+    def untertitel(self):
+        return self.md.get_meta("untertitel") or None
+
+    @property
+    def nummer(self):
+        return self.md.get_meta("nummer")
+
     year_re = re.compile(r"(\d{4}).*")
     @cached_property
     def year(self):
@@ -174,7 +186,7 @@ class Congress(DocumentFolder):
         return config["SITE_URL"] + "/" + str(self.year)
 
     def where(self, *args):
-        return sql.where("congress_year = %i" % self.year).and_(
+        return sql.where("year = %i" % self.year).and_(
             sql.where(*args))
 
     def booking_href(self, key):
@@ -233,7 +245,10 @@ class Congresses(object):
 
     @validate_congress
     def by_path(self, path):
-        match = congress_directory_re.match(path.name)
+        if isinstance(path, pathlib.Path):
+            path = path.name
+
+        match = congress_directory_re.match(path)
         if match is None:
             return None
         else:
@@ -244,9 +259,120 @@ class Congresses(object):
     def by_year(self, year:int):
         return self.congresses.get(year, None)
 
+class Change(object):
+    def __init__(self, change:dict):
+        self._errors = {}
+        self._fields = set()
+        self._validated = set()
+
+        for name, value in change.items():
+            name = self.normalize(name)
+            self._fields.add(name)
+            setattr(self, name, value)
+
+    def normalize(self, name):
+        return name.replace("-", "_")
+
+    def __getitem__(self, name):
+        return getattr(self, self.normalize(name))
+
+    @property
+    def name(self):
+        return self.firstname + " " + self.lastname
+
+    def __contains__(self, name):
+        return hasattr(self, name)
+
+    def confirm(self, field):
+        self._validated.add(field)
+        self._errors[field] = None
+
+    def report(self, field, error):
+        assert field in self._fields, NameError
+        self._errors[field] = error
+
+    @property
+    def errors(self):
+        ret = {}
+        for field, error in self._errors.items():
+            ret[field.replace("_", "-")] = error
+        return ret
+
+    def errors_as_json(self):
+        return json.dumps(self.errors)
+
+    @property
+    def validated(self):
+        return dict([ (field, getattr(self, field))
+                      for field in self._validated ])
+
 class Booking(dbobject):
     __relation__ = "booking"
+    __view__ = "booking_info"
 
+    @property
+    def workshop_choices(self):
+        return self._workshop_choices
+
+    @workshop_choices.setter
+    def workshop_choices(self, choices):
+        if choices is None:
+            self._workshop_choices = set()
+        else:
+            self._workshop_choices = set(choices.split(","))
+
+    def as_dict(self):
+        ret = super().as_dict()
+        ret["workshop_choices"] = self.workshop_choices
+        return ret
+
+    @classmethod
+    def update_by_slug(cls, year, slug, **data):
+        if "lactose_intolerant" in data:
+            data["lactose_intolerant"] = (data["lactose_intolerant"] == "true")
+
+        command = sql.update(
+            cls.__relation__,
+            sql.where("year = %i" % year,
+                      " AND slug = ", sql.string_literal(slug)), data)
+        execute(command)
+
+    @property
+    def name(self):
+        return self.firstname + " " + self.lastname
+
+    def validate_me(self):
+        return self.validate(Change(self.as_dict()))
+
+    @staticmethod
+    def validate(change:Change):
+        errors = {}
+        for name in ("address", "zip", "city", "dob"):
+            if name in change:
+                if not change[name]:
+                    change.report(name, "Dises Feld darf nicht leer sein.")
+                else:
+                    change.confirm(name)
+
+        for name in ("gender", "food_preference", "room_preference",
+                     "ride_sharing_option"):
+            if name in change:
+                if not change[name]:
+                    change.report(name, "Bitte triff eine Auswahl.")
+                else:
+                    change.confirm(name)
+
+        for name in ("phone", "lactose_intolerant", "food_remarks",
+                     "room_mates", "ride_sharing_start", "musical_instrument"):
+            if name in change:
+                change.confirm(name)
+
+        return change
+
+    @property
+    def delete_href(self):
+        return "%s/%i/deletebooking?key=%s" % ( config["SITE_URL"],
+                                         self.year, self.slug)
 
 if __name__ == "__main__":
     # Test this.
