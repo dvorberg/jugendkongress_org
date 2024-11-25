@@ -18,12 +18,14 @@
 
   <head>
     <tal:block metal:fill-slot="head_slot">
-      <tal:block tal:condition="congress.registration_is_open">
-        <script>
-          const controller_url = '${congress.controller_url}';
-        </script>
-        <script src="/skin/jugendkongress/booking.js"></script>
-      </tal:block>
+      <script>
+        const controller_url = '${congress.controller_url}';
+      </script>
+      <script tal:condition="booking" tal:content="structure string:
+        const booking = (${booking.as_json()});
+        const booking_errors = (${booking.validate_me().errors_as_json()});
+      "></script>
+      <script src="/skin/jugendkongress/booking.js"></script>
     </tal:block>
   </head>
 
@@ -73,7 +75,307 @@
         </p>
       </div>
       
-      <div class="mt-4 congress" tal:content="structure congress.html" />
+      <div class="mt-4">
+        <div class="row">
+          <div class="col" tal:content="structure congress.html" />
+          
+          <div class="col-lg-5" id="booking" tal:condition="booking">
+            <div class="card booking">
+              <div class="card-header">
+                <h5>Deine Buchung</h5>
+              </div>
+              <div class="card-body">
+                <form id="booking-form">
+                  <div class="mb-3 name">
+                    ${booking.name}
+                    <small class="text-muted">‹${booking.email}›</small>
+                    <a href="javascript:alert('Solltest du dich bei deinem '+
+                             'Namen vertippt haben (passiert!), '+
+                             'schreibe an anmeldung@jugendkongress.org.')"
+                       class="pencil">✎</a>
+                  </div>
+
+                  <div class="mb-3">
+                    <label for="address"
+                           class="form-label">Straße, Hausnr.</label>
+                    <input type="text" class="form-control"
+                           id="address" />
+                    <div id="address-help" class="form-text"></div>
+                    <div class="invalid-feedback" data-for="address">
+                    </div>                    
+                  </div>
+
+                  <div class="mb-3 row">
+                    <div class="col-4">
+                      <label for="zip"
+                             class="form-label">PLZ</label>
+                      <input type="text" class="form-control" id="zip" />
+                      <div id="zip-help" class="form-text"></div>
+                      <div class="invalid-feedback" data-for="zip">
+                      </div>
+                    </div>
+
+                    <div class="col-8">
+                      <label for="city"
+                             class="form-label">Ort</label>
+                      <input type="text" class="form-control"
+                             id="city" />
+                      <div id="city-help" class="form-text"></div>
+                      <div class="invalid-feedback" data-for="city">
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="mb-3 row">
+                    <div class="col-6">
+                      <label for="dob"
+                             class="form-label">Geburtstag</label>
+                      <input type="date" class="form-control" id="dob" />
+                      <div id="dob-help" class="form-text"></div>
+                      <div class="invalid-feedback" data-for="dob">
+                      </div>                    
+                    </div>
+                    
+                    <div class="col-6">
+                      <label for="phone"
+                             class="form-label">Telefon</label>
+                      <input type="text" class="form-control"
+                             id="phone" />
+                      <div id="phone-help" class="form-text"></div>
+                      <div class="invalid-feedback" data-for="phone"></div>
+                    </div>
+                  </div><!--row-->
+
+                  <div class="mb-3 row">
+                    <label>Geschlecht</label>
+
+                    <div class="col">
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio"
+                               name="gender" value="male" id="male"
+                               aria-describedby="gender-feedback" />
+                        <label class="form-check-label" for="male">
+                          männlich
+                        </label>
+                      </div>
+                    </div><!--col-->
+                    <div class="col">
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio"
+                               name="gender" value="female" id="female"
+                               aria-describedby="gender-feedback"/>
+                        <label class="form-check-label" for="female">
+                          weiblich
+                        </label>
+                      </div>
+                    </div><!--col-->
+                    <div class="col">
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio"
+                               name="gender" value="nn" id="no-gender"
+                               aria-describedby="gender-feedback"/>
+                        <label class="form-check-label" for="no-gender">
+                          k.A.
+                        </label>
+                      </div>
+                    </div><!--col-->
+                    <div class="invalid-feedback" data-for="gender"></div>
+                    <div id="gender-help" class="form-text">
+                      Bitte sprich mit uns wegen der Zimmerwahl und -belegung,
+                      wenn du „k.A.“ angibst. Antworte einfach auf die
+                      Buchungs-Mail.
+                    </div>
+                  </div><!--row-->
+
+                  <div class="mb-3">
+                    <label>Essen</label>
+
+                    <div class="row mb-1">
+                      <div class="col">
+                        <div class="form-check">
+                          <input class="form-check-input" type="radio"
+                                 name="food-preference"
+                                 value="meat" id="meat" />
+                          <label class="form-check-label" for="meat">
+                            mit Fleisch
+                          </label>
+                        </div>
+                        <div class="form-check">
+                          <input class="form-check-input" type="radio"
+                                 name="food-preference" value="vegetarian"
+                                 id="vegetarian" /> 
+                          <label class="form-check-label" for="vegetarian">
+                            vegetarisch
+                          </label>
+                        </div>
+                        <div class="form-check">
+                          <input class="form-check-input" type="radio"
+                                 name="food-preference"
+                                 value="vegan" id="vegan" />
+                          <label class="form-check-label" for="vegan">
+                            vegan
+                          </label>
+                        </div>
+                        <div class="invalid-feedback"
+                             data-for="food-preference"></div>
+
+                        <div class="form-check mt-2">
+                          <input class="form-check-input" type="checkbox"
+                                 value="true"
+                                 id="lactose-intolerant" />
+                          <label class="form-check-label"
+                                 for="lactose-intolerant">
+                            Laktose intollerant
+                          </label>
+                        </div>
+                      </div><!--col-->
+
+                      <div class="col">
+                        <textarea class="form-control" rows="4"
+                                  id="food-remarks"></textarea>
+                        <div id="food-remarks-help" class="form-text">
+                          Weitere Angaben
+                        </div>
+                        <div class="invalid-feedback" data-for="food-remarks">
+                        </div> 
+                      </div><!--col-->
+                    </div>
+                  </div>
+
+                  <div class="mb-3 row">
+                    <label>Zimmerwunsch</label>
+
+                    <div class="col">
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio"
+                               name="room-preference"
+                               value="4-8 beds" id="4-8 beds" />
+                        <label class="form-check-label" for="4-8 beds">
+                          4–8-Bett-Zimmer (80,– €)
+                        </label>
+                      </div>
+                      
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio"
+                               name="room-preference"
+                               value="2-3 beds" id="2-3 beds" />
+                        <label class="form-check-label" for="2-3 beds">
+                          2–3-Bett-Zimmer (95,– €)
+                        </label>
+                      </div>                      
+                      <div class="invalid-feedback"
+                           data-for="room-preference">
+                      </div>
+                      <div class="mt-1 form-text">
+                        Freiwillig kann man einen Solipreis von 130,– €
+                        leisten. 
+                      </div>
+                    </div><!--col-->
+
+                    <div class="col">
+                      <textarea type="text" class="form-control" rows="4"
+                                id="room-mates"></textarea>
+                      <div id="room-mates-help" class="form-text">
+                        Zimmerpartner (ein Name oder e-Mail-Adresse pro Zeile)
+                      </div>
+                      <div class="invalid-feedback" data-for="food-remarks">
+                      </div> 
+                    </div><!--col-->                    
+                  </div>
+
+                  <div class="mb-3">
+                    <label for="musical-instrument"
+                           class="form-label">Musikinstrument</label>
+                    <input type="text" class="form-control"
+                           id="musical-instrument" />
+                    <div id="musical-instrument-help" class="form-text">
+                      Ich spiele dieses Instrument (bringe es ggF. auch mit)
+                      und würde mich gerne an der Musikalischen Gestaltung
+                      beteiligen.
+                    </div>
+                    <div class="invalid-feedback" data-for="musical-instrument">
+                    </div>                    
+                  </div>
+
+                  <div class="mb-3">
+                    <label>Mitfahrgelegenheit</label>
+
+                    <div class="mt-1 mb-1 row">
+                      <div class="col-2">
+                        Ich
+                      </div>
+                      <div class="col-10">
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="radio"
+                                 name="ride-sharing-option"
+                                 value="seek" id="seek" />
+                          <label class="form-check-label" for="seek">
+                            … suche
+                          </label>
+                        </div>
+                        
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="radio"
+                                 name="ride-sharing-option"
+                                 value="offer" id="offer" />
+                          <label class="form-check-label" for="offer">
+                            biete
+                          </label>
+                        </div>
+                        
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="radio"
+                                 name="ride-sharing-option"
+                                 value="none" id="none" />
+                          <label class="form-check-label" for="none">
+                            <i>keins</i>
+                          </label>
+                        </div>                      
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-2">
+                        <label class="col-form-label">
+                          ab
+                        </label>
+                      </div>
+
+                      <div class="col-10">
+                        <input type="text" class="form-control"
+                               id="ride-sharing-start" />
+                      </div>                      
+                    </div><!--row-->                    
+                  </div>
+
+                  <div class="mt-3 form-text">
+                    Die Vorauswahl für drei Workshops kannst du unter
+                    den Workshop-Beschreibungen treffen.
+                  </div>
+                </form>
+              </div>
+              <div class="card-footer">
+                <div class="row mt-3 mb-3">
+                  <div class="col">
+                    <button type="button" id="save-button"
+                            class="btn btn-primary main">
+                      Speichern
+                    </button>
+                    <img id="spinner" class="ms-1"
+                         src="/skin/jugendkongress/spinner.svg" />
+                  </div>
+                  <div class="col text-end">
+                    <a href="${booking.delete_href}" class="btn btn-danger"
+                       onclick="return confirm('Bist du sicher, dass du ' +
+                                'diese Buchung stornieren möchtest?')">
+                      Buchung stornieren
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <button type="button" class="btn btn-link p-0" 
               data-bs-toggle="modal"
@@ -106,7 +408,7 @@
                   </div>
                   <div id="resend-email" class="form-text" style="display:none">
                     Möchtest du deine Anmelde-e-Mail noch einmal erhalten?
-                    <button class="btn btn-sm btn-success"
+                    <button class="btn btn-sm btn-success main"
                             type="button">
                       Senden
                     </button>
@@ -135,10 +437,12 @@
               </form>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary"
-                      data-bs-dismiss="modal">Abbruch</button>
+              <img id="spinner" class="me-1"
+                   src="/skin/jugendkongress/spinner.svg" />              
               <button type="button" id="anmelde-button"
                       class="btn btn-primary disabled">Anmelden</button>
+              <button type="button" class="btn btn-secondary"
+                      data-bs-dismiss="modal">Abbruch</button>
             </div>
           </div>
         </div>
