@@ -19,6 +19,10 @@
   <head>
     <title>
       <metal:block metal:define-slot="site-title">
+        <tal:block tal:condition="congress|nothing">
+          <tal:block tal:replace="congress.titel" /> —
+          <tal:block tal:replace="congress.nummer" />
+        </tal:block>
         Lutherischer Jugendkongress
       </metal:block>
     </title>
@@ -64,15 +68,15 @@
 
     <div style="height: 60px">
     </div>
-    
-    <tal:block tal:define="site_message rget('site_message');
-                           cls rget('site_message_class', 'primary');">
-      <div class="container for-site-message" tal:condition="site_message">
+
+    <tal:block tal:define="message site_message or rget('site_message');
+                           cls site_message_class or rget('site_message_class', 'primary');">
+      <div class="mt-4 container for-site-message" tal:condition="message">
         <div class="row">
           <div class="col">
             <div tal:attributes="class string:alert alert-dismissible fade show alert-${cls}"
                  role="alert">
-              <span tal:content="site_message" />
+              <span tal:content="message" />
               <button type="button" class="btn-close" data-bs-dismiss="alert"
                       aria-label="Close"></button>
             </div>
