@@ -20,7 +20,7 @@
 ##
 ##  I have added a copy of the GPL in the file LICENSE
 
-import os.path as op
+import os.path as op, json
 import psycopg2, datetime, types
 from flask import g, current_app, request
 
@@ -293,10 +293,23 @@ class dbobject(object, metaclass=SQLRepresentation):
     def as_dict(self):
         ret = {}
         for name, value in self.__dict__.items():
-            if not name.startswith("__") and \
+            if not name.startswith("_") and \
                not type(value) is types.MethodType:
                 ret[name] = value
+
         return ret
+
+    def as_json(self):
+        def custom_json(obj):
+            if isinstance(obj, (datetime.date, datetime.datetime,)):
+                return { "type": obj.__class__.__name__,
+                         "isoformat": obj.isoformat() }
+            elif isinstance(obj, set):
+                return list(obj)
+            else:
+                raise TypeError(f'Cannot serialize object of {type(obj)}')
+
+        return json.dumps(self.as_dict(), default=custom_json)
 
     def rget(self, parameter, default=None):
         value = rget(parameter)
