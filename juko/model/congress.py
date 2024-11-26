@@ -8,6 +8,7 @@ from ..markdown.macros import MacroContext
 from ..utils import PathSet
 
 from sqlclasses import sql
+from PIL import Image
 
 import flask
 
@@ -22,6 +23,7 @@ class DocumentFolder(object):
 
         self._md = None
         self._rtime = None
+        self._rendering_md = False
 
     @property
     def href(self):
@@ -42,10 +44,15 @@ class DocumentFolder(object):
 
             self.pathset.register(infilepath)
 
+            if self._rendering_md:
+                raise Exception("Recursive rendering of " + str(infilepath))
+            self._rendering_md = True
             self._md = MarkdownResult( infilepath.open().read(),
                                        MacroContext(
                                            markdown_file_path=infilepath,
                                            pathset=self.pathset) )
+            self._md.convert()
+            self._rendering_md = False
             self._rtime = self.pathset.mtime
         return self._md
 
@@ -191,6 +198,35 @@ class Congress(DocumentFolder):
 
     def booking_href(self, key):
         return "%s/%i?key=%s" % ( config["SITE_URL"], self.year, key)
+
+    def find_og_image(self):
+        found = False
+        for ext in ( "webp", "jpg", "png"):
+            og_image_path = pathlib.Path(self.abspath, "titelbild." + ext)
+            if og_image_path.exists():
+                found = True
+                break
+
+        if not found:
+            return None
+        else:
+            return og_image_path
+
+    @property
+    def og_image_url(self):
+        if image_path := self.find_og_image():
+            return self.href + image_path.name
+        else:
+            return None
+
+    @property
+    def og_image_size(self):
+        if image_path := self.find_og_image():
+            img = Image.open(str(image_path))
+            return img.size
+        else:
+            return None
+
 
 congress_directory_re = re.compile(r"(\d{4}).*")
 class Congresses(object):
