@@ -85,7 +85,7 @@ def create_booking(congress, email="", firstname=None, lastname=None,
         insert_from_dict("booking", booking, retrieve_id=False)
         commit()
 
-        send_booking_email(congress, Booking.from_dict(booking))
+        send_booking_email(congress, Booking.from_dict(booking), True)
 
         return { "errors": errors,
                  "created": True,
@@ -102,11 +102,17 @@ def resend_booking_email(congress, email=None):
              "errors": {} }
 
 
-def send_booking_email(congress:Congress, booking:Booking):
+def send_booking_email(congress:Congress, booking:Booking,
+                       send_copy=False):
     template_path = flask.g.skin.resource_path(
         "skin/jugendkongress/booking_email.txt")
     with open(template_path) as fp:
         template = fp.read()
+
+    if send_copy:
+        bcc = [ "anmeldung@jugendkongress.org", ]
+    else:
+        bcc = []
 
     text = process_template(template, congress=congress, booking=booking)
 
@@ -117,7 +123,7 @@ def send_booking_email(congress:Congress, booking:Booking):
              booking.name,
              booking.email,
              subject,
-             text)
+             text, bcc=bcc)
 
 
 def modify_booking(congress, slug):
