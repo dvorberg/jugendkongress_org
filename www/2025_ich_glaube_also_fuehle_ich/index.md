@@ -1,5 +1,6 @@
 Titel: Ich glaube, also fühle ich! … nicht wahr?
 Untertitel: Von Gefühlen und Erfahrungen im Glauben
+Beschreibung: Wir werden uns mit verschieden Zugängen der körperlichen und der emotionalen Erfahrung von Glaubensinhalten beschäftigen. 
 Nummer: 23
 Datum: 21.–23. Februar 2025
 Anmeldeschluss: 2025-2-1
