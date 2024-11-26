@@ -19,7 +19,7 @@
 ##  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 ##
 ##  I have added a copy of the GPL in the file LICENSE
-import re, io, traceback, threading, copy
+import sys, re, io, traceback, threading, copy
 from pathlib import Path
 from functools import cached_property
 
@@ -66,9 +66,9 @@ class FunctionCallProcessor(BlockProcessor):
         \(             # Open parentheses
            (?P<params> # Parameter list
              (
-               "(\\"|[^"]+)*"| # Double quoted strings (with " escaped as \")
-               '(\\'|[^']+)*'| # Single quoted strings (with ' escaped as \')
-               [^"'\)]*        # Any other character that’s not a quote or a )
+               "(\\"|[^"])*"| # Double quoted strings (with " escaped as \")
+               '(\\'|[^'])*'| # Single quoted strings (with ' escaped as \')
+               [^"'\)]*       # Any other character that’s not a quote or a )
              )*
            )
         \)             # Close parentheses
@@ -124,6 +124,7 @@ class FunctionCallProcessor(BlockProcessor):
                  my_globals, my_locals)
             result = my_locals["__retval"]
         except Exception as e:
+            print(e, file=sys.stderr)
             if debug:
                 raise
             else:
@@ -204,7 +205,9 @@ class MarkdownResult(object):
         self.md.serializer = self._serializer
 
         self._source = source
-        self.md.convert(source)
+
+    def convert(self):
+        self.md.convert(self._source)
 
     def _serializer(self, root_element:etree.Element):
         self._root_element = copy.deepcopy(root_element)
