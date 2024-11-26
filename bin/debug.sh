@@ -23,6 +23,13 @@
 ##  I have added a copy of the GPL in the file LICENSE
 
 
+hostname=$(hostname -s)
+
+if [[ hostname == zoidberg ]]
+then
+    HOME=/home/web/jugendkongress
+fi
+
 cd $HOME/jugendkongress
 . $HOME/jugendkongress/virtualenv/bin/activate
 

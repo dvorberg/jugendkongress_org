@@ -12,7 +12,7 @@ END;
 ' LANGUAGE 'plpgsql'; 
 
 
-CREATE TYPE gender2 AS ENUM ('male', 'female', 'nn' );
+CREATE TYPE gender AS ENUM ('male', 'female', 'nn' );
 CREATE TYPE food_preference AS ENUM ('meat', 'vegetarian', 'vegan');
 CREATE TYPE room_preference AS ENUM  ('4-8 beds', '2-3 beds');
 CREATE TYPE ride_sharing_option AS ENUM  ('offer', 'seek', 'none');

@@ -73,8 +73,9 @@
         </li>
       </ul>
       
-      <div class="navbar-text ms-auto" tal:condition="not:in_archive">
-        <a class="nav-link" href="/archive.cgi" tal:replace="nothing">
+      <div class="navbar-text ms-auto" tal:replace="nothing"
+           tal:condition="not:in_archive">
+        <a class="nav-link" href="/archive.cgi">
           <strong>Archiv </strong>
         </a>
       </div>
@@ -96,7 +97,8 @@
       
       <div class="mt-4">
         <div class="row">
-          <div class="col" tal:content="structure congress.html" />
+          <div class="col congress"
+               tal:content="structure congress.html" />
           
           <div class="col-lg-5" id="booking" tal:condition="booking">
             <div class="card booking">

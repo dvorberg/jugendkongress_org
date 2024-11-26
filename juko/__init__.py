@@ -37,5 +37,5 @@ config = runpy.run_path(config_file)
 debug = bool(os.getenv("FLASK_ENV", None) == "development")
 debug_sql = (os.getenv("DEBUG_SQL", None) is not None)
 
-if not debug:
-    icecream.diable()
+if not debug and hasattr(icecream, "disable"):
+    icecream.disable()
