@@ -4,7 +4,7 @@ from urllib.parse import urlencode, quote_plus
 
 from t4.title_to_id import title_to_id
 from t4.web import set_url_param
-from t4 import sql
+from sqlclasses import sql
 
 from ll.xist import xsc
 from ll.xist.ns import html
