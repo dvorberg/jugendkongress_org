@@ -20,4 +20,6 @@ CREATE VIEW booking_info AS
      FROM booking
      LEFT JOIN wsc ON booking_id = booking.id;
 
+GRANT SELECT ON booking_info TO jugendkongress; 
+
 COMMIT;
