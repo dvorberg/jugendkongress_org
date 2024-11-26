@@ -26,6 +26,25 @@
         const booking_errors = (${booking.validate_me().errors_as_json()});
       "></script>
       <script src="/skin/jugendkongress/booking.js"></script>
+      
+      <meta property="og:title" content="${congress.titel}" />
+      <meta property="og:type" content="website" />
+      <meta property="og:description"
+            tal:condition="congress.beschreibung|nothing"
+            tal:attributes="content congress.beschreibung" />
+
+      <meta property="og:image"
+            tal:condition="congress.og_image_url"
+            content="${congress.og_image_url}" />
+
+      <tal:block tal:define="size congress.og_image_size">
+        <tal:block tal:condition="size">
+          <meta property="og:image:width" content="${size[0]}" />
+          <meta property="og:image:height" content="${size[1]}" />
+        </tal:block>
+      </tal:block>
+      
+
     </tal:block>
   </head>
 
