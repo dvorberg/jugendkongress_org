@@ -21,7 +21,7 @@
       <metal:block metal:define-slot="site-title">
         <tal:block tal:condition="congress|nothing">
           <tal:block tal:replace="congress.titel" /> —
-          <tal:block tal:replace="congress.nummer" />
+          <tal:block tal:replace="congress.nummer" />.
         </tal:block>
         Lutherischer Jugendkongress
       </metal:block>
