@@ -25,13 +25,13 @@ import psycopg2, datetime, types
 from flask import g, current_app, request
 
 from termcolor import colored
+from sqlclasses import sql
 
 from . import config, debug, debug_sql
 
 from ll.xist import xsc
 from ll.xist.ns import html
 
-from t4 import sql
 from t4.typography import pretty_german_date
 
 from .utils import rget
