@@ -1,4 +1,4 @@
-import pathlib, dataclasses, re, datetime, json
+import pathlib, dataclasses, re, datetime, json, tomllib
 from functools import cached_property
 
 from .. import config
@@ -22,8 +22,48 @@ class DocumentFolder(object):
         self.pathset.register(self.abspath)
 
         self._md = None
+        self._meta = None
         self._rtime = None
         self._rendering_md = False
+
+    titel_h1_re = re.compile(r"<title>\s*(?:\d+\s*[-–]\s*)?([^<]*)</title>")
+    untertitel_h2_re = re.compile(r"<h2[^>]*>\s*([^<]+)\s*</h2>")
+    @cached_property
+    def meta(self):
+        if self._meta is None:
+            meta_file = pathlib.Path(self.abspath, "meta.toml")
+            if meta_file.exists():
+                self.pathset.register(meta_file_path)
+                self._meta = tomllib.load(meta_file.open("rb"))
+
+            html_file = pathlib.Path(self.abspath, "index.html")
+            if html_file.exists():
+                html = html_file.open().read()
+
+                if self._meta is None:
+                    self._meta = {}
+
+                result = self.titel_h1_re.search(html)
+                if result is not None and not "titel" in self._meta:
+                    self._meta["titel"] = result.group(1)
+
+                result = self.untertitel_h2_re.search(html)
+                if result is not None and not "untertitel" in self._meta:
+                    self._meta["untertitel"] = result.group(1)
+
+        return self._meta
+
+    def get_meta(self, name, default="", as_list=False):
+        if self.meta is not None:
+            r = self.meta.get(name, default)
+            if as_list and type(r) != list:
+                return [ r, ]
+            else:
+                return r
+        elif self._md is not None:
+            return self._md.get_meta(name, default, as_list)
+        else:
+            return default
 
     @property
     def href(self):
@@ -51,6 +91,7 @@ class DocumentFolder(object):
                                        MacroContext(
                                            markdown_file_path=infilepath,
                                            pathset=self.pathset) )
+            ic(infilepath)
             self._md.convert()
             self._rendering_md = False
             self._rtime = self.pathset.mtime
@@ -104,31 +145,31 @@ class Workshop(DocumentFolder):
 
     @property
     def id(self):
-        if id := self.md.get_meta("id"):
+        if id := self.get_meta("id"):
             return id
         else:
             return self.abspath.stem
 
     @property
     def sort_key(self):
-        return self.md.get_meta("signatur", self.id)
+        return self.get_meta("signatur", self.id)
 
     @property
     def titel(self):
-        return self.md.get_meta("titel") or self.id
+        return self.get_meta("titel") or self.id
 
     @property
     def untertitel(self):
-        return self.md.get_meta("untertitel") or None
+        return self.get_meta("untertitel") or None
 
     @property
     def referenten(self):
-        return self.md.get_meta("referent", as_list=True)
+        return self.get_meta("referent", as_list=True)
 
     @property
     def referenten_info(self):
         referenten = self.referenten
-        info = self.md.get_meta("referent-info", as_list=True)
+        info = self.get_meta("referent-info", as_list=True)
         while len(info) < len(referenten):
             info.append("")
 
@@ -158,7 +199,7 @@ class Congress(DocumentFolder):
 
     @cached_property
     def anmeldeschluss(self):
-        v = self.md.get_meta("anmeldeschluss")
+        v = self.get_meta("anmeldeschluss")
         try:
             return datetime.date(*[int(a) for a in v.split("-")])
         except (ValueError, TypeError):
@@ -166,15 +207,15 @@ class Congress(DocumentFolder):
 
     @property
     def titel(self):
-        return self.md.get_meta("titel") or self.id
+        return self.get_meta("titel")
 
     @property
     def untertitel(self):
-        return self.md.get_meta("untertitel") or None
+        return self.get_meta("untertitel") or None
 
     @property
     def nummer(self):
-        return self.md.get_meta("nummer")
+        return self.get_meta("nummer")
 
     year_re = re.compile(r"(\d{4}).*")
     @cached_property
@@ -200,9 +241,14 @@ class Congress(DocumentFolder):
         return "%s/%i?key=%s" % ( config["SITE_URL"], self.year, key)
 
     def find_og_image(self):
+        names = []
+        for name in ("titelbild", "title"):
+            for ext in ( "webp", "jpg", "png"):
+                names.append(name + "." + ext)
+
         found = False
-        for ext in ( "webp", "jpg", "png"):
-            og_image_path = pathlib.Path(self.abspath, "titelbild." + ext)
+        for name in names:
+            og_image_path = pathlib.Path(self.abspath, name)
             if og_image_path.exists():
                 found = True
                 break
@@ -268,6 +314,18 @@ class Congresses(object):
     @readdir_maybe
     def congresses(self):
         return self._congresses
+
+    def __iter__(self):
+        return iter(self._congresses.values())
+
+    @property
+    def archive(self):
+        ret = list(self._congresses.values())
+        ic(ret)
+        if ret:
+            del ret[-1]
+            ret.reverse()
+        return ret
 
     @property
     @readdir_maybe

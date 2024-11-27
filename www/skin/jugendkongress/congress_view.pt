@@ -73,7 +73,7 @@
         </li>
       </ul>
       
-      <div class="navbar-text ms-auto" tal:replace="nothing"
+      <div class="navbar-text ms-auto" 
            tal:condition="not:in_archive">
         <a class="nav-link" href="/archive.cgi">
           <strong>Archiv </strong>

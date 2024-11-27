@@ -40,7 +40,7 @@
     <script src="/skin/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="/skin/jugendkongress/layout.js"></script>
     
-    <metal:block metal:define-slot="head_slot" tal:replace="nothing">
+    <metal:block metal:define-slot="head_slot" tal:replace="nothing">      
     </metal:block>
   </head>
   
@@ -74,8 +74,8 @@
     <div style="height: 60px">
     </div>
 
-    <tal:block tal:define="message site_message or rget('site_message');
-                           cls site_message_class or rget('site_message_class', 'primary');">
+    <tal:block tal:define="message site_message|rget('site_message');
+                           cls site_message_class|rget('site_message_class', 'primary');">
       <div class="mt-4 container for-site-message" tal:condition="message">
         <div class="row">
           <div class="col">

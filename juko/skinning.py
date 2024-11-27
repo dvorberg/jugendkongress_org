@@ -137,7 +137,8 @@ class Skin(object):
                            "test": ptutils.test,
                            "glyphicon": self.glyphicon,
                            "ptutils": ptutils,
-                           "utils": utils, }
+                           "utils": utils,
+                           "g": g}
 
         self.www_path = www_path
         self._pt_loader = CustomPageTemplateLoader(

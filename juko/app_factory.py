@@ -102,7 +102,9 @@ def create_app(test_config=None):
     app.add_url_rule("/scss/<path:template_path>",
                      view_func=compile_scss)
 
-    from .archive import archive_cgi
+    def archive_cgi():
+        template = skin.load_template("skin/jugendkongress/archive.pt")
+        return template()
     app.add_url_rule("/archive.cgi", view_func=archive_cgi)
 
     from .model.congress import Congresses, Booking
