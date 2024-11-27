@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+
+<html xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      metal:use-macro="skin.main_template.macros.master">  
+      lang="de">
+
+  <tal:block tal:replace="nothing">
+    This file is part of the business logic for
+    
+      Jugendkongress
+    
+    Copyright 2014–24 by Diedrich Vorberg (diedrich@tux4web.de)
+    Copyricht 2014–24 Jugendwerk der SELK (jugendwerk@selk.de)
+    
+    All Rights Reserved
+  </tal:block>
+
+  <head>
+    <tal:block metal:fill-slot="head_slot">
+    </tal:block>
+  </head>
+
+  <body>
+    <metal:block metal:fill-slot="congress-menu"
+                 tal:define="in_archive python:False">
+      <div class="navbar-text">
+        <a href="${g.congresses.current.href}"
+           class="btn btn-secondary text-white">← Zurück</a>
+      </div>
+    </metal:block>
+
+    <metal:block metal:fill-slot="main">
+      <div class="mt-4">
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+          <div class="col" tal:repeat="congress g.congresses.archive">
+            <div class="card">
+              <a href="${congress.href}" class="stretched-link">
+                <img tal:condition="congress.og_image_url"
+                     tal:attributes="src congress.og_image_url"
+                     class="card-img-top" />
+              </a>
+              <div class="card-body">                  
+                <h5>
+                  ${congress.titel}
+                  (${congress.year})<br />
+                  <small class="text-muted" tal:content="congress.untertitel" />
+                </h5>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>     
+    </metal:block>
+  </body>
+</html>
