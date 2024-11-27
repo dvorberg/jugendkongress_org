@@ -54,7 +54,12 @@
                   aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
           </button>
-          <a class="navbar-brand" href="/">
+
+          <span class="mobile-buttons">
+            <metal:block metal:define-slot="mobile-buttons" />
+          </span>
+          
+          <a class="navbar-brand" href="${congress.href | '/'}">
             <img src="/skin/jugendkongress/selk-jugend-kreuz.png"
                  alt="Jugendwerk der SELK"
                  width="50" height="36" />

@@ -64,7 +64,7 @@
       
       <ul class="navbar-nav ms-2"
           tal:condition="congress.registration_is_open and not booking">
-        <li class="nav-item">
+        <li class="nav-item hide-on-mobile">
           <button type="button" class="btn btn-primary"
                   data-bs-toggle="modal"
                   data-bs-target="#anmelden-dialog">
@@ -79,6 +79,14 @@
           <strong>Archiv </strong>
         </a>
       </div>
+    </metal:block>
+
+    <metal:block metal:fill-slot="mobile-buttons">
+      <button type="button" class="btn btn-primary"
+              data-bs-toggle="modal"
+              data-bs-target="#anmelden-dialog">
+        Anmelden          
+      </button>
     </metal:block>
 
     <metal:block metal:fill-slot="main">
@@ -462,7 +470,7 @@
                    src="/skin/jugendkongress/spinner.svg" />              
               <button type="button" id="anmelde-button"
                       class="btn btn-primary disabled">Anmelden</button>
-              <button type="button" class="btn btn-secondary"
+              <button type="button" class="btn btn-dark"
                       data-bs-dismiss="modal">Abbruch</button>
             </div>
           </div>

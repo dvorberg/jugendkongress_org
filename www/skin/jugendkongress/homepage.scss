@@ -130,22 +130,17 @@ div.workshops
     }
 }
 
-// When displayed on large (lg) displays, blank items are hidden.
-@media (max-width: 992px)
+nav .mobile-buttons
 {
-    div.titelbild
-    {
-        h1, div.datum
-        {
-            display: block;
-            visibility: visible;
-        }
-    }
-    
-    div.ablauf div.item.blank
-    {
-        display: none;
-    }    
+    display: none;
+    visibility: hidden;
+}
+
+
+nav .hide-on-mobile
+{
+    display: block;
+    visibility: visible;
 }
 
 div.card.booking
@@ -169,5 +164,35 @@ div.card.booking
         {
             text-decoration: none;
         }
+    }
+}
+
+// When displayed on large (lg) displays, blank items are hidden.
+@media (max-width: 992px)
+{
+    div.titelbild
+    {
+        h1, div.datum
+        {
+            display: block;
+            visibility: visible;
+        }
+    }
+    
+    div.ablauf div.item.blank
+    {
+        display: none;
+    }
+
+    nav .mobile-buttons
+    {
+        display: inline;
+        visibility: visible;
+    }
+
+    nav .hide-on-mobile
+    {
+        display: none;
+        visibility: hidden;
     }
 }
