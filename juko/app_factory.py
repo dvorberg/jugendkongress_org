@@ -135,6 +135,10 @@ def create_app(test_config=None):
             if booking is None:
                 site_message = "Ungültige Registrierungs-Mail!"
 
+        # The markdown must be converted before the template is rendered
+        # so the meta information is available.
+        congress.md
+                
         template = skin.load_template("skin/jugendkongress/congress_view.pt")
         return template(congress=congress,
                         booking=booking,
