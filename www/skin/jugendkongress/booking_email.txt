@@ -1,6 +1,6 @@
 Liebe/r ${booking.firstname} ${booking.lastname},
 
-wie schön, dass Du zum ${congress.nummer} Luterischen Jugenskongress
+wie schön, dass Du zum ${congress.nummer} Lutherischen Jugendkongress
 
   ${congress.titel}
   (${congress.untertitel})
@@ -26,9 +26,9 @@ Der Teilnahmebeitrag ist vorab zu überweisen. Bitte beachte, dass
 deine Anmeldung erst nach Eingang deines Teilnahmebetrages wirksam
 wird.
  
-Bankverbindung:'
+Bankverbindung:
 Jugendwerk der SELK
-IBAN: DE66 5206 2601 0104 6006 30
+IBAN: DE22 5206 2601 0004 6006 30
 VR PartnerBank eG Chattengau-Schwalm-Eder
 
 Verwendungszweck:
