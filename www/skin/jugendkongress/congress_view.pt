@@ -84,7 +84,8 @@
     <metal:block metal:fill-slot="mobile-buttons">
       <button type="button" class="btn btn-primary"
               data-bs-toggle="modal"
-              data-bs-target="#anmelden-dialog">
+              data-bs-target="#anmelden-dialog"
+              tal:condition="congress.registration_is_open and not booking">
         Anmelden          
       </button>
     </metal:block>
