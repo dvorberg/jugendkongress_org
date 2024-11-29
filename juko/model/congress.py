@@ -54,7 +54,7 @@ class DocumentFolder(object):
         return self._meta
 
     def get_meta(self, name, default="", as_list=False):
-        if self.meta is not None:
+        if self.meta:
             r = self.meta.get(name, default)
             if as_list and type(r) != list:
                 return [ r, ]
