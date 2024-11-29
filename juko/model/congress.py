@@ -60,10 +60,7 @@ class DocumentFolder(object):
                 return [ r, ]
             else:
                 return r
-        elif self._md is not None:
-            return self._md.get_meta(name, default, as_list)
-        else:
-            return default
+        return self.md.get_meta(name, default, as_list)
 
     @property
     def href(self):
@@ -91,7 +88,6 @@ class DocumentFolder(object):
                                        MacroContext(
                                            markdown_file_path=infilepath,
                                            pathset=self.pathset) )
-            ic(infilepath)
             self._md.convert()
             self._rendering_md = False
             self._rtime = self.pathset.mtime
@@ -321,7 +317,6 @@ class Congresses(object):
     @property
     def archive(self):
         ret = list(self._congresses.values())
-        ic(ret)
         if ret:
             del ret[-1]
             ret.reverse()
