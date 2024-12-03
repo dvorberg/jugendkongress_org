@@ -48,9 +48,9 @@ Lutherische Kongresse für Jugendarbeit bieten:
 Bahn: bis „Witzenhausen-Nord“ bzw. „Witzenhausen“ (es gibt nur einen Bahnhof!), von dort abholen lassen.
 PKW: direkt an der B 27 zwischen Witzenhausen und Bad Sooden-Allendorf. → Karte.
 
-**Beginn**: Fr, 23. Februar 2024, Anmeldung ab 16:00 Uhr, Veranstaltung ab 17:00 Uhr
+**Beginn**: Fr, 21. Februar 2025, Anmeldung ab 16:00 Uhr, Veranstaltung ab 17:00 Uhr
 
-**Ende**: So, 25. Februar 2024, Abreise ab 14:30 Uhr
+**Ende**: So, 23. Februar 2025, Abreise ab 14:30 Uhr
 
 **Kosten**
 80,– € inkl. Verpflegung und Übernachtung im 4–8-Bett-Zimmer
