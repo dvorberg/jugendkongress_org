@@ -229,13 +229,15 @@ class workshops_einsetzen(Macro):
         for no, workshop in enumerate(congress.workshops):
             referenten = html.div(class_="col-md-4 referenten")
 
+            used = []
             for referent, info in workshop.referenten_info:
-                div = html.div()
+                div = html.div(class_="referent")
 
                 for picture in workshop.pictures:
                     if picture.stem.lower() == referent.lower():
                         div.append(html.img(src=picture.href,
                                             class_="img-fluid"))
+                        used.append(picture)
                         break
 
                 p = html.p(referent)
@@ -262,6 +264,19 @@ class workshops_einsetzen(Macro):
                                  workshop.root_element,
                                  class_="collapse" ,
                                  id=colname)
+
+            misc_images = []
+            for picture in workshop.pictures:
+                if picture not in used:
+                    misc_images.append(picture)
+
+            if misc_images:
+                main_text.append(
+                    html.figure(html.img(src=picture.href,
+                                         class_="figure-img rounded"),
+                                html.figcaption(picture.stem,
+                                                class_="figure-caption"),
+                                class_="figure mb-2"))
 
             more_button = html.button("Mehr …",
                                       class_="btn btn-link ps-0",
