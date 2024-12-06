@@ -124,7 +124,7 @@ class Workshop(DocumentFolder):
 
         # Pictures
         paths = list()
-        for ext in ("jpg", "webp", "png"):
+        for ext in ("webp", "jpg", "jpeg", "png"):
             paths += list(self.abspath.glob("*." + ext))
         paths.sort(key=lambda p: p.name )
 
