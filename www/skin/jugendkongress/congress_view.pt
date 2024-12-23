@@ -93,7 +93,7 @@
     <metal:block metal:fill-slot="main">
       <div class="booking-welcome text-success mt-4" tal:condition="booking">
         <h3>
-          Willkommgen
+          Willkommen
           ${booking.firstname}
           ${booking.lastname}!
         </h3>
