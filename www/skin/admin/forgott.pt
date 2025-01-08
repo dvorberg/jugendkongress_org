@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+      metal:use-macro="skin.main_template.macros.master">  
+  <body>
+    <section metal:fill-slot="main">      
+      <div tal:condition="sent" class="alert alert-primary" role="alert">
+        <h4 class="alert-heading">Eintrag gefunden</h4>
+        <p>
+          Es wurde eine e-Mail an Ihre hinterlegte Adresse geschickt mit
+          einem Link. Dieser Link erlaubt Ihnen, Ihr Passwort neu zu
+          setzen.
+        </p>
+      </div>
+      
+      <form method="post" tal:condition="not:sent"
+            tal:attributes="class feedback.form_class">
+        <legend>
+          Passwort vergessen
+        </legend>
+        <div class="mb-3">
+          <p class="form-text">
+            Wenn Sie hier Ihren Benutzernamen oder Ihre hier
+            hinterlegte e-Mail-Adresse eingeben, erhlaten Sie eine
+            e-Mail mit einem Einmal-Link, durch den Sie ein neues
+            Passwort setzen können.
+          </p>
+        </div>
+        <div class="mb-3" tal:define="error feedback.on('login')">
+          <label for="login" class="form-label">
+            Benutzername oder e-Mail Adresse
+          </label>
+          <input id="login" name="login"
+                 tal:attributes="class string:form-control ${error.field_class};
+                                 value rget('login')"
+                 aria-describedby="loginHelp" />          
+          <div id="loginHelp" class="form-text">
+          </div>
+          <div tal:replace="structure error.html" />
+        </div>
+        <div class="mb-3">
+          <button type="submit" class="btn btn-primary">Abfragen</button>
+        </div>
+      </form>      
+    </section>
+  </body>
+</html>

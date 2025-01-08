@@ -1,0 +1,10 @@
+Hallo {firstname} {lastname},
+
+Dein Zugang zu jugendkongress.org lautet:
+
+    Login-Seite: {site_url}/admin/login.py
+    Benutzername: {login}
+    Passwort: {password}
+
+Viele Grüße
+der freundlich Begrüßungs-Roboter

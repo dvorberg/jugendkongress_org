@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+      metal:use-macro="skin.main_template.macros.master">
+  <head>
+    <metal:block metal:fill-slot="head">
+    </metal:block>
+  </head>
+  <body>
+    <metal:block metal:fill-slot="congress-menu">
+      <metal:block use-macro="skin.main_template.macros.admin_menu" />
+    </metal:block>
+    
+    <section metal:fill-slot="main" class="mt-3">
+      <h3 class="my-3">Benutzer ändern</h3>
+    
+      <form method="post"
+            enctype="multipart/form-data"
+            action="save_user.py"
+            tal:attributes="class string:row g-3 ${feedback.form_class}"
+            tal:define="checked ptutils.checked;">
+        <input type="hidden" name="request_login" 
+               tal:attributes="value rget('request_login') or user.login" />
+        
+        <fieldset class="row g-3"
+                  tal:define="password rget('password1', dbuser.rget('password', '')) or ''">
+          <legend>Identifikation</legend>
+          <div class="col-md-6" tal:define="fb feedback.on('newlogin')">
+            <label for="newlogin" class="form-label">Benutzername</label>
+            <tal:block tal:condition="rget('request_login') == '__new'">
+              <input type="text" id="newlogin"
+                     tal:attributes="value dbuser.rget('newlogin');
+                                     class string:form-control ${fb.cls}" />
+              <div tal:replace="structure fb.html" />
+            </tal:block>
+            <tal:block tal:condition="rget('request_login') != '__new'">
+              <input type="text" id="newlogin" disabled="disabled"
+                     class="form-control"
+                     tal:attributes="value dbuser.rget('login')" />
+            </tal:block>
+          </div>
+          <div class="col-md-3" tal:define="fb feedback.on('password1')">
+            <label for="password1" class="form-label">Passwort</label>
+            <input type="password" id="password1"
+                   tal:attributes="value '*'*len(password);
+                                   class string:form-control ${fb.cls}" />
+            <div tal:replace="structure fb.html" />
+            <div class="form-text">
+              Das Passwort muss enthalten: Großbuchstaben,
+              Kleinbuchstaben, eine Ziffer und ein Sonderzeichen.
+              Wenn eines von den vieren fehlt, meckert der Computer.
+            </div>
+          </div>
+          <div class="col-md-3" tal:define="fb feedback.on('password1')">
+            <label for="password2" class="form-label">Password
+            (Wiederholung)</label>
+            <input type="password" class="form-control" id="password2"
+                   tal:attributes="value '*'*len(password);
+                                   class string:form-control ${fb.cls}" />
+          </div>
+          <div class="col-md-6" tal:define="fb feedback.on('email')">
+            <label for="email" class="form-label">E-Mail</label>
+            <input type="email" id="email"
+                   tal:attributes="value dbuser.rget('email');
+                                   class string:form-control ${fb.cls}"/>
+            <div tal:replace="structure fb.html" />
+          </div>
+        </fieldset>        
+        <fieldset class="row g-3">
+          <legend>Persönliches</legend>
+          <div class="col-md-3" tal:define="fb feedback.on('firstname')">
+            <label for="firstname" class="form-label">Vorname</label>
+            <input type="text" id="firstname"
+                   tal:attributes="value dbuser.rget('firstname');
+                                   class string:form-control ${fb.cls}" />
+            <div tal:replace="structure fb.html" />
+          </div>
+          <div class="col-md-3" tal:define="fb feedback.on('lastname')">
+            <label for="login" class="form-label">Nachname</label>
+            <input type="text" id="lastname"
+                   tal:attributes="value dbuser.rget('lastname');
+                                   class string:form-control ${fb.cls}"/>
+            <div tal:replace="structure fb.html" />
+          </div>
+        </fieldset>
+        
+        <fieldset class="col-md-3">
+          <legend>Begrüßung</legend>
+
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox"
+                   id="send-welcome-email-checkbox"
+                   name="send_welcome_email"/>
+            
+            <label for="send-welcome-email-checkbox">
+              Willkommens-Email schicken
+            </label>
+            <div class="form-text">
+              Wenn diese Checkbox aktiviert ist, wird dem neuen
+              Benutzer eine e-Mail mit Zugangsdaten (im Klartext)
+              gesendet.
+            </div>
+          </div>              
+        </fieldset>
+        
+        <div class="col-12">
+          <input type="hidden" name="form_submitted" value="yes" />
+          <button type="submit" class="btn btn-primary">Speichern</button>
+        </div>
+      </form>      
+    </section>
+  </body>
+</html>
