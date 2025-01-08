@@ -29,4 +29,34 @@ window.addEventListener("load", function(event) {
 
 		counter += 1;
 	});
+
+    function id_to_name(element)
+    {
+        if ( !element.hasAttribute("name") && element.hasAttribute("id") )
+        {
+            element.setAttribute(
+                "name", element.getAttribute("id").replace(/-/g, "_"));
+        }
+    }
+    document.querySelectorAll("form input").forEach(id_to_name);
+    document.querySelectorAll("form textarea").forEach(id_to_name);
+    document.querySelectorAll("form select").forEach(id_to_name);
 });
+
+function send_user_email(login)
+{
+    fetch(portal_url + "/admin/forgott.py",
+          {
+              method: "POST", 
+              body: "login=" + login,
+              headers: { "Content-Type":
+                             "application/x-www-form-urlencoded;charset=UTF-8"
+                       },
+          })
+        .then(res => {
+            alert("Es wurde eine e-Mail mit einem Passwort-Link an " +
+                      login + " geschickt.");
+        });
+}
+
+

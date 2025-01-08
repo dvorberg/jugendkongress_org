@@ -29,6 +29,8 @@ from werkzeug.exceptions import Unauthorized, Forbidden
 from ll.xist import xsc
 from ll.xist.ns import html
 
+from sqlclasses import sql
+
 from .db import dbobject, Result, select_one
 from .model import users as model
 
@@ -39,18 +41,15 @@ def get_user():
         return model.AnonymousUser()
     else:
         if "user" not in g:
-            g.user = select_one( ("SELECT id, roles, shortname "
-                                  "  FROM users.login_info "
-                                  " WHERE login = %s"),
-                                 ( user_login, ),
-                                 model.LoginUser )
-            g.user.login = user_login
+            g.user = model.User.select_one(
+                sql.where("login = ", sql.string_literal(user_login)))
+            assert g.user is not None, Unauthorized
 
         return g.user
 
 
 def login(login, password):
-    authdata = select_one("SELECT login, password FROM users.users "
+    authdata = select_one("SELECT login, password FROM users "
                           " WHERE login = %s"
                           "    OR lower(email) = lower(%s)",
                           ( login, login, ))
@@ -76,16 +75,16 @@ def login_required(func):
 
     return wrapped_func
 
-class role_required:
-    def __init__(self, *roles):
-        self.roles = roles
+# class role_required:
+#     def __init__(self, *roles):
+#         self.roles = roles
 
-    def __call__(self, func):
-        @functools.wraps(func)
-        def wrapped_func(*args, **kwargs):
-            if not get_user().is_root and \
-               not get_user().has_role(self.roles):
-                raise Forbidden()
-            return func(*args, **kwargs)
+#     def __call__(self, func):
+#         @functools.wraps(func)
+#         def wrapped_func(*args, **kwargs):
+#             if not get_user().is_root and \
+#                not get_user().has_role(self.roles):
+#                 raise Forbidden()
+#             return func(*args, **kwargs)
 
-        return wrapped_func
+#         return wrapped_func

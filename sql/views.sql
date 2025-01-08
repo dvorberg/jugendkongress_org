@@ -20,6 +20,15 @@ CREATE VIEW booking_info AS
      FROM booking
      LEFT JOIN wsc ON booking_id = booking.id;
 
-GRANT SELECT ON booking_info TO jugendkongress; 
+-- GRANT SELECT ON booking_info TO jugendkongress; 
+
+DROP VIEW IF EXISTS booking_short_list CASCADE;
+CREATE VIEW booking_short_list AS
+    SELECT year, email, slug,
+           firstname, lastname, dob, city, phone, gender, room_overwrite,
+           ctime, mtime
+      FROM booking
+      
+-- GRANT SELECT ON booking_short_list TO jugendkongress; 
 
 COMMIT;

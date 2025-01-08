@@ -15,19 +15,11 @@ from ..upload_manager import UploadManager, make_image_versions
 from ..skinning import get_site_url
 from ..utils import rget
 
-class UserResult(Result):
-    def card_view(self, **kw):
-        return prediger_view_macros.card_view(result=self, **kw)
-
-class has_login:
-    pass
-
-class _BaseUser(dbobject, has_login):
+class User(dbobject):
     """
     User class that’s queried for every request that contains minimal
     data on the current user.
     """
-    __schema__ = "users"
     __relation__ = "users"
     __primary_key_column__ = "login"
 
@@ -41,18 +33,11 @@ class _BaseUser(dbobject, has_login):
 
     @property
     def roles(self):
-        return self._roles
+        return { "Authenticated", "Manager", }
 
     @roles.setter
     def roles(self, roles):
-        # The “,” is set as dilimiter in views.sql.
-        if roles is None:
-            self._roles = []
-        else:
-            if type(roles) == set:
-                self._roles = roles
-            else:
-                self._roles = set(roles.split(","))
+        raise AttributeError("Roles cannot be set.")
 
     def has_role(self, *args):
         for roles in args:
@@ -63,10 +48,6 @@ class _BaseUser(dbobject, has_login):
                     if role in self.roles:
                         return True
         return False
-
-    @property
-    def is_root(self):
-        return self.has_role("Root")
 
     @property
     def is_anonymous(self):
@@ -80,54 +61,9 @@ class _BaseUser(dbobject, has_login):
     def is_manager(self):
         return self.has_role("Manager")
 
-
-class LoginUser(_BaseUser):
-    __view__ = "login_info"
-
-    @property
-    def full_user(self):
-        if not hasattr(self, "_full_user"):
-            self._full_user = User.select_by_primary_key(self.login)
-
-        return self._full_user
-
-    @property
-    def firstname(self):
-        return self.full_user.firstname
-
-    @property
-    def lastname(self):
-        return self.full_user.lastname
-
-    @property
-    def email(self):
-        return self.full_user.email
-
-    @property
-    def phone(self):
-        return self.full_user.phone
-
-class User(_BaseUser):
-    __view__ = "user_info"
-    __result_class__ = UserResult
-
-    @property
-    def name(self):
-        if hasattr(self, "_name"):
-            return self._name
-        else:
-            return f"{self.firstname} {self.lastname}"
-
-    @name.setter
-    def name(self, name):
-        self._name = name
-
-    @property
-    def shortname(self):
-        if self.firstname:
-            return "%s. %s" % ( self.firstname[0], self.lastname, )
-        else:
-            return self.lastname
+# On blgd.tv these used to be separate because the users table had wide
+# columns.
+LoginUser = User
 
 class AnonymousUser:
     roles = set()
@@ -146,7 +82,7 @@ class AnonymousUser:
 user_ids_by_login = {}
 def user_id_by_login(login):
     if not login in user_ids_by_login:
-        tpl = query_one("SELECT id FROM users.users "
+        tpl = query_one("SELECT id FROM users "
                         " WHERE login = %s", ( login, ))
         if tpl is None:
             raise KeyError(login)

@@ -95,8 +95,8 @@ def create_app(test_config=None):
     app.add_url_rule("/markdown/<path:infile_path>",
                      view_func=markdown.view_func)
 
-    from . import authentication_blueprint
-    app.register_blueprint(authentication_blueprint.bp)
+    from . import admin_blueprint
+    app.register_blueprint(admin_blueprint.bp)
 
     from .scss import compile_scss
     app.add_url_rule("/scss/<path:template_path>",
@@ -138,7 +138,7 @@ def create_app(test_config=None):
         # The markdown must be converted before the template is rendered
         # so the meta information is available.
         congress.md
-                
+
         template = skin.load_template("skin/jugendkongress/congress_view.pt")
         return template(congress=congress,
                         booking=booking,
@@ -188,7 +188,7 @@ def create_app(test_config=None):
     def redirect_to_login(exception):
         redirect_to = b"%s?%s" % ( flask.request.path.encode("utf-8"),
                                    flask.request.query_string, )
-        return authentication_blueprint.login(
+        return admin_blueprint.login(
             redirect_to=redirect_to,
             description=exception.description,
             alert_class="danger")
