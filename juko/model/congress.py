@@ -214,6 +214,14 @@ class Congress(DocumentFolder):
         except (ValueError, TypeError):
             return None
 
+    @cached_property
+    def startdatum(self):
+        v = self.get_meta("startdatum")
+        try:
+            return datetime.date(*[int(a) for a in v.split("-")])
+        except (ValueError, TypeError):
+            return None
+
     @property
     def titel(self):
         return self.get_meta("titel")
@@ -443,6 +451,13 @@ class Booking(dbobject):
     def name(self):
         return self.firstname + " " + self.lastname
 
+    @property
+    def age_then(self):
+        if self.congress.startdatum and self.dob:
+            delta = self.congress.startdatum - self.dob
+            return int(delta.days / 364.25)
+        else:
+            return None
     def validate_me(self):
         return self.validate(Change(self.as_dict()))
 
@@ -472,9 +487,12 @@ class Booking(dbobject):
         return change
 
     @property
+    def congress(self):
+        return flask.g.congresses.by_year(self.year)
+
+    @property
     def href(self):
-        congress = flask.g.congresses.by_year(self.year)
-        return congress.booking_href(self.slug)
+        return self.congress.booking_href(self.slug)
 
     @property
     def delete_href(self):
