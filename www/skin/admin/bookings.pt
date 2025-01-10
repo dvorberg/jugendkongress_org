@@ -17,10 +17,9 @@
         <thead>
           <tr>
             <th>Name, Login</th>
-            <th>e-Mail</th>
-            <th>Telefon</th>
-            <th>Geboren</th>
-            <th>aus</th>
+            <th>e-Mail, Telefon</th>
+            <th>Geboren, (<small>Alter beim Kongress</small>)</th>
+            <th></th>
             <th></th>
           </tr>
         </thead>
@@ -28,23 +27,44 @@
           <tal:block tal:repeat="b bookings">
             <tr>
               <td>
-                <span tal:content="b.firstname"/>
-                <strong tal:content="b.lastname"/>
+                <div>
+                  <span tal:content="b.firstname"/>
+                  <strong tal:content="b.lastname"/>
+                </div>
+                <div>
+                  <small>
+                    aus ${b.city}
+                  </small>
+                </div>
               </td>
               <td>
-                <a href="string:mailto:${b.email}"
-                   tal:content="b.email" />
+                <div>
+                  <a href="string:mailto:${b.email}" tal:content="b.email" />
+                </div>
+                <div class="pt-1" tal:condition="b.phone">
+                  ☎ <a href="tel:${b.phone}">${b.phone}</a>
+                </div>
               </td>
-              <td>
-                <a href="tel:${b.phone}">${b.phone}</a>
-              </td>
-              <td>
+              <td tal:define="age b.age_then">
                 ${ptutils.pretty_german_date(b.dob)}
+                
+                <small tal:condition="age"
+                        class="${test(age &lt; 18,
+                                      'text-danger',
+                                      'text-success')}"
+                        style="font-weight: bold">
+                  (${b.age_then})
+                </small>
               </td>
               <td>
-                ${b.city}
+                
               </td>
-              <td></td>
+              <td>
+                <a href="${b.href}" class="btn btn-sm btn-primary"
+                   target="_new">
+                  <img src="/skin/admin/pen.svg" />                  
+                </a>
+              </td>
             </tr>
           </tal:block>
         </tbody>
