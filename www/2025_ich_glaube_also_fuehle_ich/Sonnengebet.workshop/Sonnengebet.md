@@ -1,6 +1,7 @@
-Titel: (Mein) Beten in Bewegung?
-Untertitel: Beten mit Leib und Seele
+Titel: Beten mit Leib und Seele
+Untertitel: Das „Sonnengebet“
 Referent: Matthias Forchheim
-Referent-Info: Pfarrer in Scharnebeck
+Referent-Info: JuPa in NDS-Ost
 Workshopphasen: 
 
+Mein Beten – in Bewegung? Das Sonnengebet ist ein Morgengebet, verbunden mit einer Reihe von Körperübungen, die aus dem Yoga kommen. Dieses Sonnengebet des indischen Christen Pater S. Painadath möchte ich Euch vorstellen, mit Euch reflektieren und mit Euch betend üben. 

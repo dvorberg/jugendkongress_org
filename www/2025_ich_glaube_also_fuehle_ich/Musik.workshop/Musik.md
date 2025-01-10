@@ -4,6 +4,8 @@ Referent: Elisabeth Schwarz-Gangel
 Referent-Info: Kirchenmusikerin
 Workshopphasen: 
 
+Für diesen Workshop brauchst du keine musikalischen Vorkenntnisse und keine Chorerfahrung. Du kannst mit einem musikalischen Hintergrund teilnehmen, aber auch, wenn du dich noch kaum mit Deiner Stimme beschäftigt hast. 
+
 Stimme braucht unseren Körper, die Atmung, den Raum, in dem wir uns befinden. Wir bereiten uns körperlich, stimmlich und mental auf gemeinsames Singen vor mit Übungen zur Lockerung, Dehnung, Sensibilisierung, Aktivierung, Übungen zur Bewegung des Körpers, Übungen zur Gruppendynamik und zur Atmung.
 
 Wir erzeugen Klänge, spüren dem Rhythmus und den Klängen einzelner Worte nach, verbinden Klänge und Bewegung.
