@@ -87,11 +87,16 @@ class DocumentFolder(object):
             self._md = MarkdownResult( infilepath.open().read(),
                                        MacroContext(
                                            markdown_file_path=infilepath,
-                                           pathset=self.pathset) )
+                                           pathset=self.pathset,
+                                           congress=self.congress) )
             self._md.convert()
             self._rendering_md = False
             self._rtime = self.pathset.mtime
         return self._md
+
+    @property
+    def congress(self):
+        raise NotImplementedError()
 
     @property
     def html(self):
@@ -120,7 +125,7 @@ class Picture(object):
 class Workshop(DocumentFolder):
     def __init__(self, path, congress):
         super().__init__(path, congress.pathset)
-        self.congress = congress
+        self._congress = congress
 
         # Pictures
         paths = list()
@@ -130,6 +135,10 @@ class Workshop(DocumentFolder):
 
         self.pathset.register(*paths)
         self._pictures = [ Picture(self, path) for path in paths ]
+
+    @property
+    def congress(self):
+        return self._congress
 
     @property
     def pictures(self):
@@ -177,6 +186,10 @@ class Congress(DocumentFolder):
         super().__init__(path)
         self.congresses = congresses
         self.reset()
+
+    @property
+    def congress(self):
+        return self
 
     def reset(self):
         self.pathset = PathSet()
@@ -457,6 +470,11 @@ class Booking(dbobject):
                 change.confirm(name)
 
         return change
+
+    @property
+    def href(self):
+        congress = flask.g.congresses.by_year(self.year)
+        return congress.booking_href(self.slug)
 
     @property
     def delete_href(self):
