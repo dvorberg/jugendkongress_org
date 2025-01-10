@@ -410,4 +410,4 @@ def bookings():
 
     template = g.skin.load_template("skin/admin/bookings.pt")
 
-    return template(bookings=bookings)
+    return template(congress=congress, bookings=bookings)
