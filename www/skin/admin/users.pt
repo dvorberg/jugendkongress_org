@@ -46,28 +46,21 @@
                      tal:attributes="href string:/admin/user_form.py?request_login=${user.login}"
                      data-bs-toggle="tooltip" data-bs-placement="bottom"
                      title="Bearbeiten">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-                      <path d="M27.414,8.82812l-2.08588,2.08594L21.08588,6.67188l2.08587-2.08594a.99985.99985,0,0,1,1.41425,0l2.828,2.82812A.99986.99986,0,0,1,27.414,8.82812ZM8.08594,19.67188l4.24218,4.24218L23.91406,12.32812,19.67181,8.08594ZM4.27667,27.09863a.50005.50005,0,0,0,.62476.62476l5.92773-2.48023L6.75677,21.1709Z"/>
-                    </svg>                    
+                    <img src="/skin/admin/pen.svg" />
                   </a>              
                   <a tal:attributes="class string:btn btn-sm btn-danger ${disabled(user.login == current_user.login)};
                                      href string:/admin/delete_user.py?login=${user.login};
                                      onclick delete_onclick(user);"
                      data-bs-toggle="tooltip" data-bs-placement="bottom"
                      title="Aus der Datenbank löschen.">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-                      <path d="M7,26a2.00006,2.00006,0,0,0,2,2H23a2.00006,2.00006,0,0,0,2-2V10H7ZM20,14a1,1,0,0,1,2,0V24a1,1,0,0,1-2,0Zm-5,0a1,1,0,0,1,2,0V24a1,1,0,0,1-2,0Zm-5,0a1,1,0,0,1,2,0V24a1,1,0,0,1-2,0ZM26,6V8H6V6A1,1,0,0,1,7,5h6V4a1,1,0,0,1,1-1h4a1,1,0,0,1,1,1V5h6A1,1,0,0,1,26,6Z"/>
-                    </svg>
-
+                    <img src="/skin/admin/trashbin.svg" />
                   </a>
                    
                   <a tal:attributes="class string:btn btn-sm btn-warning;
                                      href string:javascript:send_user_email('${user.login}')"
                      data-bs-toggle="tooltip" data-bs-placement="bottom"
                      title="Link zuschicken, um das Passwort zurückzusetzen.">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-                      <path d="M14.69305,17.707,3.986,7h24L17.27893,17.707a1.15255,1.15255,0,0,1-.70709.293H15.40015A1.15257,1.15257,0,0,1,14.69305,17.707ZM10.17169,16,4,9.82812V22.17188Zm11.65656,0L28,22.17188V9.82812Zm-3.428,3.41418A2.3055,2.3055,0,0,1,16.986,20H14.986a2.30474,2.30474,0,0,1-1.41424-.58594l-1.99988-2L3.986,25h24l-7.58581-7.58594Z"/>
-                    </svg> 
+                    <img src="/skin/admin/envelope.svg" />
                   </a>
                 </div>
               </td>
@@ -79,10 +72,7 @@
       <div class="col-sm-1">
         <a tal:attributes="href string:/admin/user_form.py?request_login=__new"
            class="btn btn-success">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-            <path id="plus" d="M27,14v4a1,1,0,0,1-1,1H19v7a1,1,0,0,1-1,1H14a1,1,0,0,1-1-1V19H6a1,1,0,0,1-1-1V14a1,1,0,0,1,1-1h7V6a1,1,0,0,1,1-1h4a1,1,0,0,1,1,1v7h7A1,1,0,0,1,27,14Z"/>
-          </svg>
-          
+          <img src="/skin/admin/plus.svg" />
           Neu
         </a>            
       </div>
