@@ -11,25 +11,39 @@
     </metal:block>
     
     <div metal:fill-slot="main" class="mt-4">
-      <h3 class="my-3">Buchungen</h3>
+      <div class="my-3" >
+        <h3 style="display: inline">
+          Buchungen
+        </h3>
+        <label class="ms-2">
+          <input type="checkbox" id="details" />
+          Details
+        </label>
+      </div>
       
-      <table class="table users">
+      <table class="table table-striped users">
         <thead>
           <tr>
             <th>Name, Login</th>
             <th>e-Mail, Telefon</th>
             <th>Geboren, (<small>Alter beim Kongress</small>)</th>
-            <th></th>
-            <th></th>
+            <tal:block tal:condition="details">
+              <th colspan="3">Zimmer</th>
+              <th>Zimmerpartner</th>
+              <th>Essen</th>
+            </tal:block>
+            <th><!--buttons--></th>
           </tr>
         </thead>
         <tbody>
           <tal:block tal:repeat="b bookings">
             <tr>
               <td>
-                <div>
+                <div class="text-nowrap">
                   <span tal:content="b.firstname"/>
-                  <strong tal:content="b.lastname"/>
+                  <strong tal:content="b.lastname"
+                          /> <a href="/admin/booking_name_form.py?id=${b.id}"
+                                class="text-decoration-none">✎</a>
                 </div>
                 <div>
                   <small>
@@ -56,10 +70,32 @@
                   (${b.age_then})
                 </small>
               </td>
-              <td>
+              <tal:block tal:condition="details">
+                <td class="text-nowrap"
+                    tal:content="structure b.room_preference_html"></td>
+                <td>${b.gender_symbol}</td>
+                <td class="text-nowrap">
+                  <strong tal:omit-tag="not:b.room_overwrite">
+                    <tal:block tal:condition="b.room">${b.room}</tal:block>
+                    <strong tal:condition="not:b.room">∅</strong>
+                  </strong>
+                  <a href="/admin/"
+                     class="ms-3 text-decoration-none">✎</a>
+                </td>
+                <td tal:content="structure b.room_mates_html" />
+
+                <!--Essen-->
+                <td>
+                  <div class="text-bold">
+                    ${b.food_preference_html}
+                  </div>
+                  <div tal:condition="b.food_remarks"
+                       class="text-danger small"
+                       tal:content="b.food_remarks" />
+                </td>
                 
-              </td>
-              <td>
+              </tal:block>
+              <td><!--Buttons-->
                 <a href="${b.href}" class="btn btn-sm btn-primary"
                    target="_new">
                   <img src="/skin/admin/pen.svg" />                  
@@ -68,6 +104,21 @@
             </tr>
           </tal:block>
         </tbody>
+        <tr>
+          <td><!--name-->
+            ${len(bookings)} Anmeldungen
+          </td>
+          <td><!--Kontakt-->
+          </td>
+          <td><!--dob&alter-->
+          </td>
+          <td colspan="4"><!--Zimmer-->
+          </td>
+          <td tal:content="food_preference_html"><!--Essen-->            
+          </td>
+          <td>
+          </td>
+        </tr>
       </table>
     </div>
   </body>

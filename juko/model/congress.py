@@ -10,6 +10,9 @@ from ..utils import PathSet
 from sqlclasses import sql
 from PIL import Image
 
+from ll.xist import xsc
+from ll.xist.ns import html
+
 import flask
 
 
@@ -416,6 +419,13 @@ class Change(object):
         return dict([ (field, getattr(self, field))
                       for field in self._validated ])
 
+def food_preference_html(food_preference):
+    return { None: html.strong("∅", class_="text-danger"),
+             "meat": "Fleisch",
+             "vegetarian": "vegitarisch",
+             "vegan": "vegan"
+            }[food_preference]
+
 class Booking(dbobject):
     __relation__ = "booking"
     __view__ = "booking_info"
@@ -487,6 +497,24 @@ class Booking(dbobject):
         return change
 
     @property
+    def gender_symbol(self):
+        if self.gender == "male":
+            return "♂"
+        elif self.gender == "female":
+            return "♀"
+        elif self.gender == "nn":
+            return "◦"
+        else:
+            return "∅"
+
+    @property
+    def room_preference_html(self):
+        if self.room_preference is None:
+            return '<strong class="text-danver">0</strong>'
+        else:
+            return self.room_preference.split(" ")[0]
+
+    @property
     def congress(self):
         return flask.g.congresses.by_year(self.year)
 
@@ -498,6 +526,46 @@ class Booking(dbobject):
     def delete_href(self):
         return "%s/%i/deletebooking?key=%s" % ( config["SITE_URL"],
                                          self.year, self.slug)
+
+    @property
+    def resolved_room_mates(self):
+        # This returns a list pairs matching a found name or email address
+        # to a Booking object.
+        if not hasattr(self, "_resolved_room_mates"):
+            raise ValueError("Room mates not resolved, yet.")
+        else:
+            return self._resolved_room_mates
+
+    def resolve_room_mates(self, keys_to_bookings):
+        room_mates = self.room_mates.replace(
+            ",", "\n").replace("/", "\n").split("\n")
+        ret = []
+        for line in room_mates:
+            key = sql.normalize_whitespace(line).lower()
+            ret.append( (line, keys_to_bookings.get(key, None),) )
+        self._resolved_room_mates = ret
+        return ret
+
+    @property
+    def room_mates_html(self):
+        ret = xsc.Frag()
+        for line, booking in self.resolved_room_mates:
+            if booking is None:
+                ret.append(html.div(line,
+                                    class_="text-danger"))
+            else:
+                ret.append(html.div(booking.name,
+                                    class_="text-success"))
+        return ret
+
+    @property
+    def food_preference_html(self):
+        return food_preference_html(self.food_preference)
+
+
+class BookingForNameForm(dbobject):
+    __relation__ = "booking"
+    __view__ = "booking_for_name_form"
 
 if __name__ == "__main__":
     # Test this.

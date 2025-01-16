@@ -304,7 +304,7 @@
                       <textarea type="text" class="form-control" rows="4"
                                 id="room-mates"></textarea>
                       <div id="room-mates-help" class="form-text">
-                        Zimmerpartner (ein Name oder e-Mail-Adresse pro Zeile)
+                        Zimmerpartner (ein Name oder e-Mail-Adresse pro Zeile).
                       </div>
                       <div class="invalid-feedback" data-for="food-remarks">
                       </div> 

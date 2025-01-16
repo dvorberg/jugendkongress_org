@@ -9,11 +9,11 @@ CREATE VIEW booking_info AS
          FROM workshop_choices
         GROUP BY booking_id
    ) 
-   SELECT year, email, slug,
+   SELECT id, year, email, slug,
           firstname, lastname, 
           address, zip, city, phone, dob,
           gender, food_preference, food_remarks, lactose_intolerant,
-          room_preference, room_mates,
+          room, room_preference, room_mates, room_overwrite,
           ride_sharing_option, ride_sharing_start,
           musical_instrument,
           wsc.workshop_choices
@@ -24,11 +24,16 @@ CREATE VIEW booking_info AS
 
 DROP VIEW IF EXISTS booking_short_list CASCADE;
 CREATE VIEW booking_short_list AS
-    SELECT year, email, slug,
+    SELECT id, year, email, slug,
            firstname, lastname, dob, city, phone, gender, room_overwrite,
            ctime, mtime
-      FROM booking
+      FROM booking;
       
 -- GRANT SELECT ON booking_short_list TO jugendkongress; 
+
+DROP VIEW IF EXISTS booking_for_name_form CASCADE;
+CREATE VIEW booking_for_name_form AS
+    SELECT id, firstname, lastname, email FROM booking;
+
 
 COMMIT;

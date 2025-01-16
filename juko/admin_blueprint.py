@@ -399,15 +399,78 @@ def save_user(request_login, firstname, lastname, email,
     else:
         return user_form(request_login=request_login, feedback=feedback)
 
+def resolve_room_mates(bookings):
+    # Create a dict matching (lower case) names and email-addresses
+    # to bookings.
+    d = {}
+    for booking in bookings:
+        d[booking.name.lower()] = booking
+        d[booking.email] = booking
+
+    # Now go through each of the names listed in the bookings
+    # and see if we can find them.
+    for booking in bookings:
+        booking.resolve_room_mates(d)
+
 @bp.route("/bookings.py", methods=('GET',))
 @authentication.login_required
 def bookings():
     congress = g.congresses.current
 
+    details = (request.cookies.get("details", "false") == "true")
+
     bookings = model.congress.Booking.select(
         sql.where("year=%i" % congress.year),
         sql.orderby("lower(lastname), lower(firstname)"))
 
+    resolve_room_mates(bookings)
+
+    cursor = execute(f"SELECT food_preference, COUNT(*) AS count "
+                     f"  FROM booking "
+                     f" WHERE year = {congress.year} "
+                     f" GROUP BY food_preference")
+
+    food_preference_html = html.table()
+    for id, count in cursor.fetchall():
+        food_preference_html.append(html.tr(
+            html.td(count, style="text-align: right"),
+            html.td("✕"),
+            html.td(model.congress.food_preference_html(id))))
+
     template = g.skin.load_template("skin/admin/bookings.pt")
 
-    return template(congress=congress, bookings=bookings)
+    return template(congress=congress, bookings=bookings, details=details,
+                    food_preference_html=food_preference_html)
+
+@bp.route("/booking_name_form.py", methods=("GET", "POST",))
+@authentication.login_required
+@gets_parameters_from_request
+def booking_name_form(id:int, firstname=None, lastname=None, email=None):
+    template = g.skin.load_template("skin/admin/booking_name_form.pt")
+
+    if request.method == "POST":
+        feedback = FormFeedback()
+
+        feedback.validate_not_empty("firstname")
+        feedback.validate_not_empty("lastname")
+
+        feedback.validate_not_empty("email")
+        email_match = email_re.match(email)
+
+        if email_match is None:
+            feedback.give("email", "Keine gültige e-Mail Adresse.")
+
+        if feedback.is_valid():
+            execute(sql.update("booking", sql.where("id = %i" % id),
+                               { "firstname": firstname,
+                                 "lastname": lastname,
+                                 "email": email }))
+            commit()
+
+            return redirect("/admin/bookings.py")
+    else:
+        feedback = NullFeedback()
+
+    booking = model.congress.BookingForNameForm.select_by_primary_key(id)
+
+    return template(feedback=feedback, booking=booking)
