@@ -112,11 +112,13 @@
           </td>
           <td><!--dob&alter-->
           </td>
-          <td colspan="4"><!--Zimmer-->
-          </td>
-          <td tal:content="food_preference_html"><!--Essen-->            
-          </td>
-          <td>
+          <tal:block tal:condition="details">
+            <td colspan="4"><!--Zimmer-->
+            </td>
+            <td tal:content="food_preference_html"><!--Essen-->            
+            </td>
+          </tal:block>
+          <td><!--buttons-->
           </td>
         </tr>
       </table>
