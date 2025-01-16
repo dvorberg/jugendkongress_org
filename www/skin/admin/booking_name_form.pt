@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+      metal:use-macro="skin.main_template.macros.master">  
+  <body>
+    <metal:block metal:fill-slot="congress-menu">
+      <metal:block use-macro="skin.main_template.macros.admin_menu" />
+    </metal:block>
+    
+    <div metal:fill-slot="main" class="mt-4">
+      <h3 class="my-3">Buchung bearbeiten</h3>
+
+      <form method="post"
+            enctype="multipart/form-data"
+            tal:attributes="class string:row g-3 ${feedback.form_class}">
+
+        <input type="hidden" name="id" value="${booking.id}" />
+        
+        <fieldset class="row g-3">
+          <legend>Name und e-Mail</legend>
+          
+          <div class="col-md-9"
+               tal:define="fb feedback.on('firstname')">
+            <label for="firstname"
+                   class="form-label">Vorname</label>
+            <input type="text" id="firstname" 
+                   tal:attributes="value booking.rget('firstname');
+                                   class string:form-control ${fb.cls}"/>
+            <div tal:replace="structure fb.html" />
+            <div class="form-text">
+            </div>
+          </div>
+          
+          <div class="col-md-9"
+               tal:define="fb feedback.on('lastname')">
+            <label for="lastname"
+                   class="form-label">Vorname</label>
+            <input type="text" id="lastname" 
+                   tal:attributes="value booking.rget('lastname');
+                                   class string:form-control ${fb.cls}"/>
+            <div tal:replace="structure fb.html" />
+            <div class="form-text">
+            </div>
+          </div>
+          
+          <div class="col-md-9"
+               tal:define="fb feedback.on('email')">
+            <label for="email"
+                   class="form-label">E-Mail</label>
+            <input type="email" id="email" 
+                   tal:attributes="value booking.rget('email');
+                                   class string:form-control ${fb.cls}"/>
+            <div tal:replace="structure fb.html" />
+            <div class="form-text">
+            </div>
+          </div>
+
+          <div class="col-md-9">
+            <button type="submit" class="btn btn-primary">
+              Speichern
+            </button>
+          </div>
+        </fieldset>
+      </form>      
+    </div>
+  </body>
+</html>
