@@ -29,9 +29,10 @@ from werkzeug.exceptions import Unauthorized
 from ll.xist import xsc
 from ll.xist.ns import html
 
-from t4 import sql
 from t4.res import login_re, email_re
 from t4.passwords import apple_style_random_password, password_good_enough
+
+from sqlclasses import sql
 
 from .form_feedback import FormFeedback, NullFeedback
 from .db import Result, cursor, commit, execute
