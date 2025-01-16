@@ -79,5 +79,26 @@ CREATE TABLE remarks
     ctime TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
+
+CREATE TABLE users (
+       id SERIAL,
+       login TEXT NOT NULL PRIMARY KEY,
+       password TEXT,
+       firstname TEXT NOT NULL DEFAULT '',
+       lastname TEXT NOT NULL DEFAULT '',
+       email TEXT NOT NULL UNIQUE
+);
+
+INSERT INTO users (login, firstname, lastname, email) VALUES
+    ( 'diedrich', 'Diedrich', 'Vorberg', 'diedrich@tux4web.de' );
+
+
+CREATE TABLE forgotten_password_requests (
+       user_login TEXT NOT NULL UNIQUE REFERENCES users ON DELETE CASCADE,
+       ctime TIMESTAMP NOT NULL DEFAULT NOW(),
+       slug TEXT NOT NULL UNIQUE
+);
+
+
 COMMIT;
 

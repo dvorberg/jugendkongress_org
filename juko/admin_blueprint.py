@@ -1,4 +1,4 @@
-##  Copyright 2024 by Diedrich Vorberg <diedrich@tux4web.de>
+##  Copyright 2024–25 by Diedrich Vorberg <diedrich@tux4web.de>
 ##
 ##  All Rights Reserved
 ##
@@ -43,7 +43,7 @@ from .utils import (get_site_url, gets_parameters_from_request, redirect,
 from .ptutils import js_string_literal
 
 
-bp = Blueprint("authentication", __name__, url_prefix="/authentication")
+bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 @bp.route("/login.py", methods=('GET', 'POST'))
 @gets_parameters_from_request
@@ -54,7 +54,7 @@ def login(login=None, password=None, redirect_to=None,
         # and must not come from the request.
         raise ValueError()
 
-    template = g.skin.load_template("skin/authentication/login.pt")
+    template = g.skin.load_template("skin/admin/login.pt")
 
     if request.method == "POST":
         feedback = FormFeedback()
@@ -76,7 +76,7 @@ def login(login=None, password=None, redirect_to=None,
             if redirect_to is None:
                 # For our very template this has to be done here.
                 # template.extra_builtins["user"] = authentication.get_user()
-                return redirect("/authentication/dashboard.py")
+                return redirect("/admin/bookings.py")
             else:
                 return redirect(redirect_to)
     else:
@@ -91,6 +91,7 @@ def login(login=None, password=None, redirect_to=None,
 
 
 @bp.route("/logout.py")
+@authentication.login_required
 def logout():
     authentication.logout()
     return redirect(get_site_url(site_message="Sie wurden ausgeloggt."))
@@ -98,7 +99,7 @@ def logout():
 @bp.route("/forgott.py", methods=('GET', 'POST'))
 @gets_parameters_from_request
 def forgott(login=None):
-    template = g.skin.load_template("skin/authentication/forgott.pt")
+    template = g.skin.load_template("skin/admin/forgott.pt")
 
     if request.method == "POST":
         feedback = FormFeedback()
@@ -137,14 +138,14 @@ def forgott(login=None):
 def send_forgotten_email(dbuser):
     with cursor() as cc:
         # Clean the request table.
-        cc.execute("DELETE FROM users.forgotten_password_requests "
+        cc.execute("DELETE FROM forgotten_password_requests "
                    "      WHERE user_login = %s"
                    "         OR ctime + '4 hours'::interval < NOW()",
                    (dbuser.login,) )
 
         # Create the new entry.
         slug = apple_style_random_password(4, 6)
-        cc.execute("INSERT INTO users.forgotten_password_requests"
+        cc.execute("INSERT INTO forgotten_password_requests"
                    "            (user_login, slug)"
                    "     VALUES (%s, %s)",
                    (dbuser.login, slug,) )
@@ -152,16 +153,17 @@ def send_forgotten_email(dbuser):
 
         # Send the email
         site_url = g.skin.site_url
-        link = "%s/authentication/reset_password.py/%s" % ( site_url, slug, )
+        link = "%s/admin/reset_password.py/%s" % ( site_url, slug, )
 
         login = dbuser.login
         firstname = dbuser.firstname
         lastname = dbuser.lastname
 
-        sendmail_template( "forgotten_email.txt",
-                           "Blütenlese Webmaster", "webmaster@blgd.tv",
+        sendmail_template( "admin/forgotten_email.txt",
+                           "Jugendkongress Webmaster",
+                           "webmaster@jugendkongress.org",
                            "%s %s" % ( firstname, lastname, ), dbuser.email,
-                           "Passwort-Anfrage auf blgd.tv", locals() )
+                           "Passwort-Anfrage auf jugendkongress.org", locals() )
 
 password_strength_error_message = """\
 Das Passwort ist nicht stark genug. Das Passwort muss enthalten:
@@ -172,15 +174,15 @@ Sonderzeichen. Wenn eines von den vieren fehlt, meckert der Computer.
 @bp.route("/reset_password.py/<slug>", methods=("GET", "POST",))
 @gets_parameters_from_request
 def reset_password(slug, password1=None, password2=None):
-    template = g.skin.load_template("skin/authentication/reset_password.pt")
+    template = g.skin.load_template("skin/admin/reset_password.pt")
 
     with cursor() as cc:
         # Remove stale links.
-        cc.execute("DELETE FROM users.forgotten_password_requests "
+        cc.execute("DELETE FROM forgotten_password_requests "
                    "      WHERE ctime + '4 hours'::interval < NOW()")
         commit()
 
-        cc.execute("SELECT user_login FROM users.forgotten_password_requests "
+        cc.execute("SELECT user_login FROM forgotten_password_requests "
                    " WHERE slug = %s", ( slug, ))
         tpl = cc.fetchone()
         if tpl is None:
@@ -191,7 +193,6 @@ def reset_password(slug, password1=None, password2=None):
 
     if request.method == "POST":
         feedback = FormFeedback()
-
         if password1 != password2:
             feedback.give("password1", "Die Passwörter stimme nicht überein.")
         else:
@@ -203,20 +204,20 @@ def reset_password(slug, password1=None, password2=None):
             password = generate_password_hash(password1)
 
             with cursor() as cc:
-                cc.execute("UPDATE users.users SET password = %s "
+                cc.execute("UPDATE users SET password = %s "
                            " WHERE login = %s", ( password, user_login, ))
                 commit()
 
-            return redirect(get_site_url() + "/authentication/login.py")
+            return redirect(get_site_url() + "/admin/login.py")
     else:
         feedback = NullFeedback()
 
     return template(feedback=feedback, user_login=user_login)
 
 @bp.route("/users.py", methods=("POST", "GET"))
-@authentication.role_required("User Manager")
+@authentication.login_required
 def users():
-    template = g.skin.load_template("skin/authentication/users.pt")
+    template = g.skin.load_template("skin/admin/users.pt")
 
     def delete_onclick(user):
         tmpl = ('return confirm("Möchten Sie den Eintrag von " + '
@@ -224,44 +225,13 @@ def users():
         return tmpl % ( js_string_literal(user.firstname),
                         js_string_literal(user.lastname), )
 
-    cursor = execute("SELECT name FROM users.user_roles "
-                     " WHERE in_list ORDER BY name")
-    user_roles = [ tpl[0] for tpl in cursor.fetchall() ]
+    users = model.users.User.select(sql.orderby("login"))
 
-
-    orderby = OrderByHandler(
-        [ ("login", "Login",),
-          ("lower(firstname), lower(lastname)", "Vorname",),
-          ("lower(lastname), lower(firstname)", "Nachname",),
-         ], "users_orderby")
-
-
-    where = None
-    if filter.get("filter_search"):
-        search_string = sql.string_literal("%" + filter.filter_search + "%")
-        where = sql.where("firstname ILIKE ", search_string, " OR "
-                          "lastname ILIKE ", search_string, " OR "
-                          "login ILIKE ", search_string).and_(where)
-
-    if filter.get("role"):
-        where = sql.where("EXISTS (SELECT 1 FROM users.users_to_roles "
-                          "         WHERE user_login = users.user_info.login "
-                          "           AND role_name = ",
-                          sql.string_literal(filter.role), ")").and_(where)
-
-    if filter.get("active_only", True):
-        where = sql.where("EXISTS (SELECT 1 FROM users.user_flags "
-                          "         WHERE user_login = users.user_info.login "
-                          "           AND flag = 'active')").and_(where)
-
-    users = model.users.User.select(where, orderby.sql_clause())
-
-    return template(users=users, user_roles=user_roles, orderby=orderby,
-                    filter=filter, delete_onclick=delete_onclick)
+    return template(users=users, delete_onclick=delete_onclick)
 
 @bp.route("/delete.py")
-@authentication.role_required("User Manager")
 @gets_parameters_from_request
+@authentication.login_required
 def delete(login):
     if login == authentication.get_user().login:
         raise ValueError("Dude! You can’t delete yourself.")
@@ -274,15 +244,15 @@ def delete(login):
     #                 authentication.User)
 
     with cursor() as cc:
-        cc.execute("DELETE FROM users.users WHERE login = %s", ( user.login, ))
+        cc.execute("DELETE FROM users WHERE login = %s", ( user.login, ))
         commit()
 
-    return redirect("/authentication/users.py",
+    return redirect("/admin/users.py",
                     site_message="Der Eintrag von %s %s wurde gelöscht." % (
                         user.firstname, user.lastname,))
 
 @bp.route("/delete_user_password.py")
-@authentication.role_required("User Manager")
+@authentication.login_required
 @gets_parameters_from_request
 def delete_user_password(login):
     if login == authentication.get_user().login:
@@ -292,11 +262,11 @@ def delete_user_password(login):
         sql.where("login =", sql.string_literal(login)))
 
     with cursor() as cc:
-        cc.execute("UPDATE users.users SET password = NULL "
+        cc.execute("UPDATE users SET password = NULL "
                    " WHERE login = %s", ( user.login, ))
         commit()
 
-    return redirect("/authentication/users.py",
+    return redirect("/admin/users.py",
                     site_message="Das Passwort von %s %s wurde gelöscht." % (
                         user.firstname, user.lastname,))
 
@@ -307,10 +277,10 @@ def user_form(request_login=None, feedback:FormFeedback=None):
     current_user = authentication.get_user()
 
     # Security precautions.
-    if not current_user.is_root \
-       and not current_user.has_role("User Manager") \
-       or request_login is None:
-        request_login = current_user.login
+    #if not current_user.is_root \
+    #   and not current_user.has_role("User Manager") \
+    #   or request_login is None:
+    #    request_login = current_user.login
 
     if feedback is None:
         feedback = NullFeedback()
@@ -322,112 +292,19 @@ def user_form(request_login=None, feedback:FormFeedback=None):
             sql.where("login = ",
                       sql.string_literal(request_login)))
 
-    with cursor() as cc:
-        cc.execute("SELECT name FROM users.user_roles ORDER BY name")
-        roles = [ role for role, in cc.fetchall() ]
-
-    template = g.skin.load_template("skin/authentication/user_form.pt")
+    template = g.skin.load_template("skin/admin/user_form.pt")
     return template(dbuser=user,
                     feedback=feedback,
-                    roles=roles)
-
-@bp.route("/users/<user_name>.html")
-@authentication.login_required
-def profile_preview(user_name):
-    template = g.skin.load_template("skin/authentication/profile_preview.pt")
-
-    result = model.users.User.select(
-        sql.where("firstname || ' ' || lastname = ",
-                  sql.string_literal(user_name)))
-    if len(result) < 1:
-        return abort(404)
-    else:
-        user = result[0]
-        return template(prediger=user, result=result)
-
-@bp.route("/dashboard.py")
-@authentication.login_required
-@gets_parameters_from_request
-def dashboard(request_login=None):
-    template = g.skin.load_template("skin/authentication/dashboard.pt")
-
-    if request_login is not None:
-        assert authentication.get_user().has_role("User Manager"), Unauthorized
-
-        dbuser = model.users.User.select_one(
-            sql.where("login = ", sql.string_literal(request_login)))
-    else:
-        dbuser = model.users.User.current()
-
-    today = datetime.date.today()
-    todays_id = (   today.year  * 1000000
-                  + today.month * 10000
-                  + today.day   * 100
-                  + 99 )
-
-    def gd_query(future, foreign_key_column):
-        where = sql.where(foreign_key_column, " = ",
-                          sql.string_literal(dbuser.login),
-                          " AND produce")
-
-        if future:
-            where = where.and_(sql.where("id > %i" % todays_id))
-            limit = None
-            dir = "ASC"
-        else:
-            where = where.and_(sql.where("id <= %i" % todays_id))
-            limit = sql.limit(5)
-            dir = "DESC"
-
-        return model.gottesdienste.Gottesdienst_Alles.select(
-            where, limit, sql.orderby("id " + dir))
-
-    def vergangene_predigten():
-        return gd_query(False, "prediger_login")
-    def kommende_predigten():
-        return gd_query(True, "prediger_login")
-    def vergangene_videos():
-        return gd_query(False, "editor_login")
-    def kommende_videos():
-        return gd_query(True, "editor_login")
-
-    # def resource_cards_html_for(gottesdienst):
-    #     prorium_where = sql.where(
-    #         "proprium_ngb = %i" % gottesdienst.proprium_ngb)
-    #     introitus = model.archive.Introitus.select(prorium_where)
-    #     lesungen = model.archive.Lesung.select(
-    #         prorium_where, sql.orderby("lesung_typ"))
-
-    #     resources = introitus + lesungen
-
-    #     view_macros = model.gottesdienste.gottesdienst_view_macros
-    #     resource_card = view_macros.resource_card
-
-    #     return [ resource_card(resource=resource)
-    #              for resource in resources ]
-
-    return template(dbuser=dbuser,
-                    vergangene_predigten=vergangene_predigten,
-                    kommende_predigten=kommende_predigten,
-                    vergangene_videos=vergangene_videos,
-                    kommende_videos=kommende_videos)
-    # resource_cards_html_for=resource_cards_html_for
+                    roles=[])
 
 no_change_password = re.compile(r"$|\*+")
-
-@bp.route("/save.py", methods=("POST",))
+@bp.route("/save_user.py", methods=("POST",))
 @gets_parameters_from_request
-def save(request_login, firstname, lastname, email, phone,
-         info, about, details, city,
-         website, newlogin=None, password1=None, password2=None,
-         skip_reminders_untill=None, roles:list=[],
-         send_welcome_email:bool=False):
+@authentication.login_required
+def save_user(request_login, firstname, lastname, email,
+              newlogin=None, password1=None, password2=None,
+              send_welcome_email=False):
     current_user = authentication.get_user()
-
-    # Security precautions.
-    if not current_user.is_root and not current_user.has_role("User Manager"):
-        request_login = current_user.login
-        newlogin = None
 
     feedback = FormFeedback()
 
@@ -466,11 +343,6 @@ def save(request_login, firstname, lastname, email, phone,
     feedback.validate_not_empty("firstname")
     feedback.validate_not_empty("lastname")
     feedback.validate_email("email")
-    skip_reminders_untill = feedback.ensure_german_date(
-        "skip_reminders_untill", required=False)
-    if skip_reminders_untill and skip_reminders_untill < datetime.date.today():
-        feedback.give("skip_reminders_untill",
-                      "Dieses Datum darf nicht in der Vergangenheit liegen.")
 
     if feedback.is_valid():
         if request_login == "__new":
@@ -482,49 +354,22 @@ def save(request_login, firstname, lastname, email, phone,
 
         with cursor() as cc:
             if request_login == "__new":
-                cc.execute("INSERT INTO users.users (login, password, email) "
+                cc.execute("INSERT INTO users (login, password, email) "
                            "     VALUES (%s, %s, %s)",
                            ( newlogin, password, email, ))
 
             data = {}
-            for field in [ "email", "phone", "firstname", "lastname",
-                           "website", "city", "skip_reminders_untill", ]:
+            for field in [ "firstname", "lastname", ]:
                 data[field] = locals()[field]
-
-            for field in [ "info", "about", "details" ]:
-                data[field] = improve_typography(locals()[field])
 
             if password is not None:
                 data["password"] = password
 
-            command = sql.update("users.users",
+            command = sql.update("users",
                                  sql.where("login = ",
                                            sql.string_literal(login)),
                                  data)
             execute(command)
-
-            # The User Manager may change roles.
-            if current_user.has_role("User Manager"):
-                cc.execute("DELETE FROM users.users_to_roles "
-                           " WHERE user_login = %s",
-                           (login,))
-                for role in roles:
-                    cc.execute("INSERT INTO users.users_to_roles "
-                               "     VALUES (%s, %s)",
-                               ( login, role, ))
-
-            user = model.users.User.from_dict({"login": login,
-                                               "firstname": firstname,
-                                               "lastname": lastname})
-            model.users.store_profile_picture(user, "picture")
-
-            for flag in ("active", "show-in-overview"):
-                cc.execute("DELETE FROM users.user_flags "
-                           " WHERE user_login = %s "
-                           "   AND flag = %s", ( login, flag, ))
-                if flag + "-flag" in request.form:
-                    cc.execute("INSERT INTO users.user_flags VALUES (%s, %s)",
-                               ( login, flag, ))
 
             commit()
 
@@ -540,16 +385,92 @@ def save(request_login, firstname, lastname, email, phone,
                 else:
                     password = password1
 
-                sendmail_template("willkommens_email.txt",
-                                  "Blütenlese Roboter", "webmaster@blgd.tv",
+                sendmail_template("admin/willkommens_email.txt",
+                                  "Jugendkongress Wembaster",
+                                  "webmaster@jugendkongress.org",
                                   f"{firstname} {lastname}",
                                   email,
-                                  "Willkommen bei blgd.tv",
+                                  "Willkommen auf jugendkongress.org",
                                   locals(),
                                   headers={"Reply-To": reply_to},
                                   bcc=[current_user.email,])
 
-            return redirect("/authentication/users/%s %s.html" % (
-                firstname, lastname))
+            return redirect("/admin/users.py")
     else:
         return user_form(request_login=request_login, feedback=feedback)
+
+def resolve_room_mates(bookings):
+    # Create a dict matching (lower case) names and email-addresses
+    # to bookings.
+    d = {}
+    for booking in bookings:
+        d[booking.name.lower()] = booking
+        d[booking.email] = booking
+
+    # Now go through each of the names listed in the bookings
+    # and see if we can find them.
+    for booking in bookings:
+        booking.resolve_room_mates(d)
+
+@bp.route("/bookings.py", methods=('GET',))
+@authentication.login_required
+def bookings():
+    congress = g.congresses.current
+
+    details = (request.cookies.get("details", "false") == "true")
+
+    bookings = model.congress.Booking.select(
+        sql.where("year=%i" % congress.year),
+        sql.orderby("lower(lastname), lower(firstname)"))
+
+    resolve_room_mates(bookings)
+
+    cursor = execute(f"SELECT food_preference, COUNT(*) AS count "
+                     f"  FROM booking "
+                     f" WHERE year = {congress.year} "
+                     f" GROUP BY food_preference")
+
+    food_preference_html = html.table()
+    for id, count in cursor.fetchall():
+        food_preference_html.append(html.tr(
+            html.td(count, style="text-align: right"),
+            html.td("✕"),
+            html.td(model.congress.food_preference_html(id))))
+
+    template = g.skin.load_template("skin/admin/bookings.pt")
+
+    return template(congress=congress, bookings=bookings, details=details,
+                    food_preference_html=food_preference_html)
+
+@bp.route("/booking_name_form.py", methods=("GET", "POST",))
+@authentication.login_required
+@gets_parameters_from_request
+def booking_name_form(id:int, firstname=None, lastname=None, email=None):
+    template = g.skin.load_template("skin/admin/booking_name_form.pt")
+
+    if request.method == "POST":
+        feedback = FormFeedback()
+
+        feedback.validate_not_empty("firstname")
+        feedback.validate_not_empty("lastname")
+
+        feedback.validate_not_empty("email")
+        email_match = email_re.match(email)
+
+        if email_match is None:
+            feedback.give("email", "Keine gültige e-Mail Adresse.")
+
+        if feedback.is_valid():
+            execute(sql.update("booking", sql.where("id = %i" % id),
+                               { "firstname": firstname,
+                                 "lastname": lastname,
+                                 "email": email }))
+            commit()
+
+            return redirect("/admin/bookings.py")
+    else:
+        feedback = NullFeedback()
+
+    booking = model.congress.BookingForNameForm.select_by_primary_key(id)
+
+    return template(feedback=feedback, booking=booking)

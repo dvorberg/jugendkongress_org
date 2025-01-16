@@ -10,6 +10,9 @@ from ..utils import PathSet
 from sqlclasses import sql
 from PIL import Image
 
+from ll.xist import xsc
+from ll.xist.ns import html
+
 import flask
 
 
@@ -87,11 +90,16 @@ class DocumentFolder(object):
             self._md = MarkdownResult( infilepath.open().read(),
                                        MacroContext(
                                            markdown_file_path=infilepath,
-                                           pathset=self.pathset) )
+                                           pathset=self.pathset,
+                                           congress=self.congress) )
             self._md.convert()
             self._rendering_md = False
             self._rtime = self.pathset.mtime
         return self._md
+
+    @property
+    def congress(self):
+        raise NotImplementedError()
 
     @property
     def html(self):
@@ -120,7 +128,7 @@ class Picture(object):
 class Workshop(DocumentFolder):
     def __init__(self, path, congress):
         super().__init__(path, congress.pathset)
-        self.congress = congress
+        self._congress = congress
 
         # Pictures
         paths = list()
@@ -130,6 +138,10 @@ class Workshop(DocumentFolder):
 
         self.pathset.register(*paths)
         self._pictures = [ Picture(self, path) for path in paths ]
+
+    @property
+    def congress(self):
+        return self._congress
 
     @property
     def pictures(self):
@@ -178,6 +190,10 @@ class Congress(DocumentFolder):
         self.congresses = congresses
         self.reset()
 
+    @property
+    def congress(self):
+        return self
+
     def reset(self):
         self.pathset = PathSet()
         self.pathset.register(self.abspath)
@@ -196,6 +212,14 @@ class Congress(DocumentFolder):
     @cached_property
     def anmeldeschluss(self):
         v = self.get_meta("anmeldeschluss")
+        try:
+            return datetime.date(*[int(a) for a in v.split("-")])
+        except (ValueError, TypeError):
+            return None
+
+    @cached_property
+    def startdatum(self):
+        v = self.get_meta("startdatum")
         try:
             return datetime.date(*[int(a) for a in v.split("-")])
         except (ValueError, TypeError):
@@ -395,6 +419,13 @@ class Change(object):
         return dict([ (field, getattr(self, field))
                       for field in self._validated ])
 
+def food_preference_html(food_preference):
+    return { None: html.strong("∅", class_="text-danger"),
+             "meat": "Fleisch",
+             "vegetarian": "vegitarisch",
+             "vegan": "vegan"
+            }[food_preference]
+
 class Booking(dbobject):
     __relation__ = "booking"
     __view__ = "booking_info"
@@ -430,6 +461,13 @@ class Booking(dbobject):
     def name(self):
         return self.firstname + " " + self.lastname
 
+    @property
+    def age_then(self):
+        if self.congress.startdatum and self.dob:
+            delta = self.congress.startdatum - self.dob
+            return int(delta.days / 364.25)
+        else:
+            return None
     def validate_me(self):
         return self.validate(Change(self.as_dict()))
 
@@ -459,9 +497,75 @@ class Booking(dbobject):
         return change
 
     @property
+    def gender_symbol(self):
+        if self.gender == "male":
+            return "♂"
+        elif self.gender == "female":
+            return "♀"
+        elif self.gender == "nn":
+            return "◦"
+        else:
+            return "∅"
+
+    @property
+    def room_preference_html(self):
+        if self.room_preference is None:
+            return '<strong class="text-danver">0</strong>'
+        else:
+            return self.room_preference.split(" ")[0]
+
+    @property
+    def congress(self):
+        return flask.g.congresses.by_year(self.year)
+
+    @property
+    def href(self):
+        return self.congress.booking_href(self.slug)
+
+    @property
     def delete_href(self):
         return "%s/%i/deletebooking?key=%s" % ( config["SITE_URL"],
                                          self.year, self.slug)
+
+    @property
+    def resolved_room_mates(self):
+        # This returns a list pairs matching a found name or email address
+        # to a Booking object.
+        if not hasattr(self, "_resolved_room_mates"):
+            raise ValueError("Room mates not resolved, yet.")
+        else:
+            return self._resolved_room_mates
+
+    def resolve_room_mates(self, keys_to_bookings):
+        room_mates = self.room_mates.replace(
+            ",", "\n").replace("/", "\n").split("\n")
+        ret = []
+        for line in room_mates:
+            key = sql.normalize_whitespace(line).lower()
+            ret.append( (line, keys_to_bookings.get(key, None),) )
+        self._resolved_room_mates = ret
+        return ret
+
+    @property
+    def room_mates_html(self):
+        ret = xsc.Frag()
+        for line, booking in self.resolved_room_mates:
+            if booking is None:
+                ret.append(html.div(line,
+                                    class_="text-danger"))
+            else:
+                ret.append(html.div(booking.name,
+                                    class_="text-success"))
+        return ret
+
+    @property
+    def food_preference_html(self):
+        return food_preference_html(self.food_preference)
+
+
+class BookingForNameForm(dbobject):
+    __relation__ = "booking"
+    __view__ = "booking_for_name_form"
 
 if __name__ == "__main__":
     # Test this.

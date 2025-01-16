@@ -1,8 +1,6 @@
 import re, dataclasses, pathlib, mimetypes, copy
 import xml.etree.ElementTree as etree
 
-import flask
-
 from . import html
 from ..utils import PathSet
 
@@ -10,6 +8,13 @@ from ..utils import PathSet
 class MacroContext:
     markdown_file_path: pathlib.Path
     pathset: PathSet
+
+    def __init__(self, markdown_file_path, pathset, **kw):
+        self.markdown_file_path=markdown_file_path
+        self.pathset=pathset
+
+        for name, value in kw.items():
+            setattr(self, name, value)
 
 class Macro(object):
     def __init__(self, context:MacroContext):
@@ -191,7 +196,7 @@ class titelbild_einsetzen(Macro):
             source = etree.Element("source")
             mtype, encoding = mimetypes.guess_type(fn)
 
-            source.set("srcset", flask.g.congress.href + src)
+            source.set("srcset", self.context.congress.href + src)
             source.set("type", mtype)
             source.set("media", media)
             source.text = ""
@@ -202,7 +207,7 @@ class titelbild_einsetzen(Macro):
         add_source(fn_mobil, "(max-width: 992px)")
 
         img = etree.Element("img")
-        img.set("src", flask.g.congress.href + fn)
+        img.set("src", self.context.congress.href + fn)
         picture.append(img)
 
         ret.append(picture)
@@ -222,7 +227,7 @@ class titelbild_einsetzen(Macro):
 
 class workshops_einsetzen(Macro):
     def __call__(self):
-        congress = flask.g.congress
+        congress = self.context.congress
 
         ret = html.div(class_="workshops row")
 

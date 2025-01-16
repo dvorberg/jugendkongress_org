@@ -28,7 +28,7 @@ def sendmail_template(template_filename,
                       attachments=[], headers={}, bcc=[]):
 
     # Load the template.
-    path = op.join(config["EMAIL_TEMPLATE_PATH"], template_filename)
+    path = op.join(config["SKIN_PATH"], template_filename)
     with open(path) as fp:
         template = fp.read()
 

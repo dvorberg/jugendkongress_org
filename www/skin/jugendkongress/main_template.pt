@@ -37,6 +37,8 @@
     <link rel="stylesheet" type="text/css"
 	      href="/skin/jugendkongress/homepage.scss" />
 
+    <script tal:content="string:var portal_url = '${skin.site_url}';">
+    </script>
     <script src="/skin/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="/skin/jugendkongress/layout.js"></script>
     
@@ -108,11 +110,15 @@
         </div>
         <div class="col">
           <div>
-            <a href="/datenschutzerklaerung.html">
-              Datenschutzerklärung
+            <a href="/admin/">
+              Admin Bereich
             </a>
           </div>
           <div>
+            <a href="/datenschutzerklaerung.html">
+              Datenschutzerklärung
+            </a>
+            •
             <a href="https://www.facebook.com/lutherischerjugendkongress">
               Facebook Seite
             </a>
@@ -138,3 +144,32 @@
     </footer>    
   </body>
 </html>
+
+<metal:block metal:define-macro="admin_menu">
+  <ul class="navbar-nav ms-2">
+    <li class="nav-item">
+      <a class="nav-link ${test('bookings.py' in request.url, 'active')}"
+         href="/admin/bookings.py">
+        Buchungen
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link ${test('user' in request.url, 'active')}"
+         href="/admin/users.py">
+        Benutzerverwaltung
+      </a>
+    </li>
+  </ul>
+  <div class="ms-auto btn-group me-2" tal:condition="user">        
+    <a class="btn btn-outline-secondary"
+       href="/admin/logout.py">
+      ${user.firstname}
+      ${user.lastname}
+    </a>
+    <a class="btn btn-danger exit-button" href="/admin/logout.py">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+        <path d="M25.08307,4.92358l-10-.83337A.9908.9908,0,0,0,14.01849,5H14V26h.01849a.9907.9907,0,0,0,1.06458.90967l10-.83325A1.00012,1.00012,0,0,0,26,25.07983V5.92017A1,1,0,0,0,25.08307,4.92358ZM17,17a1,1,0,1,1,1-1A1,1,0,0,1,17,17ZM8,5h4V7H8V24h4v2H8a2.0026,2.0026,0,0,1-2-2V7A2.0026,2.0026,0,0,1,8,5Z" />
+      </svg>
+    </a>
+  </div>
+</metal:block>

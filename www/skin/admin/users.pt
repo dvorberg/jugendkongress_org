@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+      metal:use-macro="skin.main_template.macros.master">
+  <head>
+    <metal:block metal:fill-slot="congress-menu">
+      <metal:block use-macro="skin.main_template.macros.admin_menu" />
+    </metal:block>
+  </head>
+  <body>
+    <section metal:fill-slot="main" class=""
+             tal:define="checked ptutils.checked;
+                         disabled ptutils.disabled;
+                         rchecked ptutils.rchecked">
+      <h3 class="my-3">Benutzerverwaltung</h3>
+      
+      <table class="table users">
+        <thead>
+          <tr>
+            <th>Name, Login</th>
+            <th>e-Mail</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody tal:define="current_user user">
+          <tal:block tal:repeat="user users">
+            <tr>
+              <td>
+                <span tal:content="user.firstname"/>
+                <span tal:content="user.lastname"/>
+                
+                (<code class="login" tal:content="user.login" />)
+              </td>
+              <td>
+                <div>
+                  <a href="string:mailto:${user.email}"
+                     tal:content="user.email" />
+                </div>
+              </td>
+              <td class="buttons">
+                <div>
+                  <a class="btn btn-sm btn-primary"
+                     tal:attributes="href string:/admin/user_form.py?request_login=${user.login}"
+                     data-bs-toggle="tooltip" data-bs-placement="bottom"
+                     title="Bearbeiten">
+                    <img src="/skin/admin/pen.svg" />
+                  </a>              
+                  <a tal:attributes="class string:btn btn-sm btn-danger ${disabled(user.login == current_user.login)};
+                                     href string:/admin/delete_user.py?login=${user.login};
+                                     onclick delete_onclick(user);"
+                     data-bs-toggle="tooltip" data-bs-placement="bottom"
+                     title="Aus der Datenbank löschen.">
+                    <img src="/skin/admin/trashbin.svg" />
+                  </a>
+                   
+                  <a tal:attributes="class string:btn btn-sm btn-warning;
+                                     href string:javascript:send_user_email('${user.login}')"
+                     data-bs-toggle="tooltip" data-bs-placement="bottom"
+                     title="Link zuschicken, um das Passwort zurückzusetzen.">
+                    <img src="/skin/admin/envelope.svg" />
+                  </a>
+                </div>
+              </td>
+            </tr>
+          </tal:block>
+        </tbody>
+      </table>
+
+      <div class="col-sm-1">
+        <a tal:attributes="href string:/admin/user_form.py?request_login=__new"
+           class="btn btn-success">
+          <img src="/skin/admin/plus.svg" />
+          Neu
+        </a>            
+      </div>
+      
+    </section>
+  </body>
+</html>

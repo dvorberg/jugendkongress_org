@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+      metal:use-macro="skin.main_template.macros.master">  
+  <body>
+    <section metal:fill-slot="main" class="pt-5">
+      <tal:block tal:condition="user.is_authenticated">
+        <p>
+          Guten Tag
+          <span tal:replace="string:${user.firstname} ${user.lastname}" />!
+        </p>
+        <p>
+          Sie wurden erfolgreich eingeloggt!
+        </p>
+      </tal:block>
+
+      <form method="post" tal:condition="user.is_anonymous"
+            tal:attributes="class feedback.form_class;
+                            action string:${skin.site_url}/admin/login.py">
+
+        <fieldset>
+          <h3>Anmeldung</h3>
+        
+          <div class="alert alert-${alert_class or 'alert-info'}"
+               tal:condition="description">
+            <p tal:replace="structure description" />
+          </div>
+          
+          <div class="mb-3"
+               tal:define="error feedback.on('login')">
+            <label for="login" class="form-label">Benutzername</label>
+            <input id="login" name="login"
+                   tal:attributes="class string:form-control ${error.field_class}"
+                   aria-describedby="loginHelp"
+                   autocomplete="username" />
+            <div id="loginHelp" class="form-text">
+            </div>
+            <div tal:replace="structure error" />
+          </div>
+          <div class="mb-3"
+               tal:define="error feedback.on('password')">
+            <label for="password" class="form-label">Passwort</label>
+            <input type="password"
+                   tal:attributes="class string:form-control ${error.field_class}"
+                   id="lassword" name="password"
+                   autocomplete="current-password"/>
+            <div tal:replace="structure error" />
+            <div class="form-text">
+              <a href="/admin/forgott.py">Passwort vergessen</a>
+            </div>
+          </div>
+          <div class="mb-3">
+            <input type="hidden" name="redirect_to"
+                   tal:condition="redirect_to"
+                   tal:attributes="value redirect_to" />
+            
+            <button type="submit" class="btn btn-primary">Einloggen</button>
+          </div>
+        </fieldset>
+      </form>      
+    </section>
+  </body>
+</html>
