@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+      metal:use-macro="skin.main_template.macros.master">
+  <head>
+    <metal:block metal:fill-slot="head_slot">
+      <script src="/skin/jugendkongress/uiblocker.js"></script>
+      <script src="/skin/admin/admin.js"></script>
+    </metal:block>
+  </head>
+  
+  <body>
+    <metal:block metal:fill-slot="congress-menu">
+      <metal:block use-macro="skin.main_template.macros.admin_menu" />
+    </metal:block>
+    
+    <div metal:fill-slot="main" class="mt-4">
+      <h3 class="mb-3">
+        Zimmerauswahl für den Jugendkongress ${congress.year}
+      </h3>
+      
+      <form class="form rooms row g-3" method="post">
+        <fieldset class="col-2" tal:repeat="section sections">
+          <legend tal:content="section.title" />
+
+          <div class="form-check" tal:repeat="room section.rooms">
+            <input class="form-check-input"
+                   type="checkbox"
+                   tal:attributes="checked test(room.booked, 'checked')"
+                   name="room-${room.no}" value="on"                   
+                   id="room-${room.no}"/>
+            <label class="form-check-label" for="room-${room.no}">
+              ${room.NO}
+              <small class="ps-2">${room.beds} Betten</small>
+            </label>
+          </div>
+        </fieldset>
+
+        <div class="mt-3">
+          <button class="btn btn-primary">Speichern</button>
+        </div>
+      </form>
+    </div>
+  </body>
+</html>
