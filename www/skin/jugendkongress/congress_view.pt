@@ -25,6 +25,7 @@
         const booking = (${booking.as_json()});
         const booking_errors = (${booking.validate_me().errors_as_json()});
       "></script>
+      <script src="/skin/jugendkongress/uiblocker.js"></script>
       <script src="/skin/jugendkongress/booking.js"></script>
       
       <meta property="og:title" content="${congress.titel}" />
@@ -215,61 +216,6 @@
                     </div>
                   </div><!--row-->
 
-                  <div class="mb-3">
-                    <label>Essen</label>
-
-                    <div class="row mb-1">
-                      <div class="col">
-                        <div class="form-check">
-                          <input class="form-check-input" type="radio"
-                                 name="food-preference"
-                                 value="meat" id="meat" />
-                          <label class="form-check-label" for="meat">
-                            mit Fleisch
-                          </label>
-                        </div>
-                        <div class="form-check">
-                          <input class="form-check-input" type="radio"
-                                 name="food-preference" value="vegetarian"
-                                 id="vegetarian" /> 
-                          <label class="form-check-label" for="vegetarian">
-                            vegetarisch
-                          </label>
-                        </div>
-                        <div class="form-check">
-                          <input class="form-check-input" type="radio"
-                                 name="food-preference"
-                                 value="vegan" id="vegan" />
-                          <label class="form-check-label" for="vegan">
-                            vegan
-                          </label>
-                        </div>
-                        <div class="invalid-feedback"
-                             data-for="food-preference"></div>
-
-                        <div class="form-check mt-2">
-                          <input class="form-check-input" type="checkbox"
-                                 value="true"
-                                 id="lactose-intolerant" />
-                          <label class="form-check-label"
-                                 for="lactose-intolerant">
-                            Laktose intollerant
-                          </label>
-                        </div>
-                      </div><!--col-->
-
-                      <div class="col">
-                        <textarea class="form-control" rows="4"
-                                  id="food-remarks"></textarea>
-                        <div id="food-remarks-help" class="form-text">
-                          Weitere Angaben
-                        </div>
-                        <div class="invalid-feedback" data-for="food-remarks">
-                        </div> 
-                      </div><!--col-->
-                    </div>
-                  </div>
-
                   <div class="mb-3 row">
                     <label>Zimmerwunsch</label>
 
@@ -304,11 +250,72 @@
                       <textarea type="text" class="form-control" rows="4"
                                 id="room-mates"></textarea>
                       <div id="room-mates-help" class="form-text">
-                        Zimmerpartner (ein Name oder e-Mail-Adresse pro Zeile).
+                        Zimmerpartner
+                        (ein Name oder e-Mail-Adresse pro Zeile,
+                        sonst nichts).
                       </div>
                       <div class="invalid-feedback" data-for="food-remarks">
                       </div> 
                     </div><!--col-->                    
+                  </div>
+                  
+                  <div class="mb-3 row">
+                    <label>Essen</label>
+
+                    <div class="row mb-1">
+                      <div class="col">
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="radio"
+                                 name="food-preference"
+                                 value="meat" id="meat" />
+                          <label class="form-check-label" for="meat">
+                            mit Fleisch
+                          </label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="radio"
+                                 name="food-preference" value="vegetarian"
+                                 id="vegetarian" /> 
+                          <label class="form-check-label" for="vegetarian">
+                            vegetarisch
+                          </label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="radio"
+                                 name="food-preference"
+                                 value="vegan" id="vegan" />
+                          <label class="form-check-label" for="vegan">
+                            vegan
+                          </label>
+                        </div>
+                        <div class="invalid-feedback"
+                             data-for="food-preference"></div>
+
+                        <div class="form-check mt-2">
+                          <input class="form-check-input" type="checkbox"
+                                 value="true"
+                                 id="lactose-intolerant" />
+                          <label class="form-check-label"
+                                 for="lactose-intolerant">
+                            Laktose intollerant
+                          </label>
+                        </div>
+                      </div><!--col-->
+                    </div>
+                  </div>
+                  
+                  <div class="row mb-3">
+                    <label>Bemerkungen/Sonstiges</label>
+                    
+                    <div class="col">
+                      <textarea class="form-control" rows="4"
+                                id="food-remarks"></textarea>
+                      <div id="food-remarks-help" class="form-text">
+                        Weitere Angaben (zum Essen oder sonstige Bemerkungen)
+                      </div>
+                      <div class="invalid-feedback" data-for="food-remarks">
+                      </div> 
+                    </div><!--col-->
                   </div>
 
                   <div class="mb-3">
@@ -380,7 +387,7 @@
                     den Workshop-Beschreibungen treffen.
                   </div>
                   <div class="mt-3 form-text text-success">
-                    Wo ein grüber Haken ist, ist alles gut und
+                    Wo ein grüner Haken ist, ist alles gut und
                     alles gespeichert. 
                   </div>
                   <div class="form-text text-danger">
