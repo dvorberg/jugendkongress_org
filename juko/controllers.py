@@ -130,6 +130,8 @@ def modify_booking(congress, slug):
     change = Change(flask.request.form)
     Booking.validate(change)
 
+    # The values dict will contain only fields that are explicitly
+    # validated.
     values = change.validated
     values["user_agent"] = flask.request.headers.get("User-Agent")
     if (values):
