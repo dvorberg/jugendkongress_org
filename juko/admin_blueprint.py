@@ -20,7 +20,7 @@
 ##
 ##  I have added a copy of the GPL in the file LICENSE
 
-import re, string, datetime
+import re, string, datetime, json, itertools, dataclasses
 
 from flask import Blueprint, g, request, session, abort, redirect, make_response
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -46,7 +46,7 @@ from .ptutils import js_string_literal
 
 bp = Blueprint("admin", __name__, url_prefix="/admin")
 
-@bp.route("/login.py", methods=('GET', 'POST'))
+@bp.route("/login.py", methods=("GET", "POST"))
 @gets_parameters_from_request
 def login(login=None, password=None, redirect_to=None,
           description=None, alert_class=None):
@@ -97,7 +97,7 @@ def logout():
     authentication.logout()
     return redirect(get_site_url(site_message="Sie wurden ausgeloggt."))
 
-@bp.route("/forgott.py", methods=('GET', 'POST'))
+@bp.route("/forgott.py", methods=("GET", "POST"))
 @gets_parameters_from_request
 def forgott(login=None):
     template = g.skin.load_template("skin/admin/forgott.pt")
@@ -221,8 +221,8 @@ def users():
     template = g.skin.load_template("skin/admin/users.pt")
 
     def delete_onclick(user):
-        tmpl = ('return confirm("Möchten Sie den Eintrag von " + '
-                '%s + " " + %s + " löschen?")')
+        tmpl = ("return confirm('Möchten Sie den Eintrag von ' + "
+                "'%s' + ' ' + '%s' + ' löschen?')")
         return tmpl % ( js_string_literal(user.firstname),
                         js_string_literal(user.lastname), )
 
@@ -413,12 +413,12 @@ def resolve_room_mates(bookings):
     for booking in bookings:
         booking.resolve_room_mates(d)
 
-@bp.route("/bookings.py", methods=('GET',))
+@bp.route("/bookings.py", methods=("GET",))
 @authentication.login_required
 def bookings():
     congress = g.congresses.current
 
-    details = (request.cookies.get("details", "false") == "true")
+    active_colsets = set(request.cookies.get("details", "").split(","))
 
     bookings = model.congress.Booking.select(
         sql.where("year=%i" % congress.year),
@@ -440,7 +440,8 @@ def bookings():
 
     template = g.skin.load_template("skin/admin/bookings.pt")
 
-    return template(congress=congress, bookings=bookings, details=details,
+    return template(congress=congress, bookings=bookings,
+                    active_colsets=active_colsets,
                     food_preference_html=food_preference_html)
 
 @bp.route("/booking_name_form.py", methods=("GET", "POST",))
@@ -475,3 +476,62 @@ def booking_name_form(id:int, firstname=None, lastname=None, email=None):
     booking = model.congress.BookingForNameForm.select_by_primary_key(id)
 
     return template(feedback=feedback, booking=booking)
+
+@dataclasses.dataclass
+class Section:
+    title: str
+    rooms: list
+
+@bp.route("/rooms.py", methods=("GET", "POST",))
+@authentication.login_required
+def rooms():
+    congress = g.congresses.current
+    template = g.skin.load_template("skin/admin/rooms.pt")
+
+    rooms = model.congress.Room.select(
+        sql.where( "year = %i OR year IS NULL" % congress.year),
+        sql.orderby("section, no"))
+
+    if request.method == "POST":
+        numbers = []
+        for room in rooms:
+            if request.form.get("room-" + room.no):
+                numbers.append( (congress.year,
+                                 sql.string_literal(room.no),) )
+                room.booked = True
+        execute("DELETE FROM booked_rooms WHERE year = %i" % congress.year)
+        if numbers:
+            execute(sql.insert("booked_rooms", ("year", "room_no",), numbers))
+        commit()
+
+        site_message = "Auswahl gespeichert."
+        smc = "success"
+    else:
+        site_message = None
+        smc = None
+
+    sections = []
+    for title, rooms in itertools.groupby(rooms, lambda room: room.section):
+        sections.append(Section(title, list(rooms)))
+
+    return template(congress=congress, sections=sections,
+                    site_message=site_message, site_message_class=smc)
+
+
+def json_response(**kw):
+    response = make_response(json.dumps(kw), 200)
+    response.headers["Content-Type"] = "application/json"
+    return response
+
+@bp.route("/modify_booking.py", methods=("POST",))
+@authentication.login_required
+@gets_parameters_from_request
+def modify_booking(id, what, **kw):
+    if what == "room_overwrite":
+        # We should check whether the room is in our current set of rooms.
+
+        # We return room and room_overwrite from the db.
+
+        return json_response(room=None, room_overwrite="1234")
+    else:
+        return abort(404)
