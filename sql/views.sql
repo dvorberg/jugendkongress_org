@@ -20,7 +20,7 @@ CREATE VIEW booking_info AS
      FROM booking
      LEFT JOIN wsc ON booking_id = booking.id;
 
--- GRANT SELECT ON booking_info TO jugendkongress; 
+GRANT SELECT ON booking_info TO jugendkongress; 
 
 DROP VIEW IF EXISTS booking_short_list CASCADE;
 CREATE VIEW booking_short_list AS
@@ -29,13 +29,13 @@ CREATE VIEW booking_short_list AS
            ctime, mtime
       FROM booking;
       
--- GRANT SELECT ON booking_for_name_form TO jugendkongress; 
+GRANT SELECT ON booking_for_name_form TO jugendkongress; 
 
 DROP VIEW IF EXISTS booking_for_name_form CASCADE;
 CREATE VIEW booking_for_name_form AS
     SELECT id, firstname, lastname, email FROM booking;
 
--- GRANT SELECT ON booking_for_name_form TO jugendkongress; 
+GRANT SELECT ON booking_for_name_form TO jugendkongress; 
 
 DROP VIEW IF EXISTS room_info CASCADE;
 CREATE VIEW room_info AS
@@ -43,7 +43,7 @@ CREATE VIEW room_info AS
       FROM room
       LEFT JOIN booked_rooms ON room_no = no;
 
--- GRANT SELECT ON room_info TO jugendkongress; 
+GRANT SELECT ON room_info TO jugendkongress; 
 
 
 
