@@ -209,3 +209,30 @@ a.exit-button svg
     height: 1.5em;
 }
 
+.ride-sharing-offer strong
+{
+    color: var(--bs-yellow);
+}
+
+.ride-sharing-seek strong
+{
+    color: var(--bs-teal);    
+}
+
+.room.overwritten
+{
+    font-weight: bold;
+    color: var(--bs-danger);
+}
+
+form.rooms fieldset
+{
+    background-color: var(--bs-light);
+    margin-right: 2rem;
+    padding: 0.5rem;
+
+    label
+    {
+        margin-bottom: 0.2rem;
+    }
+}
