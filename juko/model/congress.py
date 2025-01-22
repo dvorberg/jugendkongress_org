@@ -567,6 +567,13 @@ class BookingForNameForm(dbobject):
     __relation__ = "booking"
     __view__ = "booking_for_name_form"
 
+class Room(dbobject):
+    __view__ = "room_info"
+
+    @property
+    def NO(self):
+        return self.no.upper()
+
 if __name__ == "__main__":
     # Test this.
     import sys
