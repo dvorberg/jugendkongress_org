@@ -4,20 +4,43 @@
       xmlns:tal="http://xml.zope.org/namespaces/tal"
       xmlns:metal="http://xml.zope.org/namespaces/metal"
       xmlns:i18n="http://xml.zope.org/namespaces/i18n"
-      metal:use-macro="skin.main_template.macros.master">  
+      metal:use-macro="skin.main_template.macros.master">
+  <head>
+    <metal:block metal:fill-slot="head_slot">
+      <script src="/skin/jugendkongress/uiblocker.js"></script>
+      <script src="/skin/admin/admin.js"></script>
+    </metal:block>
+  </head>
+  
   <body>
     <metal:block metal:fill-slot="congress-menu">
       <metal:block use-macro="skin.main_template.macros.admin_menu" />
     </metal:block>
     
     <div metal:fill-slot="main" class="mt-4">
-      <div class="my-3" >
+      <div class="my-3 title">
         <h3 style="display: inline">
-          Buchungen
+          Buchungen ${congress.year}
         </h3>
-        <label class="ms-2">
-          <input type="checkbox" id="details" />
-          Details
+        <label class="ms-3">
+          <input type="checkbox" value="kontakt" />
+          e-Kontakt
+        </label>
+        <label class="ms-3">
+          <input type="checkbox" />
+          Adresse
+        </label>
+        <label class="ms-3">
+          <input type="checkbox" />
+          Zimmer
+        </label>
+        <label class="ms-3">
+          <input type="checkbox" />
+          Essen
+        </label>        
+        <label class="ms-3">
+          <input type="checkbox" value="misc" />
+          Anreise, Musik
         </label>
       </div>
       
@@ -25,19 +48,30 @@
         <thead>
           <tr>
             <th>Name, Login</th>
-            <th>e-Mail, Telefon</th>
-            <th>Geboren, (<small>Alter beim Kongress</small>)</th>
-            <tal:block tal:condition="details">
+            <tal:block tal:condition="'kontakt' in active_colsets">
+              <th>e-Mail, Telefon</th>
+              <th>Geboren, (<small>Alter beim Kongress</small>)</th>
+            </tal:block>
+            <tal:block tal:condition="'adresse' in active_colsets">
+              <th>Adresse</th>
+            </tal:block>
+            <tal:block tal:condition="'zimmer' in active_colsets">
               <th colspan="3">Zimmer</th>
               <th>Zimmerpartner</th>
+            </tal:block>
+            <tal:block tal:condition="'essen' in active_colsets">
               <th>Essen</th>
+            </tal:block>
+            <tal:block tal:condition="'essen' in active_colsets">
+              <th>Anreise</th>
+              <th>Musik</th>
             </tal:block>
             <th><!--buttons--></th>
           </tr>
         </thead>
         <tbody>
           <tal:block tal:repeat="b bookings">
-            <tr>
+            <tr data-id="${b.id}">
               <td>
                 <div class="text-nowrap">
                   <span tal:content="b.firstname"/>
@@ -51,50 +85,81 @@
                   </small>
                 </div>
               </td>
-              <td>
-                <div>
-                  <a href="string:mailto:${b.email}" tal:content="b.email" />
-                </div>
-                <div class="pt-1" tal:condition="b.phone">
-                  ☎ <a href="tel:${b.phone}">${b.phone}</a>
-                </div>
-              </td>
-              <td tal:define="age b.age_then">
-                ${ptutils.pretty_german_date(b.dob)}
-                
-                <small tal:condition="age"
-                        class="${test(age &lt; 18,
-                                      'text-danger',
-                                      'text-success')}"
-                        style="font-weight: bold">
-                  (${b.age_then})
-                </small>
-              </td>
-              <tal:block tal:condition="details">
+              
+              <tal:block tal:condition="'kontakt' in active_colsets">
+                <td>
+                  <div>
+                    <a href="string:mailto:${b.email}" tal:content="b.email" />
+                  </div>
+                  <div class="pt-1" tal:condition="b.phone">
+                    ☎ <a href="tel:${b.phone}">${b.phone}</a>
+                  </div>
+                </td>
+                <td tal:define="age b.age_then">
+                  ${ptutils.pretty_german_date(b.dob)}
+                  
+                  <small tal:condition="age"
+                         class="${test(age &lt; 18,
+                                'text-danger',
+                                'text-success')}"
+                         style="font-weight: bold">
+                    (${b.age_then})
+                  </small>
+                </td>
+              </tal:block>
+
+              <tal:block tal:condition="'adresse' in active_colsets">
+                <td>
+                  <div class="text-nowrap" tal:content="b.address" />
+                  <div>${b.zip} ${b.city}</div>
+                </td>
+              </tal:block>
+              
+              <tal:block tal:condition="'zimmer' in active_colsets">
                 <td class="text-nowrap"
                     tal:content="structure b.room_preference_html"></td>
                 <td>${b.gender_symbol}</td>
                 <td class="text-nowrap">
-                  <strong tal:omit-tag="not:b.room_overwrite">
-                    <tal:block tal:condition="b.room">${b.room}</tal:block>
-                    <strong tal:condition="not:b.room">∅</strong>
-                  </strong>
-                  <a href="/admin/"
-                     class="ms-3 text-decoration-none">✎</a>
+                  <span class="room ${test(b.room_overwrite, 'overwritten')}"
+                        tal:content="b.room_overwrite or b.room or '∅'">
+                  </span>
+                  <a href="#" style="text-decoration: none"
+                     class="ms-3 room-overwrite-link">✎</a>
                 </td>
                 <td tal:content="structure b.room_mates_html" />
-
+              </tal:block>
+              
+              <tal:block tal:condition="'essen' in active_colsets">
                 <!--Essen-->
                 <td>
                   <div class="text-bold">
                     ${b.food_preference_html}
                   </div>
-                  <div tal:condition="b.food_remarks"
-                       class="text-danger small"
-                       tal:content="b.food_remarks" />
+                </td>                
+              </tal:block>
+              
+              <tal:block tal:condition="'misc' in active_colsets">
+                <td class="ride-sharing-${b.ride_sharing_option}">
+                  <tal:block tal:condition="b.ride_sharing_option == 'offer'">
+                    biete
+                  </tal:block>
+                  <tal:block tal:condition="b.ride_sharing_option == 'seek'">
+                    suche
+                  </tal:block>
+                  <div tal:condition="b.ride_sharing_option != 'none'">
+                    <strong tal:content="b.ride_sharing_start" />
+                  </div>
                 </td>
                 
+                <td tal:content="b.musical_instrument">
+                </td>
               </tal:block>
+              
+              <td>
+                <div tal:condition="b.food_remarks"
+                     class="text-danger small"
+                     tal:content="b.food_remarks" />
+              </td>
               <td><!--Buttons-->
                 <a href="${b.href}" class="btn btn-sm btn-primary"
                    target="_new">
@@ -108,16 +173,25 @@
           <td><!--name-->
             ${len(bookings)} Anmeldungen
           </td>
-          <td><!--Kontakt-->
-          </td>
-          <td><!--dob&alter-->
-          </td>
-          <tal:block tal:condition="details">
+          <tal:block tal:condition="'kontakt' in active_colsets">
+            <td><!--Kontakt--></td>
+            <td><!--dob&alter--></td>
+          </tal:block>
+          <tal:block tal:condition="'zimmer' in active_colsets">
             <td colspan="4"><!--Zimmer-->
             </td>
+          </tal:block>
+          <tal:block tal:condition="'essen' in active_colsets">
             <td tal:content="food_preference_html"><!--Essen-->            
             </td>
           </tal:block>
+          <tal:block tal:condition="'misc' in active_colsets">
+            <td></td>
+            <td></td>
+          </tal:block>
+          
+          <td><!--remarks-->
+          </td>
           <td><!--buttons-->
           </td>
         </tr>
