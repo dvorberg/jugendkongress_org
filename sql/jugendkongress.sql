@@ -100,5 +100,17 @@ CREATE TABLE forgotten_password_requests (
 );
 
 
+CREATE TABLE room
+(
+    no TEXT PRIMARY KEY,
+    beds INTEGER NOT NULL
+);
+
+CREATE TABLE booked_rooms
+(
+    year INTEGER NOT NULL,
+    room_no TEXT NOT NULL REFERENCES room
+);
+
 COMMIT;
 
