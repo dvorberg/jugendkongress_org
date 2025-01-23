@@ -40,7 +40,7 @@
     <script tal:content="string:var portal_url = '${skin.site_url}';">
     </script>
     <script src="/skin/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="/skin/jugendkongress/layout.js"></script>
+    <script src="/skin/jugendkongress/layout.js?2"></script>
     
     <metal:block metal:define-slot="head_slot" tal:replace="nothing">      
     </metal:block>
