@@ -9,14 +9,15 @@ CREATE VIEW booking_info AS
          FROM workshop_choices
         GROUP BY booking_id
    ) 
-   SELECT id, year, email, slug,
+   SELECT id, year, email, slug, role,
           firstname, lastname, 
           address, zip, city, phone, dob,
           gender, food_preference, food_remarks, lactose_intolerant,
           room, room_preference, room_mates, room_overwrite,
           ride_sharing_option, ride_sharing_start,
           musical_instrument,
-          wsc.workshop_choices
+          wsc.workshop_choices,
+          (mtime <> ctime) AS completed
      FROM booking
      LEFT JOIN wsc ON booking_id = booking.id;
 

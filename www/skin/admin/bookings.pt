@@ -42,11 +42,16 @@
           <input type="checkbox" value="misc" />
           Anreise, Musik
         </label>
+        <label class="ms-3">
+          <input type="checkbox" />
+          Rolle
+        </label>
       </div>
       
       <table class="table table-striped users">
         <thead>
           <tr>
+            <th></th>
             <th>Name, Login</th>
             <tal:block tal:condition="'kontakt' in active_colsets">
               <th>e-Mail, Telefon</th>
@@ -66,23 +71,31 @@
               <th>Anreise</th>
               <th>Musik</th>
             </tal:block>
+            <tal:block tal:condition="'rolle' in active_colsets">
+              <th>Rolle</th>
+            </tal:block>
             <th><!--buttons--></th>
           </tr>
         </thead>
         <tbody>
           <tal:block tal:repeat="b bookings">
             <tr data-id="${b.id}">
+              <td class="role ${b.role}"></td>
               <td>
-                <div class="text-nowrap">
+                <div class="text-nowrap ${test(not b.completed,
+                                               'text-danger')}">
                   <span tal:content="b.firstname"/>
                   <strong tal:content="b.lastname"
                           /> <a href="/admin/booking_name_form.py?id=${b.id}"
                                 class="text-decoration-none">✎</a>
                 </div>
-                <div>
+                <div tal:condition="b.completed">
                   <small>
                     aus ${b.city}
                   </small>
+                </div>
+                <div class="text-danger" tal:condition="not:b.completed">
+                  Anmeldung noch unvollständig!
                 </div>
               </td>
               
@@ -121,7 +134,7 @@
                 <td>${b.gender_symbol}</td>
                 <td class="text-nowrap">
                   <span class="room ${test(b.room_overwrite, 'overwritten')}"
-                        tal:content="b.room_overwrite or b.room or '∅'">
+                        tal:content="b.ROOM">
                   </span>
                   <a href="#" style="text-decoration: none"
                      class="ms-3 room-overwrite-link">✎</a>
@@ -154,6 +167,28 @@
                 <td tal:content="b.musical_instrument">
                 </td>
               </tal:block>
+
+              <tal:block tal:condition="'rolle' in active_colsets">
+                <td>
+                  <select class="role form-select ${b.role}">
+                    <option tal:attributes="selected
+                                    ptutils.selected(b.role == 'attendee')"
+                            value="attendee">
+                      Teilnehmer
+                    </option>
+                    <option tal:attributes="selected
+                                    ptutils.selected(b.role == 'team')"
+                            value="team">
+                      Team
+                    </option>
+                    <option tal:attributes="selected
+                                    ptutils.selected(b.role == 'speaker')"
+                            value="speaker">
+                      Workshopleiter
+                    </option>
+                  </select>
+                </td>
+              </tal:block>
               
               <td>
                 <div tal:condition="b.food_remarks"
@@ -165,13 +200,16 @@
                    target="_new">
                   <img src="/skin/admin/pen.svg" />                  
                 </a>
-              </td>
+              </td>              
             </tr>
           </tal:block>
         </tbody>
         <tr>
+          <td></td><!--role-->
           <td><!--name-->
             ${len(bookings)} Anmeldungen
+            <div tal:replace="structure gender_info_html">
+            </div>
           </td>
           <tal:block tal:condition="'kontakt' in active_colsets">
             <td><!--Kontakt--></td>
@@ -187,6 +225,9 @@
           </tal:block>
           <tal:block tal:condition="'misc' in active_colsets">
             <td></td>
+            <td></td>
+          </tal:block>
+          <tal:block tal:condition="'rolle' in active_colsets">
             <td></td>
           </tal:block>
           

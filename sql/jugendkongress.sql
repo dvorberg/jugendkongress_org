@@ -16,6 +16,7 @@ CREATE TYPE gender AS ENUM ('male', 'female', 'nn' );
 CREATE TYPE food_preference AS ENUM ('meat', 'vegetarian', 'vegan');
 CREATE TYPE room_preference AS ENUM  ('4-8 beds', '2-3 beds');
 CREATE TYPE ride_sharing_option AS ENUM  ('offer', 'seek', 'none');
+CREATE TYPE role AS ENUM ('team', 'speaker', 'attendee');
 
 CREATE TABLE booking
 (
@@ -50,6 +51,8 @@ CREATE TABLE booking
 
     room_overwrite VARCHAR(4), 
     keep_data BOOLEAN NOT NULL DEFAULT false,
+
+    role role NOT NULL DEFAULT 'attendee',
 
     ctime TIMESTAMP NOT NULL DEFAULT NOW(),
     mtime TIMESTAMP NOT NULL DEFAULT NOW(),

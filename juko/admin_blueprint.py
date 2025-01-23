@@ -35,7 +35,7 @@ from t4.passwords import apple_style_random_password, password_good_enough
 from sqlclasses import sql
 
 from .form_feedback import FormFeedback, NullFeedback
-from .db import Result, cursor, commit, execute
+from .db import Result, cursor, commit, execute, query_one
 from .email import sendmail_template
 
 from . import authentication, model
@@ -440,9 +440,27 @@ def bookings():
 
     template = g.skin.load_template("skin/admin/bookings.pt")
 
+    cursor = execute("SELECT gender, count(*) "
+                     "  FROM booking "
+                     " WHERE year = 2025 GROUP BY gender")
+    gender_counts = dict(cursor.fetchall())
+    for gender in ("male", "female", "nn"):
+        if gender not in gender_counts:
+            gender_counts[gender] = 0
+
+    gender_info = "♂ {male}, ♀ {female}, ⊙ {nn}".format(**gender_counts)
+
+    gender_info_html = html.div(html.small(gender_info))
+
+    if None in gender_counts:
+        gender_info_html.append(html.div(html.small(
+            "%i unvollständige Anmeldungen" % gender_counts[None],
+            class_="text-danger")))
+
     return template(congress=congress, bookings=bookings,
                     active_colsets=active_colsets,
-                    food_preference_html=food_preference_html)
+                    food_preference_html=food_preference_html,
+                    gender_info_html=gender_info_html)
 
 @bp.route("/booking_name_form.py", methods=("GET", "POST",))
 @authentication.login_required
@@ -526,12 +544,31 @@ def json_response(**kw):
 @bp.route("/modify_booking.py", methods=("POST",))
 @authentication.login_required
 @gets_parameters_from_request
-def modify_booking(id, what, **kw):
+def modify_booking(id:int, what):
     if what == "room_overwrite":
         # We should check whether the room is in our current set of rooms.
 
         # We return room and room_overwrite from the db.
 
-        return json_response(room=None, room_overwrite="1234")
+        ro = request.form["room_overwrite"].strip()
+        if not ro:
+            ro = None
+
+        execute("UPDATE booking SET room_overwrite = %s WHERE id = %s",
+                ( ro, id, ))
+        commit()
+
+        room, room_overwrite = query_one("SELECT room, room_overwrite "
+                                         "  FROM booking WHERE id = %s",
+                                         ( id, ))
+
+        return json_response(room=room, room_overwrite=room_overwrite)
+    elif what == "role":
+        role = request.form.get("role")
+
+        execute("UPDATE booking SET role = %s WHERE id = %s", ( role, id, ))
+        commit()
+
+        return json_response(role=role)
     else:
         return abort(404)

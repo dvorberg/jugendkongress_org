@@ -150,21 +150,61 @@ window.addEventListener("load", function(event) {
 		});
 	}
 
-	class RoomOverwriteLinkController
+	class TableRowBasedController
+	{
+		get id()
+		{
+			if ( ! this.__id )
+			{
+				this.__id = this.row.getAttribute("data-id");
+			}
+
+			return this.__id;
+		}
+
+		get row()
+		{
+			if ( ! this.__row )
+			{
+				var here = this.node;
+				while(here.tagName != "TR")
+				{
+					here = here.parentNode;
+					if (here.tagName == "BODY") throw "Must be in <TR>.";
+				}
+
+				this.__row = here;
+			}
+
+			return this.__row;
+		}
+
+		modify_booking(what, dict, on_json_f=null)
+		{
+			modify_booking(this.id, what, dict,
+						   this.on_json_fetched.bind(this));
+		}
+
+		on_json_fetched(result)
+		{
+			// pass
+		}
+	}
+	
+	class RoomOverwriteLinkController extends TableRowBasedController
 	{
 		constructor(a)
 		{
+			super();
+		 
 			this.a = a;
 			this.room_span = a.parentNode.querySelector("span.room");
 			this.a.addEventListener("click", this.on_click.bind(this));
+		}
 
-			var here = this.a;
-			while(here.tagName != "TR")
-			{
-				here = here.parentNode;
-				if (here.tagName == "BODY") throw "Must be in <TR>.";
-			}
-			this.id = here.getAttribute("data-id");
+		get node()
+		{
+			return this.a;
 		}
 
 		get room()
@@ -191,6 +231,8 @@ window.addEventListener("load", function(event) {
 		
 		on_click(event)
 		{
+			event.preventDefault();
+
 			let newroom = prompt("Zimmer manuell festlegen (leer for keins)",
 								 this.room_overwrite);
 			if (newroom === null)
@@ -199,18 +241,14 @@ window.addEventListener("load", function(event) {
 			}
 			else
 			{
-				this.send(newroom);
+				this.modify_booking( "room_overwrite",
+									 { room_overwrite: newroom });
 			}
+
+			return false;
 		}
 
-		send(newroom)
-		{
-			modify_booking( this.id, "room_overwrite",
-							{ room_overwrite: newroom },
-						    this.on_fetched.bind(this) );
-		}
-
-		on_fetched(result)
+		on_json_fetched(result)
 		{
 			if (result.error)
 			{
@@ -220,12 +258,20 @@ window.addEventListener("load", function(event) {
 			{
 				if (result.room_overwrite)
 				{
-					this.room_span.innerHTML = result.room_overwrite;
+					this.room_span.innerHTML =
+						result.room_overwrite.toUpperCase();
 					this.room_span.classList.add("overwritten");
 				}
 				else
 				{
-					this.room_span.innerHTML = result.room;
+					if (result.room)
+					{
+						this.room_span.innerHTML = result.room.toUpperCase();
+					}
+					else
+					{
+						this.room_span.innerHTML = "∅";
+					}
 					this.room_span.classList.remove("overwritten");
 				}
 			}
@@ -235,4 +281,44 @@ window.addEventListener("load", function(event) {
 	document.querySelectorAll("a.room-overwrite-link").forEach( a => {
 		new RoomOverwriteLinkController(a);
 	});
+
+
+	class RoleSelectController extends TableRowBasedController
+	{
+		constructor(select)
+		{
+			super();
+			this.select = select;
+			this.select.addEventListener("change", this.on_change.bind(this));
+		}
+
+		get node()
+		{
+			return this.select;
+		}
+
+		on_change(event)
+		{
+			const role = this.select.options[this.select.selectedIndex].value;
+			this.modify_booking("role", {role: role});
+		}
+
+		on_json_fetched(result)
+		{
+			function set_role_class(element)
+			{
+				element.classList.remove("team");
+				element.classList.remove("speaker");
+				element.classList.remove("attendee");
+				element.classList.add(result.role);
+			}			
+			set_role_class(this.select);
+			const td = this.row.querySelector("td.role");
+			set_role_class(td);
+		}
+	}
+
+	document.querySelectorAll("select.role").forEach( a => {
+		new RoleSelectController(a);
+	});	
 });

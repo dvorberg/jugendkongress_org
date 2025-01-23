@@ -562,6 +562,15 @@ class Booking(dbobject):
     def food_preference_html(self):
         return food_preference_html(self.food_preference)
 
+    @property
+    def ROOM(self):
+        if self.room_overwrite:
+            return self.room_overwrite.upper()
+        else:
+            if self.room is None:
+                return "∅"
+            else:
+                return self.room.upper()
 
 class BookingForNameForm(dbobject):
     __relation__ = "booking"
