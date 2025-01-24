@@ -35,7 +35,7 @@ from t4.passwords import apple_style_random_password, password_good_enough
 from sqlclasses import sql
 
 from .form_feedback import FormFeedback, NullFeedback
-from .db import Result, cursor, commit, execute, query_one
+from .db import cursor, commit, execute, query_one
 from .email import sendmail_template
 
 from . import authentication, model
@@ -421,6 +421,7 @@ class Filter:
     anreise: str | None = None
     musik: bool = False
     remarks: bool = False
+    room_overwrite: bool = False
 
     @classmethod
     def from_cookie(cls):
@@ -445,6 +446,9 @@ class Filter:
         if self.remarks:
             where.append(sql.where("remarks <> '' AND "
                                    "remarks IS NOT NULL"))
+
+        if self.room_overwrite:
+            where.append(sql.where("room_overwrite IS NOT NULL"))
 
         if where:
             return sql.where.and_(*where)
