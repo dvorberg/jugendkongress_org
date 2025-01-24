@@ -399,7 +399,7 @@ class BookingFormController extends BookingController
 				input.classList.remove("is-valid");
 				input.classList.remove("is-invalid");
 			});
-			input.value = booking[input.id];
+			input.value = booking[input.id] || "";
 		});			
 		
 		this.report_errors(errors);
