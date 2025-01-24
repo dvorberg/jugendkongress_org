@@ -1,29 +1,4 @@
-#!/usr/bin/env python3
-
-##  Copyright 2024–25 by Diedrich Vorberg <diedrich@tux4web.de>
-##
-##  All Rights Reserved
-##
-##  For more Information on orm see the README file.
-##
-##  This program is free software; you can redistribute it and/or modify
-##  it under the terms of the GNU General Public License as published by
-##  the Free Software Foundation; either version 2 of the License, or
-##  (at your option) any later version.
-##
-##  This program is distributed in the hope that it will be useful,
-##  but WITHOUT ANY WARRANTY; without even the implied warranty of
-##  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-##  GNU General Public License for more details.
-##
-##  You should have received a copy of the GNU General Public License
-##  along with this program; if not, write to the Free Software
-##  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-##
-##  I have added a copy of the GPL in the file LICENSE
-
-
-from juko import plastic_bottle
-from juko.cmdline import send_validation_mails
-
-send_validation_mails()
+#!/bin/bash
+export YOURAPPLICATION_SETTINGS=/home/web/jugendkongress/etc/config-production-zoidberg.py
+.  /home/web/jugendkongress/virtualenv/bin/activate
+python3 -m juko.cmdline -c "send_validation_mails()"
