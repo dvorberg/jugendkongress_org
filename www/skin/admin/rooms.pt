@@ -7,8 +7,8 @@
       metal:use-macro="skin.main_template.macros.master">
   <head>
     <metal:block metal:fill-slot="head_slot">
-      <script src="/skin/jugendkongress/uiblocker.js"></script>
-      <script src="/skin/admin/admin.js"></script>
+      <script src="${sref('jugendkongress/uiblocker.js')}"></script>
+      <script src="${sref('admin/admin.js')}"></script>
     </metal:block>
   </head>
   

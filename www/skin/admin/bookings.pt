@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml"
@@ -7,8 +8,8 @@
       metal:use-macro="skin.main_template.macros.master">
   <head>
     <metal:block metal:fill-slot="head_slot">
-      <script src="/skin/jugendkongress/uiblocker.js"></script>
-      <script src="/skin/admin/admin.js"></script>
+      <script src="${sref('jugendkongress/uiblocker.js')}"></script>
+      <script src="${sref('admin/admin.js')}"></script>
     </metal:block>
   </head>
   
@@ -48,7 +49,7 @@
         </label>
       </div>
       
-      <table class="table table-striped users">
+      <table class="table users">
         <thead>
           <tr>
             <th></th>
@@ -74,10 +75,103 @@
             <tal:block tal:condition="'rolle' in active_colsets">
               <th>Rolle</th>
             </tal:block>
-            <th><!--buttons--></th>
+            <th colspan="2"><!--remakrs&buttons-->
+            </th>
           </tr>
         </thead>
-        <tbody>
+        
+        <tbody class="filters text-secondary"
+               tal:condition="'rolle' in active_colsets or 'misc' in active_colsets">
+          <tr>
+            <th></th><!--Role marker-->
+            <th class="align-middle text-secondary">
+              <!--Name, Login-->
+              Filter
+              <button class="btn btn-primary btn-tiny reset">
+                ❌ Zurücksetzen
+              </button>
+            </th>
+            <tal:block tal:condition="'kontakt' in active_colsets">
+              <th></th><!--e-Mail, Telefon-->
+              <th></th>
+            </tal:block>
+            
+            <tal:block tal:condition="'adresse' in active_colsets">
+              <th></th><!--Adresse-->
+            </tal:block>
+            
+            <tal:block tal:condition="'zimmer' in active_colsets">
+              <th colspan="3"></th><!--Zimmer-->
+              <th></th><!--Zimmerpartner-->
+            </tal:block>
+            
+            <tal:block tal:condition="'essen' in active_colsets">
+              <th></th><!--Essen-->
+            </tal:block>
+            
+            <tal:block tal:condition="'misc' in active_colsets">
+              <th><!--Anreise-->
+                <select class="form-select ${filter.anreise}"
+                        data-filter-name="anreise">
+                  <option></option>
+                  <option tal:attributes="selected
+                                ptutils.selected(filter.anreise == 'suche')"
+                          value="attendee">
+                    suche
+                  </option>
+                  <option tal:attributes="selected
+                               ptutils.selected(filter.anreise == 'biete')"
+                          value="team">
+                    biete
+                  </option>
+                </select>
+                
+              </th>
+              <th class="align-middle text-nowrap"><!--Musik-->
+                <label class="form-label">
+                  <input type="checkbox" value="on"
+                         data-filter-name="musik"/>
+                  Angaben
+                </label>
+              </th>
+            </tal:block>
+            
+            <tal:block tal:condition="'rolle' in active_colsets">
+              <th><!--Rolle-->
+                <select class="filter form-select ${filter.role}"
+                        data-filter-name="role">
+                  <option>Alle</option>
+                  <option tal:attributes="selected
+                                ptutils.selected(filter.role == 'attendee')"
+                          value="attendee">
+                    Teilnehmer
+                  </option>
+                  <option tal:attributes="selected
+                               ptutils.selected(filter.role == 'team')"
+                          value="team">
+                    Team
+                  </option>
+                  <option tal:attributes="selected
+                                ptutils.selected(filter.role == 'speaker')"
+                          value="speaker">
+                    Workshopleiter
+                  </option>
+                </select>
+              </th>
+            </tal:block>
+            <th><!--remarks-->
+              <label class="form-label">
+                <input type="checkbox" value="on"
+                       data-filter-name="remarks"/>
+                Angaben
+              </label>
+            </th>
+            <th><!--buttons-->
+            </th>
+          </tr>
+        </tbody>
+        
+        <tbody class="table-striped">
           <tal:block tal:repeat="b bookings">
             <tr data-id="${b.id}">
               <td class="role ${b.role}"></td>
@@ -191,9 +285,9 @@
               </tal:block>
               
               <td>
-                <div tal:condition="b.food_remarks"
+                <div tal:condition="b.remarks"
                      class="text-danger small"
-                     tal:content="b.food_remarks" />
+                     tal:content="b.remarks" />
               </td>
               <td><!--Buttons-->
                 <a href="${b.href}" class="btn btn-sm btn-primary"
@@ -228,7 +322,24 @@
             <td></td>
           </tal:block>
           <tal:block tal:condition="'rolle' in active_colsets">
-            <td></td>
+            <td>
+              <table class="role-counts">
+                <tbody>
+                  <tr>
+                    <td class="count">${role_counts.get('team', 0)}</td>
+                    <td>Team</td>
+                  </tr>
+                  <tr>
+                    <td class="count">${role_counts.get('speaker', 0)}</td>
+                    <td>Workshopleiter</td>
+                  </tr>
+                  <tr>
+                    <td class="count">${role_counts.get('attendee', 0)}</td>
+                    <td>Teilnehmer</td>
+                  </tr>
+                </tbody>
+              </table>
+            </td>
           </tal:block>
           
           <td><!--remarks-->

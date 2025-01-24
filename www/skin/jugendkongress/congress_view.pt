@@ -25,8 +25,8 @@
         const booking = (${booking.as_json()});
         const booking_errors = (${booking.validate_me().errors_as_json()});
       "></script>
-      <script src="/skin/jugendkongress/uiblocker.js"></script>
-      <script src="/skin/jugendkongress/booking.js?2"></script>
+      <script src="${sref('jugendkongress/uiblocker.js')}"></script>
+      <script src="${sref('jugendkongress/booking.js')}"></script>
       
       <meta property="og:title" content="${congress.titel}" />
       <meta property="og:type" content="website" />

@@ -20,7 +20,7 @@
 ##
 ##  I have added a copy of the GPL in the file LICENSE
 
-import sys, os, os.path as op, time, datetime
+import sys, os, os.path as op, time, datetime, pathlib
 import chameleon, chameleon.tales
 
 from flask import g, current_app, session, request
@@ -138,7 +138,8 @@ class Skin(object):
                            "glyphicon": self.glyphicon,
                            "ptutils": ptutils,
                            "utils": utils,
-                           "g": g}
+                           "g": g,
+                           "sref": self.href}
 
         self.www_path = www_path
         self._pt_loader = CustomPageTemplateLoader(
@@ -156,13 +157,9 @@ class Skin(object):
         return op.join(self.www_path, path)
 
     def href(self, path):
-        if debug:
-            if ".min." in path:
-                t = "" # startup_time
-            elif path.endswith(".js") or path.endswith(".mjs"):
-                t = ""
-            else:
-                t = "?t=%f" % time.time()
+        fp = pathlib.Path(self.www_path, "skin", path)
+        if fp.exists:
+            t = "?t=%f" % fp.stat().st_mtime
         else:
             t = "?t=%f" % startup_time
 

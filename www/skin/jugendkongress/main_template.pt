@@ -32,15 +32,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <link rel="stylesheet" type="text/css"
-          href="/skin/bootstrap/css/bootstrap.min.css" />
+          href="${sref('bootstrap/css/bootstrap.min.css')}" />
     
     <link rel="stylesheet" type="text/css"
-	      href="/skin/jugendkongress/homepage.scss" />
+	      href="${sref('jugendkongress/homepage.scss')}" />
 
     <script tal:content="string:var portal_url = '${skin.site_url}';">
     </script>
     <script src="/skin/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="/skin/jugendkongress/layout.js?2"></script>
+    <script src="${sref('jugendkongress/layout.js')}"></script>
     
     <metal:block metal:define-slot="head_slot" tal:replace="nothing">      
     </metal:block>

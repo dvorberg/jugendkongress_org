@@ -413,6 +413,44 @@ def resolve_room_mates(bookings):
     for booking in bookings:
         booking.resolve_room_mates(d)
 
+filter_cookie_re = re.compile(r"(\w+)=(\w+)")
+
+@dataclasses.dataclass
+class Filter:
+    role: str | None = None
+    anreise: str | None = None
+    musik: bool = False
+    remarks: bool = False
+
+    @classmethod
+    def from_cookie(cls):
+        fcookie = request.cookies.get("filter", "")
+        values = dict(filter_cookie_re.findall(fcookie))
+        return cls(**values)
+
+    def where_for(self, active_colsets:set):
+        where = []
+        if self.role and "rolle" in active_colsets:
+            where.append(sql.where("role = ", sql.string_literal(self.role)))
+
+        if self.anreise:
+            where.append(sql.where("ride_sharing_option = ",
+                                   sql.string_literal(self.anreise)))
+
+        if self.musik:
+            where.append(sql.where("musical_instrument <> ''"
+                                   " AND "
+                                   "musical_instrument IS NOT NULL"))
+
+        if self.remarks:
+            where.append(sql.where("remarks <> '' AND "
+                                   "remarks IS NOT NULL"))
+
+        if where:
+            return sql.where.and_(*where)
+        else:
+            return None
+
 @bp.route("/bookings.py", methods=("GET",))
 @authentication.login_required
 def bookings():
@@ -420,8 +458,11 @@ def bookings():
 
     active_colsets = set(request.cookies.get("details", "").split(","))
 
+    filter = Filter.from_cookie()
+
+    where = sql.where("year=%i" % congress.year)
     bookings = model.congress.Booking.select(
-        sql.where("year=%i" % congress.year),
+        where.and_(filter.where_for(active_colsets)),
         sql.orderby("lower(lastname), lower(firstname)"))
 
     resolve_room_mates(bookings)
@@ -442,13 +483,22 @@ def bookings():
 
     cursor = execute("SELECT gender, count(*) "
                      "  FROM booking "
-                     " WHERE year = 2025 GROUP BY gender")
+                     " WHERE year = %s GROUP BY gender",
+                     (congress.year,))
     gender_counts = dict(cursor.fetchall())
     for gender in ("male", "female", "nn"):
         if gender not in gender_counts:
             gender_counts[gender] = 0
 
     gender_info = "♂ {male}, ♀ {female}, ⊙ {nn}".format(**gender_counts)
+
+    gender_info_html = html.div(html.small(gender_info))
+
+    cursor = execute("SELECT role, count(*) "
+                     "  FROM booking "
+                     " WHERE year = %s GROUP BY role",
+                     (congress.year,))
+    role_counts = dict(cursor.fetchall())
 
     gender_info_html = html.div(html.small(gender_info))
 
@@ -460,7 +510,9 @@ def bookings():
     return template(congress=congress, bookings=bookings,
                     active_colsets=active_colsets,
                     food_preference_html=food_preference_html,
-                    gender_info_html=gender_info_html)
+                    gender_info_html=gender_info_html,
+                    role_counts=role_counts,
+                    filter=filter)
 
 @bp.route("/booking_name_form.py", methods=("GET", "POST",))
 @authentication.login_required

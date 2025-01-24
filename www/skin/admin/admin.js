@@ -22,6 +22,8 @@ window.addEventListener("load", function(event) {
 		document.cookie =
 			name +'=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
 	}
+
+	//////////////////////////////////////////////////////////////////////
 	
 	class Checkbox
 	{
@@ -282,7 +284,8 @@ window.addEventListener("load", function(event) {
 		new RoomOverwriteLinkController(a);
 	});
 
-
+	//////////////////////////////////////////////////////////////////////
+	
 	class RoleSelectController extends TableRowBasedController
 	{
 		constructor(select)
@@ -320,5 +323,128 @@ window.addEventListener("load", function(event) {
 
 	document.querySelectorAll("select.role").forEach( a => {
 		new RoleSelectController(a);
-	});	
+	});
+
+	//////////////////////////////////////////////////////////////////////
+
+	class FilterController
+	{
+		constructor(node)
+		{
+			this.node = node;
+
+			const values = this.get_cookie_values(),
+				  value = values[this.name];
+			if (value)
+			{
+				this.value = value;
+			}
+			
+			this.node.addEventListener("change", this.on_change.bind(this));
+		}
+
+		get name()
+		{
+			return this.node.getAttribute("data-filter-name");
+		}
+
+		get value()
+		{
+			throw "Not Implemented";
+		}
+
+		set value(value)
+		{
+			throw "Not Implemented";
+		}
+
+		get_cookie_values()
+		{
+			const cookie = get_cookie("filter") || "",
+				  values = {};
+			
+			for(const part of cookie.split(","))
+			{
+				const pair = part.split("=");
+				if (pair[0] && pair[1])
+				{
+					values[pair[0]] = pair[1];
+				}
+			}
+
+			return values;
+		}			
+		
+		on_change(event)
+		{
+			const values = this.get_cookie_values();
+			
+			values[this.name] = this.value;
+
+			var new_cookie = "";
+			for (const key in values)
+			{
+				if (values[key])
+				{
+					if (new_cookie) new_cookie += ",";
+					new_cookie += key + "=" + values[key];
+				}
+			}
+
+			set_cookie("filter", new_cookie);
+
+			window.location.reload();
+		}
+	}
+
+	class SelectFilterController extends FilterController
+	{
+		get value()
+		{
+			return this.node.options[this.node.selectedIndex].value;
+		}
+
+		set value(value)
+		{
+			for (var idx = 0; idx < this.node.options.length; idx++)
+			{
+				const option = this.node.options[idx];
+				option.selected = (option.value == value);
+			}
+		}
+	}
+
+	class CheckboxFilterController extends FilterController
+	{
+		get value()
+		{
+			return this.node.checked;
+		}
+
+		set value(value)
+		{
+			if (value)
+			{
+				this.node.checked = true;
+			}
+			else
+			{
+				this.node.checked = false;
+			}
+		}
+	}
+	
+	document.querySelectorAll("tbody.filters select").forEach( a => {
+		new SelectFilterController(a);
+	});
+	document.querySelectorAll("tbody.filters input").forEach( a => {
+		new CheckboxFilterController(a);
+	});
+
+	document.querySelector("tbody.filters button.reset").addEventListener(
+		"click", function (event) {
+			set_cookie("filter", null);
+			window.location.reload();
+		});
+	
 });

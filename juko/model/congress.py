@@ -489,7 +489,7 @@ class Booking(dbobject):
                 else:
                     change.confirm(name)
 
-        for name in ("phone", "lactose_intolerant", "food_remarks",
+        for name in ("phone", "lactose_intolerant", "remarks",
                      "room_mates", "ride_sharing_start", "musical_instrument"):
             if name in change:
                 change.confirm(name)
