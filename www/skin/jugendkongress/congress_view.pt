@@ -254,7 +254,7 @@
                         (ein Name oder e-Mail-Adresse pro Zeile,
                         sonst nichts).
                       </div>
-                      <div class="invalid-feedback" data-for="food-remarks">
+                      <div class="invalid-feedback" data-for="room-mates">
                       </div> 
                     </div><!--col-->                    
                   </div>
@@ -309,11 +309,11 @@
                     
                     <div class="col">
                       <textarea class="form-control" rows="4"
-                                id="food-remarks"></textarea>
-                      <div id="food-remarks-help" class="form-text">
+                                id="remarks"></textarea>
+                      <div id="remarks-help" class="form-text">
                         Weitere Angaben (zum Essen oder sonstige Bemerkungen)
                       </div>
-                      <div class="invalid-feedback" data-for="food-remarks">
+                      <div class="invalid-feedback" data-for="remarks">
                       </div> 
                     </div><!--col-->
                   </div>
