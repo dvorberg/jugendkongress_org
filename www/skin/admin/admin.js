@@ -441,10 +441,12 @@ window.addEventListener("load", function(event) {
 		new CheckboxFilterController(a);
 	});
 
-	document.querySelector("tbody.filters button.reset").addEventListener(
-		"click", function (event) {
+	const reset_button = document.querySelector("tbody.filters button.reset");
+	if (reset_button)
+	{
+		reset_button.addEventListener( "click", function (event) {
 			set_cookie("filter", null);
 			window.location.reload();
 		});
-	
+	}
 });
