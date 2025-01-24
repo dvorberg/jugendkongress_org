@@ -8,6 +8,7 @@ import psycopg2
 from t4 import sql
 
 from . import config
+from . import skinning
 
 # logger = logging.getLogger("plastic_bottle")
 
@@ -129,11 +130,12 @@ from .model.congress import Congresses
 flask.g.congresses = Congresses()
 flask.g.congress = flask.g.congresses.current
 
+flask.g.skin = skinning.Skin(config["SKIN_PATH"])
 
 from .model.users import User
 def get_user(user_class=User):
     username = getpass.getuser()
-    if username == "blgd":
+    if username == "jugendkongress":
         username = "diedrich"
 
     return user_class.select_one(
