@@ -32,7 +32,7 @@ IBAN: DE22 5206 2601 0004 6006 30
 VR PartnerBank eG Chattengau-Schwalm-Eder
 
 Verwendungszweck:
-${congress.nummer} Kongress ${booking.firstname} ${booking.lastname}
+${congress.year} Kongress ${booking.firstname} ${booking.lastname}
 
 Eine Quittung über den Teilnahmebetrag erhältst du beim Kongress.
 
