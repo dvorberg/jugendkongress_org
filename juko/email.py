@@ -1,6 +1,6 @@
 import sys, os, os.path as op, string, subprocess, tempfile
 
-from t4.sendmail import sendmail
+from t4.sendmail import sendmail as t4_sendmail
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formataddr
@@ -20,6 +20,27 @@ def lynx_dump(html):
                                capture_output=True,
                                check=True)
         return state.stdout.decode("utf-8", "ignore")
+
+def sendmail(from_name, from_email,
+             to_name, to_email,
+             subject, message, attachments=[], headers={}, bcc=[],
+             text_subtype="plain", encoding="utf-8", multipart_subtype="mixed"):
+    if debug:
+        to_name = "Diedrich Vorberg"
+        to_email = "diedrich@tux4web.de"
+
+        if "Cc" in headers:
+            print("Cc not used:", headers["Cc"])
+            del headers["Cc"]
+
+        t4_sendmail(from_name, from_email,
+                    to_name, to_email,
+                    subject, message, attachments, headers, bcc,
+                    text_subtype, encoding, multipart_subtype)
+
+    if debug:
+        # This should be a logger, of course.
+        print(f"Mail sent to {to_name} ‹{to_email}›", file=sys.stderr)
 
 def sendmail_template(template_filename,
                       from_name, from_email,
@@ -78,85 +99,3 @@ def sendmail_template(template_filename,
     if debug:
         # This should be a logger, of course.
         print(f"Mail sent to {to_name} ‹{to_email}›", file=sys.stderr)
-
-
-def get_info_from(kw):
-    if "user" in kw:
-        user = kw["user"]
-        firstname = user.firstname
-        lastname = user.lastname
-        email = user.email
-
-    if "gottesdienst_id" in kw:
-        gottesdienst_id = kw["gottesdienst_id"]
-
-        gottesdienst_date_o = datum_nach_id(gottesdienst_id)
-        gottesdienst_datum = pretty_german_date(gottesdienst_date_o,
-                                                monthname=True)
-
-    ret = locals().copy()
-    ret.update(kw)
-    return ret
-
-def notify_team(what, **kw):
-    info = get_info_from(kw)
-    headers = {}
-    bcc = []
-    if what == "predigt_uebernommen":
-        subject = ("Predigt übernommen: {firstname} {lastname} "
-                   "am {gottesdienst_datum} ({kurzname})")
-        f = formataddr(("{firstname} {lastname}".format(**info),
-                        info["email"]))
-        headers["Reply-To"] = f
-        if not debug: headers["Cc"] = f
-    elif what == "predigt_zurueckgegeben":
-        subject = "Predigt zurückgegeben am {gottesdienst_datum} ({kurzname})"
-    else:
-        raise ValueError(what)
-
-    sendmail_template(
-        what + ".html",
-        "Blütenlese Benachrichtigungs Roboter",
-        "benachrichtigungs-roboter@bluetenlese-gottesdienst.de",
-        "Blütenlese Team",
-        "bluetenlesegottesdienste@selk.de",
-        subject, info, headers=headers, bcc=bcc)
-
-
-def involved_as_html(involved):
-    lines = ["<div><b>Am Gottesdienst sind laut Datenbank beteilig:</b></div>"]
-    for user in involved:
-        role = user.role.capitalize()
-        lines.append(f"<div>"
-                     f"<b>{role}:</b> {user.firstname} {user.lastname} "
-                     f"‹{user.email}› {user.phone}"
-                     f"</div>")
-    return "\n".join(lines)
-
-def notify_involved(what, gottesdienst_id, **kw):
-    kw["gottesdienst_id"] = gottesdienst_id
-    info = get_info_from(kw)
-    involved = Involved.bei_gottesdienst(gottesdienst_id)
-    info["involved"] = involved_as_html(involved)
-
-    headers = {}
-    bcc = []
-    if what == "kalender_comment_changed":
-        subject = "blgd Kommentar ({gottesdienst_datum}): {kalender_comment}"
-        user = authentication.get_user()
-        headers["Reply-To"] = formataddr( ("%s %s" % ( user.firstname,
-                                                       user.lastname, ),
-                                           user.email) )
-    else:
-        raise ValueError(what)
-
-    for recipient in involved:
-        info["recipient"] = recipient
-
-        sendmail_template(
-            what + ".html",
-            "Blütenlese Benachrichtigungs Roboter",
-            "benachrichtigungs-roboter@bluetenlese-gottesdienst.de",
-            f"{recipient.firstname} {recipient.lastname}",
-            recipient.email,
-            subject, info, headers=headers, bcc=bcc)
