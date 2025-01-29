@@ -113,6 +113,8 @@ def create_app(test_config=None):
     @app.before_request
     def set_congresses():
         flask.g.congresses = congresses
+        flask.g.congress = congresses.current
+
         parts = flask.request.path.split("/")
         if len(parts) >= 2 and parts[1] in { "congress", "booking"}:
             flask.g.congress = congresses.by_path(parts[2])

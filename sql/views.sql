@@ -40,7 +40,8 @@ GRANT SELECT ON booking_for_name_form TO jugendkongress;
 
 DROP VIEW IF EXISTS room_info CASCADE;
 CREATE VIEW room_info AS
-    SELECT no, beds, section, year, (room_no IS NOT NULL) AS booked
+    SELECT no, beds, beds_overwrite,
+           section, year, (room_no IS NOT NULL) AS booked
       FROM room
       LEFT JOIN booked_rooms ON room_no = no;
 

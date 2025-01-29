@@ -1,0 +1,1 @@
+select room_no, beds from booked_rooms left join room on room_no = no where booked_rooms.year = 2025 and room_no not in ( SELECT lower(room_overwrite) FROM booking WHERE year = 2025 AND room_overwrite IS NOT NULL);

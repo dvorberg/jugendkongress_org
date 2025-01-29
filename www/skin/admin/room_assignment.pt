@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+      metal:use-macro="skin.main_template.macros.master">
+  <head>
+    <metal:block metal:fill-slot="head_slot">
+      <script src="${sref('jugendkongress/uiblocker.js')}"></script>
+      <script src="${sref('admin/admin.js')}"></script>
+    </metal:block>
+  </head>
+  
+  <body>
+    <metal:block metal:fill-slot="congress-menu">
+      <metal:block use-macro="skin.main_template.macros.admin_menu" />
+    </metal:block>
+    
+    <div metal:fill-slot="main" class="mt-4 room-assignment">
+      <h3 class="mb-3">
+        Zimmerverteilung für den Jugendkongress
+        ${congress.year}
+      </h3>
+      
+      <div class="row g-3">
+        <div class="col-3" tal:repeat="section sections">
+          <table class="table caption-top">
+            <caption tal:content="section.title" />
+            <thead>
+              <tr>
+                <th>
+                  Nr.
+                </th>
+                <th>
+                  Bewohner
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr tal:repeat="room section.rooms">
+                <td class="text-nowrap">
+                  <strong tal:attributes="class test(room.overwrite,
+                                                     'text-danger')"
+                          tal:content="room.NO" />
+                  <div>
+                    <small><s tal:omit-tag="not:room.beds_overwrite"
+                    >${room.beds} Bett</s></small>
+                  </div>
+                  <div>
+                    <small tal:condition="room.beds_overwrite"
+                           class="text-danger"
+                           >${room.beds_overwrite} Bett</small>
+                  </div>
+                </td>
+                <td>
+                  <div class="mb-1" tal:repeat="b room.occupants">
+                    <div class="name text-nowrap">
+                         ${b.name}
+                         <span class="badge rounded-pill role ${b.role}">id=${b.id}</span>
+                    </div>
+                    <div class="room-mates"
+                         tal:content="structure b.make_room_mates_html(room)"/>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <form class="form mt-3" method="post">
+        <button type="submit" class="btn btn-primary"
+                onclick="return confirm('Alle Zuordnungen werden gelöscht. Sicher?')">
+          Zurücksetzen
+        </button>
+      </form>
+
+      <hr />
+      
+      <form class="form swap-rooms row mt-4" method="post"
+            action="/admin/swap_rooms.py">
+        <div class="col-2">
+          <div class="input-group">
+            <span class="input-group-text">id =</span>
+            <input class="form-control" name="left" />
+          </div>
+        </div>
+        <div class="col-2">
+          <div class="input-group">
+            <span class="input-group-text">id =</span>
+            <input class="form-control" name="right" />
+          </div>
+        </div>
+        <div class="col">
+          <button class="btn btn-primary">
+            Tauschen
+          </button>
+        </div>
+      </form>
+      
+      <form class="form swap-rooms row mt-4" method="post"
+            action="/admin/move_to_room.py">
+        <div class="col-2">
+          <div class="input-group">
+            <span class="input-group-text">id =</span>
+            <input class="form-control" name="booking" />
+          </div>
+        </div>
+        <div class="col-2">
+          <div class="input-group">
+            <span class="input-group-text">Zimmer Nr.</span>
+            <input class="form-control" name="room_no" />
+          </div>
+        </div>
+        <div class="col">
+          <button class="btn btn-primary">
+            Umziehen
+          </button>
+        </div>
+      </form>
+
+      
+      
+    </div>
+  </body>
+</html>

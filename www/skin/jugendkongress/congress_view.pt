@@ -250,13 +250,14 @@
                       <textarea type="text" class="form-control" rows="4"
                                 id="room-mates"></textarea>
                       <div id="room-mates-help" class="form-text">
-                        Zimmerpartner
-                        (ein Name oder e-Mail-Adresse pro Zeile,
-                        sonst nichts).
+                        Zimmerpartner, ein Name oder e-Mail-Adresse
+                        pro Zeile, sonst nichts. Spitznahmen funktionieren
+                        nur, wenn sich die Person auch mit Spitznamen
+                        anmeldet. 
                       </div>
                       <div class="invalid-feedback" data-for="room-mates">
                       </div> 
-                    </div><!--col-->                    
+                    </div><!--col-->
                   </div>
                   
                   <div class="mb-3 row">
