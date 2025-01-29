@@ -23,8 +23,8 @@
         ${congress.year}
       </h3>
       
-      <div class="row g-3">
-        <div class="col-3" tal:repeat="section sections">
+      <div class="row g-4">
+        <div class="col-sm-3 " tal:repeat="section sections">
           <table class="table caption-top">
             <caption tal:content="section.title" />
             <thead>
@@ -56,8 +56,10 @@
                 <td>
                   <div class="mb-1" tal:repeat="b room.occupants">
                     <div class="name text-nowrap">
-                         ${b.name}
-                         <span class="badge rounded-pill role ${b.role}">id=${b.id}</span>
+                      ${b.name}
+                      <div style="width: 60px; float: right">
+                        <span class="pull-right badge rounded-pill role ${b.role}">id=${b.id}</span>
+                      </div>
                     </div>
                     <div class="room-mates"
                          tal:content="structure b.make_room_mates_html(room)"/>
@@ -69,10 +71,26 @@
         </div>
       </div>
 
-      <form class="form mt-3" method="post">
+      <div class="my-3" tal:condition="unassigned">
+        <h5 class="text-danger">Nicht zugewiesen</h5>
+
+        <ul>
+          <li tal:repeat="b unassigned">
+            <div class="name text-nowrap">
+              ${b.name}
+              <span class="badge rounded-pill role ${b.role}">id=${b.id}</span>
+            </div>
+            <div class="room-mates"
+                 tal:content="structure b.make_room_mates_html()"/>
+          </li>
+        </ul>
+        
+      </div>
+      
+      <form class="form mt-4" method="post">
         <button type="submit" class="btn btn-primary"
                 onclick="return confirm('Alle Zuordnungen werden gelöscht. Sicher?')">
-          Zurücksetzen
+          Automatik zurücksetzen
         </button>
       </form>
 
@@ -104,7 +122,7 @@
         <div class="col-2">
           <div class="input-group">
             <span class="input-group-text">id =</span>
-            <input class="form-control" name="booking" />
+            <input class="form-control" name="booking_id" />
           </div>
         </div>
         <div class="col-2">
