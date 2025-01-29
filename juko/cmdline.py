@@ -46,6 +46,7 @@ def send_validation_mail(booking, error_dict):
              booking.name, booking.email,
              "Anmeldung auf jugendkongress.org vervollständigen",
              text)
+    print(booking.name, booking.email)
 
 def send_validation_mails():
     congress = g.congress

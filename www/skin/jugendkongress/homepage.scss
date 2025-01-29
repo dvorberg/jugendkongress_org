@@ -294,3 +294,40 @@ table.role-counts td.count
     text-align: right;
     padding-right: 0.5rem;
 }
+
+div.room-assignment
+{
+    div.room-mates
+    {
+        padding-left: 2rem;
+        font-size: 75%;
+    }
+
+    span.role
+    {
+        position: absolute;
+        margin-top: -1px;
+        margin-left: 2px;
+    }
+}
+
+
+.badge.role
+{
+    &.attendee
+    {
+        background-color: var(--bs-secondary);
+        color: white;
+    }
+    
+    &.speaker
+    {
+        color: white;
+        background-color: var(--bs-primary);
+    }
+
+    &.team
+    {
+        background-color: var(--bs-warning);
+    }
+}

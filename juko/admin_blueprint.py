@@ -22,7 +22,8 @@
 
 import re, string, datetime, json, itertools, dataclasses
 
-from flask import Blueprint, g, request, session, abort, redirect, make_response
+from flask import (Blueprint, g, request, session, abort, redirect,
+                   make_response, url_for)
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.exceptions import Unauthorized
 
@@ -34,6 +35,7 @@ from t4.passwords import apple_style_random_password, password_good_enough
 
 from sqlclasses import sql
 
+from . import controllers
 from .form_feedback import FormFeedback, NullFeedback
 from .db import cursor, commit, execute, query_one
 from .email import sendmail_template
@@ -42,6 +44,7 @@ from . import authentication, model
 from .utils import (get_site_url, gets_parameters_from_request, redirect,
                     rget, rchecked, OrderByHandler)
 from .ptutils import js_string_literal
+
 
 
 bp = Blueprint("admin", __name__, url_prefix="/admin")
@@ -400,19 +403,6 @@ def save_user(request_login, firstname, lastname, email,
     else:
         return user_form(request_login=request_login, feedback=feedback)
 
-def resolve_room_mates(bookings):
-    # Create a dict matching (lower case) names and email-addresses
-    # to bookings.
-    d = {}
-    for booking in bookings:
-        d[booking.name.lower()] = booking
-        d[booking.email] = booking
-
-    # Now go through each of the names listed in the bookings
-    # and see if we can find them.
-    for booking in bookings:
-        booking.resolve_room_mates(d)
-
 filter_cookie_re = re.compile(r"(\w+)=(\w+)")
 
 @dataclasses.dataclass
@@ -469,7 +459,7 @@ def bookings():
         where.and_(filter.where_for(active_colsets)),
         sql.orderby("lower(lastname), lower(firstname)"))
 
-    resolve_room_mates(bookings)
+    model.congress.resolve_room_mates(bookings)
 
     cursor = execute(f"SELECT food_preference, COUNT(*) AS count "
                      f"  FROM booking "
@@ -551,11 +541,6 @@ def booking_name_form(id:int, firstname=None, lastname=None, email=None):
 
     return template(feedback=feedback, booking=booking)
 
-@dataclasses.dataclass
-class Section:
-    title: str
-    rooms: list
-
 @bp.route("/rooms.py", methods=("GET", "POST",))
 @authentication.login_required
 def rooms():
@@ -576,6 +561,18 @@ def rooms():
         execute("DELETE FROM booked_rooms WHERE year = %i" % congress.year)
         if numbers:
             execute(sql.insert("booked_rooms", ("year", "room_no",), numbers))
+
+        # If rooms have been removed frmo the roster, remove them from
+        # the referencing bookings.
+        update = sql.update("booking",
+                            sql.where("year = %i" % congress.year,
+                                      " AND ",
+                                      "room NOT IN (",
+                                      "SELECT room_no FROM booked_rooms "
+                                      " WHERE year = %i"  % congress.year,
+                                      ")"),
+                            {"room": None})
+        execute(update)
         commit()
 
         site_message = "Auswahl gespeichert."
@@ -584,11 +581,8 @@ def rooms():
         site_message = None
         smc = None
 
-    sections = []
-    for title, rooms in itertools.groupby(rooms, lambda room: room.section):
-        sections.append(Section(title, list(rooms)))
 
-    return template(congress=congress, sections=sections,
+    return template(congress=congress, sections=rooms.sections,
                     site_message=site_message, site_message_class=smc)
 
 
@@ -610,8 +604,9 @@ def modify_booking(id:int, what):
         if not ro:
             ro = None
 
-        execute("UPDATE booking SET room_overwrite = %s WHERE id = %s",
-                ( ro, id, ))
+        execute("UPDATE booking "
+                "   SET room_overwrite = %s, room = NULL "
+                " WHERE id = %s", ( ro, id, ))
         commit()
 
         room, room_overwrite = query_one("SELECT room, room_overwrite "
@@ -628,3 +623,64 @@ def modify_booking(id:int, what):
         return json_response(role=role)
     else:
         return abort(404)
+
+@bp.route("/room_assignment.py", methods=("POST", "GET",))
+def room_assignment():
+    template = g.skin.load_template("skin/admin/room_assignment.pt")
+    congress = g.congresses.current
+    year = congress.year
+
+
+    if request.method == "POST":
+        execute("UPDATE booking SET room = NULL WHERE year = %i" % year)
+        controllers.zimmer_zuordnung()
+        commit()
+
+    rooms = model.congress.Room.select(
+        sql.where( "year = %i" % congress.year ),
+        sql.orderby("section, no"))
+
+    bookings = model.congress.Booking.select(
+        sql.where("year=%i" % congress.year),
+        sql.orderby("lower(lastname), lower(firstname)"))
+    model.congress.resolve_room_mates(bookings)
+
+    rooms_by_no = {}
+    for room in rooms:
+        room.occupants = []
+        rooms_by_no[room.no] = room
+
+    for booking in bookings:
+        if booking.room_overwrite:
+            room_no = booking.room_overwrite.lower()
+        else:
+            room_no = booking.room
+
+        if room_no:
+            room = rooms_by_no.get(room_no, None)
+            if room:
+                room.occupants.append(booking)
+
+                if booking.room_overwrite:
+                    room.overwrite = True
+                else:
+                    room.overwrite = False
+
+    return template(congress=congress, sections=rooms.sections)
+
+@bp.route("/swap_rooms.py", methods=("POST", "GET",))
+@gets_parameters_from_request
+def swap_rooms(left:int, right:int):
+    year = g.congresses.current.year
+    cursor = execute("SELECT id, room FROM booking "
+                     " WHERE id IN (%s, %s) AND year = %s",
+                     (left, right, year,))
+    rooms = dict(cursor.fetchall())
+
+    execute("UPDATE booking SET room = %s WHERE id = %s",
+            (rooms[left], right))
+    execute("UPDATE booking SET room = %s WHERE id = %s",
+            (rooms[right], left))
+    commit()
+
+    return redirect(url_for("admin.room_assignment"))

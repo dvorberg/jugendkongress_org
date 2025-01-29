@@ -1,8 +1,8 @@
-import pathlib, dataclasses, re, datetime, json, tomllib
+import pathlib, dataclasses, re, datetime, json, tomllib, itertools
 from functools import cached_property
 
 from .. import config
-from ..db import dbobject, execute
+from ..db import dbobject, execute, Result
 from ..markdown import MarkdownResult
 from ..markdown.macros import MacroContext
 from ..utils import PathSet
@@ -14,7 +14,6 @@ from ll.xist import xsc
 from ll.xist.ns import html
 
 import flask
-
 
 class DocumentFolder(object):
     def __init__(self, path, pathset:PathSet=PathSet()):
@@ -468,6 +467,7 @@ class Booking(dbobject):
             return int(delta.days / 364.25)
         else:
             return None
+
     def validate_me(self):
         return self.validate(Change(self.as_dict()))
 
@@ -536,6 +536,14 @@ class Booking(dbobject):
         else:
             return self._resolved_room_mates
 
+    @property
+    def found_room_mates(self):
+        # This returns a list of resolved bookings that have been found.
+        return [ booking
+                 for (name, booking) in self.resolved_room_mates
+                 if booking is not None ]
+
+
     def resolve_room_mates(self, keys_to_bookings):
         room_mates = self.room_mates.replace(
             ",", "\n").replace("/", "\n").split("\n")
@@ -546,17 +554,41 @@ class Booking(dbobject):
         self._resolved_room_mates = ret
         return ret
 
-    @property
-    def room_mates_html(self):
+    def make_room_mates_html(self, room=None):
         ret = xsc.Frag()
         for line, booking in self.resolved_room_mates:
             if booking is None:
-                ret.append(html.div(line,
-                                    class_="text-danger"))
+                ret.append(html.div(line, class_="text-danger"))
             else:
-                ret.append(html.div(booking.name,
-                                    class_="text-success"))
+                if room:
+                    if booking in room.occupants:
+                        symbol = " ✓"
+                    else:
+                        symbol = " ❌"
+                else:
+                    symbol = xsc.Frag()
+
+                ret.append(html.div(booking.name, symbol,
+                                    class_="text-no-wrap text-success"))
         return ret
+
+    @property
+    def max_beds(self):
+        if self.room_preference == "2-3 beds":
+            return 3
+        elif self.room_preference == "4-8 beds":
+            return 8
+        else:
+            return 0
+
+    @property
+    def min_beds(self):
+        if self.room_preference == "2-3 beds":
+            return 2
+        elif self.room_preference == "4-8 beds":
+            return 4
+        else:
+            return 255
 
     @property
     def food_preference_html(self):
@@ -572,12 +604,43 @@ class Booking(dbobject):
             else:
                 return self.room.upper()
 
+    def __repr__(self):
+        return "<" + self.name + ">"
+
+def resolve_room_mates(bookings):
+    # Create a dict matching (lower case) names and email-addresses
+    # to bookings.
+    d = {}
+    for booking in bookings:
+        d[booking.name.lower()] = booking
+        d[booking.email] = booking
+
+    # Now go through each of the names listed in the bookings
+    # and see if we can find them.
+    for booking in bookings:
+        booking.resolve_room_mates(d)
+
 class BookingForNameForm(dbobject):
     __relation__ = "booking"
     __view__ = "booking_for_name_form"
 
+class RoomResult(Result):
+
+    @dataclasses.dataclass
+    class Section:
+        title: str
+        rooms: list
+
+    @property
+    def sections(self):
+        sections = []
+        for title, rooms in itertools.groupby(self, lambda room: room.section):
+            sections.append(self.Section(title, list(rooms)))
+        return sections
+
 class Room(dbobject):
     __view__ = "room_info"
+    __result_class__ = RoomResult
 
     @property
     def NO(self):
