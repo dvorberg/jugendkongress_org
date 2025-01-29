@@ -651,6 +651,7 @@ def room_assignment():
         rooms_by_no[room.no] = room
         room.overwrite = False
 
+    unassigned = []
     for booking in bookings:
         if booking.room_overwrite:
             room_no = booking.room_overwrite.lower()
@@ -664,8 +665,12 @@ def room_assignment():
 
                 if booking.room_overwrite:
                     room.overwrite = True
+        else:
+            unassigned.append(booking)
 
-    return template(congress=congress, sections=rooms.sections)
+    return template(congress=congress,
+                    sections=rooms.sections,
+                    unassigned=unassigned)
 
 @bp.route("/swap_rooms.py", methods=("POST", "GET",))
 @gets_parameters_from_request
@@ -676,10 +681,27 @@ def swap_rooms(left:int, right:int):
                      (left, right, year,))
     rooms = dict(cursor.fetchall())
 
-    execute("UPDATE booking SET room = %s WHERE id = %s",
-            (rooms[left], right))
-    execute("UPDATE booking SET room = %s WHERE id = %s",
-            (rooms[right], left))
+    execute("UPDATE booking SET room = %s WHERE id = %s AND year = %s",
+            (rooms[left], right, year))
+    execute("UPDATE booking SET room = %s WHERE id = %s AND year = %s",
+            (rooms[right], left, year))
+    commit()
+
+    return redirect(url_for("admin.room_assignment"))
+
+@bp.route("/move_to_room.py", methods=("POST", "GET",))
+@gets_parameters_from_request
+def move_to_room(booking_id:int, room_no):
+    # Check the room_no.
+    year = g.congresses.current.year
+
+    room_no = room_no.lower()
+
+    room_no, = query_one("SELECT room_no FROM booked_rooms "
+                         " WHERE room_no = %s AND year = %s",
+                         ( room_no, year, ))
+    execute("UPDATE booking SET room = %s WHERE id = %s AND year = %s",
+            ( room_no, booking_id, year, ))
     commit()
 
     return redirect(url_for("admin.room_assignment"))
