@@ -42,7 +42,7 @@ from .email import sendmail_template
 
 from . import authentication, model
 from .utils import (get_site_url, gets_parameters_from_request, redirect,
-                    rget, rchecked, OrderByHandler)
+                    rget, rchecked, OrderByHandler, get_site_url)
 from .ptutils import js_string_literal
 
 
@@ -689,7 +689,7 @@ def swap_rooms(left:int, right:int):
             (rooms[right], left, year))
     commit()
 
-    return redirect(url_for("admin.room_assignment"))
+    return redirect(get_site_url() + "/admin/room_assignment.py")
 
 @bp.route("/move_to_room.py", methods=("POST", "GET",))
 @gets_parameters_from_request
@@ -706,4 +706,4 @@ def move_to_room(booking_id:int, room_no):
             ( room_no, booking_id, year, ))
     commit()
 
-    return redirect(url_for("admin.room_assignment"))
+    return redirect(get_site_url() + "/admin/room_assignment.py")
