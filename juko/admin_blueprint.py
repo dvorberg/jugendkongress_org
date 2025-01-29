@@ -649,6 +649,7 @@ def room_assignment():
     for room in rooms:
         room.occupants = []
         rooms_by_no[room.no] = room
+        room.overwrite = False
 
     for booking in bookings:
         if booking.room_overwrite:
@@ -663,8 +664,6 @@ def room_assignment():
 
                 if booking.room_overwrite:
                     room.overwrite = True
-                else:
-                    room.overwrite = False
 
     return template(congress=congress, sections=rooms.sections)
 
