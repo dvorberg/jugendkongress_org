@@ -633,6 +633,8 @@ def room_assignment():
 
     if request.method == "POST":
         execute("UPDATE booking SET room = NULL WHERE year = %i" % year)
+        execute("UPDATE booked_rooms SET beds_overwrite = NULL "
+                " WHERE year = %s", (year,))
         controllers.zimmer_zuordnung()
         commit()
 
