@@ -331,3 +331,9 @@ div.room-assignment
         background-color: var(--bs-warning);
     }
 }
+
+div.bookings label input[type=checkbox]
+{
+    position: relative;
+    top: -2px;
+}

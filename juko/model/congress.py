@@ -604,6 +604,20 @@ class Booking(dbobject):
             else:
                 return self.room.upper()
 
+    @property
+    def needs_payment(self):
+        return self.role not in { "team", "speaker" }
+
+    @property
+    def paymentcls(self):
+        if not self.needs_payment:
+            return "secondary"
+        else:
+            if self.has_payed:
+                return "success"
+            else:
+                return "danger"
+
     def __repr__(self):
         return "<" + self.name + ">"
 

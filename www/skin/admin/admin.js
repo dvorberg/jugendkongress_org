@@ -326,6 +326,113 @@ window.addEventListener("load", function(event) {
 	});
 
 	//////////////////////////////////////////////////////////////////////
+	
+	class HasPayedCheckboxController extends TableRowBasedController
+	{
+		constructor(input)
+		{
+			super();
+			this.input = input;
+			this.input.addEventListener("click", this.on_change.bind(this));
+		}
+
+		get node()
+		{
+			return this.input;
+		}
+
+		on_change(event)
+		{
+			this.modify_booking("has_payed", {has_payed: this.input.checked});
+		}
+
+		on_json_fetched(result)
+		{
+			this.row.classList.remove("table-danger");
+			this.row.classList.remove("table-success");
+
+			if (this.input.checked)
+			{
+				this.row.classList.add("table-success");
+			}
+			else
+			{
+				this.row.classList.add("table-danger");
+			}
+		}
+	}
+
+	document.querySelectorAll("input[name=has_payed]").forEach( a => {
+		new HasPayedCheckboxController(a);
+	});
+
+	const paymend_dialog = document.querySelector("#payment-remarks-dialog"),
+		  payment_modal = new bootstrap.Modal(paymend_dialog);
+
+	paymend_dialog.querySelectorAll("button.close").forEach(button => {
+		button.addEventListener("click", event => { payment_modal.hide(); })
+	});
+	
+	class PaymentRemarksController extends TableRowBasedController
+	{
+		constructor(a)
+		{
+			super();
+			this.a = a;
+			this.a.addEventListener("click", this.on_click.bind(this));
+
+			// add/remove EventListeners needs the listener to be identical.
+			this.bound_on_save = this.on_save.bind(this);
+		}
+
+		get node()
+		{
+			return this.a;
+		}
+
+		get dialog_textarea()
+		{
+			return paymend_dialog.querySelector("textarea#payment-remarks");
+		}
+
+		get save_button()
+		{
+			return paymend_dialog.querySelector("button.save");
+		}
+		
+		get span()
+		{
+			return this.row.querySelector("small.paymend-remarks");
+		}
+		
+		on_click(event)
+		{
+			this.dialog_textarea.value = this.span.innerText;
+			this.save_button.addEventListener("click", this.bound_on_save);
+			
+			payment_modal.show();
+		}
+
+		on_save(event)
+		{			
+			this.save_button.removeEventListener("click", this.bound_on_save);
+			
+			this.modify_booking("payment_remarks",
+								{payment_remarks: this.dialog_textarea.value});
+		}
+
+		on_json_fetched(result)
+		{
+			payment_modal.hide();
+			this.span.innerText = result.payment_remarks;
+		}
+	}
+
+	document.querySelectorAll("a.edit-paymend-remarks").forEach( a => {
+		new PaymentRemarksController(a);
+	});
+
+	//////////////////////////////////////////////////////////////////////
 
 	class FilterController
 	{

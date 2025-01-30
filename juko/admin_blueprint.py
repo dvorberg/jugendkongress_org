@@ -621,6 +621,25 @@ def modify_booking(id:int, what):
         commit()
 
         return json_response(role=role)
+
+    elif what == "has_payed":
+        has_payed = ( request.form.get("has_payed", None) == "true" )
+
+        execute("UPDATE booking SET has_payed = %s "
+                " WHERE id = %s", ( has_payed, id, ))
+        commit()
+
+        return json_response(has_payed=has_payed)
+
+    elif what == "payment_remarks":
+        payment_remarks = request.form["payment_remarks"];
+
+        execute("UPDATE booking SET payment_remarks = %s "
+                " WHERE id = %s", ( payment_remarks, id, ))
+        commit()
+
+        return json_response(payment_remarks=payment_remarks)
+
     else:
         return abort(404)
 

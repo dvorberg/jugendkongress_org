@@ -18,18 +18,22 @@
       <metal:block use-macro="skin.main_template.macros.admin_menu" />
     </metal:block>
     
-    <div metal:fill-slot="main" class="mt-4">
+    <div metal:fill-slot="main" class="mt-4 bookings">
       <div class="my-3 title">
         <h3 style="display: inline">
           Buchungen ${congress.year}
         </h3>
         <label class="ms-3">
           <input type="checkbox" value="kontakt" />
-          e-Kontakt
+          Kontakt
         </label>
         <label class="ms-3">
           <input type="checkbox" />
-          Adresse
+          Alter
+        </label>
+        <label class="ms-3">
+          <input type="checkbox" value="adresse" />
+          Post
         </label>
         <label class="ms-3">
           <input type="checkbox" />
@@ -41,7 +45,7 @@
         </label>        
         <label class="ms-3">
           <input type="checkbox" value="misc" />
-          Anreise, Musik
+          Reise, Musik
         </label>
         <label class="ms-3">
           <input type="checkbox" />
@@ -49,7 +53,11 @@
         </label>
         <label class="ms-3">
           <input type="checkbox" />
-          Bemerkungen
+          Geld
+        </label>        
+        <label class="ms-3">
+          <input type="checkbox" value="bemerkungen" />
+          Bem.
         </label>
       </div>
       
@@ -60,6 +68,8 @@
             <th>Name, Login</th>
             <tal:block tal:condition="'kontakt' in active_colsets">
               <th>e-Mail, Telefon</th>
+            </tal:block>
+            <tal:block tal:condition="'alter' in active_colsets">
               <th>Geboren, (<small>Alter beim Kongress</small>)</th>
             </tal:block>
             <tal:block tal:condition="'adresse' in active_colsets">
@@ -72,18 +82,25 @@
             <tal:block tal:condition="'essen' in active_colsets">
               <th>Essen</th>
             </tal:block>
-            <tal:block tal:condition="'essen' in active_colsets">
+            <tal:block tal:condition="'misc' in active_colsets">
               <th>Anreise</th>
               <th>Musik</th>
             </tal:block>
             <tal:block tal:condition="'rolle' in active_colsets">
               <th>Rolle</th>
             </tal:block>
+            <tal:block tal:condition="'geld' in active_colsets">
+              <th>
+                Geld
+              </th>
+            </tal:block>
             <tal:block tal:condition="'bemerkungen' in active_colsets">
-              <th colspan="1">
+              <th>
                 Bemerkungen
               </th>
             </tal:block>
+            <th>
+            </th>
           </tr>
         </thead>
         
@@ -100,6 +117,8 @@
             </th>
             <tal:block tal:condition="'kontakt' in active_colsets">
               <th></th><!--e-Mail, Telefon-->
+            </tal:block>
+            <tal:block tal:condition="'alter' in active_colsets">
               <th></th>
             </tal:block>
             
@@ -172,6 +191,10 @@
                 </select>
               </th>
             </tal:block>
+            <tal:block tal:condition="'geld' in active_colsets">
+              <th>
+              </th>
+            </tal:block>
             <tal:block tal:condition="'bemerkungen' in active_colsets">
               <th><!--remarks-->
                 <label class="form-label">
@@ -188,7 +211,9 @@
         
         <tbody class="table-striped">
           <tal:block tal:repeat="b bookings">
-            <tr data-id="${b.id}">
+            <tr data-id="${b.id}"
+                tal:attributes="class test('geld' in active_colsets,
+                                           'table-' + b.paymentcls)">
               <td class="role ${b.role}"></td>
               <td>
                 <div class="text-nowrap ${test(not b.completed,
@@ -217,6 +242,8 @@
                     ☎ <a href="tel:${b.phone}">${b.phone}</a>
                   </div>
                 </td>
+              </tal:block>
+              <tal:block tal:condition="'alter' in active_colsets">
                 <td tal:define="age b.age_then">
                   ${ptutils.pretty_german_date(b.dob)}
                   
@@ -299,11 +326,30 @@
                 </td>
               </tal:block>
 
+              <td tal:condition="'geld' in active_colsets">
+                <tal:block tal:condition="b.needs_payment">
+                  <label class="text-nowrap me-2">
+                    <input name="has_payed"
+                           type="checkbox"
+                           value="true"
+                           tal:attributes="checked
+                                           ptutils.checked(b.has_payed)" />
+                    bezahlt
+                  </label>
+                  
+                  <small class="paymend-remarks text-danger"
+                        tal:content="b.payment_remarks" />
+                  <a href="javascript:{}"
+                     class="edit-paymend-remarks text-decoration-none">✎</a>
+                </tal:block>
+              </td>
+              
               <td tal:condition="'bemerkungen' in active_colsets">
                 <div tal:condition="b.remarks"
                      class="text-danger small"
                      tal:content="b.remarks" />
               </td>
+
               <td><!--Buttons-->
                 <a href="${b.href}" class="btn btn-sm btn-primary"
                    target="_new">
@@ -322,6 +368,8 @@
           </td>
           <tal:block tal:condition="'kontakt' in active_colsets">
             <td><!--Kontakt--></td>
+          </tal:block>
+          <tal:block tal:condition="'alter' in active_colsets">          
             <td><!--dob&alter--></td>
           </tal:block>
           <tal:block tal:condition="'zimmer' in active_colsets">
@@ -358,12 +406,40 @@
             </td>
           </tal:block>
           
-          <td><!--remarks-->
-          </td>
-          <td><!--buttons-->
+          <td tal:condition="'geld' in active_colsets"></td>
+          <td><!--buttons--></td>
+          <td tal:condition="'bemerkungen' in active_colsets"><!--remarks-->
           </td>
         </tr>
       </table>
+
+
+      <div class="modal" id="payment-remarks-dialog" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5">Bezahlen</h1>
+              <button type="button" class="btn-close"
+                      data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <form>
+                <div class="mb-3">
+                  <label for="payment-remarks"
+                         class="col-form-label">Bemerkungen</label>
+                    <textarea class="form-control"
+                              id="payment-remarks"></textarea>
+                  </div>
+                </form>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary close">Abbrechen</button>
+                <button type="button"
+                        class="btn btn-primary save">Speichern</button>
+              </div>
+            </div>
+          </div>
+        </div>      
     </div>
   </body>
 </html>
