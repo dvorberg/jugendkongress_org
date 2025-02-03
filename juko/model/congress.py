@@ -246,7 +246,7 @@ class Congress(DocumentFolder):
     def registration_is_open(self):
         return ( self.congresses.latest_year == self.year
                  and self.anmeldeschluss is not None
-                 and self.anmeldeschluss >= datetime.date.today())
+                 and self.anmeldeschluss >= datetime.date.today() )
 
     @property
     def controller_url(self):

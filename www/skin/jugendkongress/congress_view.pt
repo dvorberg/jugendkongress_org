@@ -10,8 +10,8 @@
     
       Jugendkongress
     
-    Copyright 2014–24 by Diedrich Vorberg (diedrich@tux4web.de)
-    Copyricht 2014–24 Jugendwerk der SELK (jugendwerk@selk.de)
+    Copyright 2014–25 by Diedrich Vorberg (diedrich@tux4web.de)
+    Copyricht 2014–25 Jugendwerk der SELK (jugendwerk@selk.de)
     
     All Rights Reserved
   </tal:block>
@@ -62,12 +62,17 @@
       </ul>
       
       <ul class="navbar-nav ms-2"
-          tal:condition="congress.registration_is_open and not booking">
+          tal:condition="(congress.registration_is_open or user.is_authenticated) and not booking">
         <li class="nav-item hide-on-mobile">
-          <button type="button" class="btn btn-primary"
+          <button type="button" class="btn ${test(congress.registration_is_open, 'btn-primary', 'btn-warning')}"
                   data-bs-toggle="modal"
                   data-bs-target="#anmelden-dialog">
-            Anmelden
+            <tal:block tal:condition="congress.registration_is_open">
+              Anmelden
+            </tal:block>
+            <tal:block tal:condition="not:congress.registration_is_open">
+              Nachmelden
+            </tal:block>
           </button>
         </li>
       </ul>
@@ -431,7 +436,7 @@
       </button>
 
       <div class="modal" tabindex="-1" id="anmelden-dialog"
-           tal:condition="congress.registration_is_open and not booking">
+           tal:condition="(congress.registration_is_open or user.is_authenticated) and not booking">
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header">
