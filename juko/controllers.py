@@ -463,7 +463,8 @@ def workshop_zuordnung():
 
     bookings = Booking.select(sql.where("year=%i " % year,
                                         " AND ",
-                                        "role = 'attendee'"))
+                                        "role = 'attendee'"),
+                              sql.orderby("ctime"))
     for booking in bookings:
         booking.placed = set()
 

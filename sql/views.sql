@@ -17,7 +17,7 @@ CREATE VIEW booking_info AS
           ride_sharing_option, ride_sharing_start,
           musical_instrument,
           wsc.workshop_choices,
-          (mtime <> ctime) AS completed,
+          ctime, (mtime <> ctime) AS completed,
           has_payed, payment_remarks
      FROM booking
      LEFT JOIN wsc ON booking_id = booking.id;
