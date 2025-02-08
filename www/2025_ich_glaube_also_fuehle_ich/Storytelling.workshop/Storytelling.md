@@ -2,7 +2,7 @@ Titel: Storytelling
 Untertitel: Emotionen und Erfahrungen Worte verleihen
 Referent: Jojo Zwingelberg
 Referent-Info: Geschichtenerzähler
-Workshopphasen: 
+Workshopphasen: 1, 2, 3
 
 Biblische Geschichten sind oft komprimierte Wiedergaben von Fakten. Für alles andere reicht der Platz einfach nicht aus. Das Buch des Lebens würde sonst wohl ein Leben lang zum Lesen brauchen. So aber sagen „die Leute“ oft, dass es irgendwie langweilig sei. Als Erzähler habe ich gelernt, die Richtigen Fakten zu sammeln und die Erfahrungswelt meines Lebens, meine Empathie und meine Fantasie zu nutzen, um den Fakten wieder Farben, Gerüche und Emotionen hinzuzufügen.
 

@@ -2,7 +2,7 @@ Titel: Raum – Bewegung – Klang
 Untertitel: Wenn Worte lebendig werden
 Referent: Elisabeth Schwarz-Gangel
 Referent-Info: Kirchenmusikerin
-Workshopphasen: 
+Workshopphasen: 1, 2, 3
 
 Für diesen Workshop brauchst du keine musikalischen Vorkenntnisse und keine Chorerfahrung. Du kannst mit einem musikalischen Hintergrund teilnehmen, aber auch, wenn du dich noch kaum mit Deiner Stimme beschäftigt hast. 
 

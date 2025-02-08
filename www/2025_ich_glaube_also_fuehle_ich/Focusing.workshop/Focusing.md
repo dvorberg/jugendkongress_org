@@ -2,7 +2,7 @@ Titel: Focusing
 Unteritel: 
 Referent: Sabine Plaschke
 Referent-Info: 
-Workshopphasen: 
+Workshopphasen: 1, 2, 3
 
 > *Focusing* ist die Zeit, die ich mit einem gespürten *Etwas* verbringe,  ohne schon zu wissen, was es ist.
 
