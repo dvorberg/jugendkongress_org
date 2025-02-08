@@ -72,6 +72,24 @@ CREATE TABLE workshop_choices
     UNIQUE (booking_id, workshop_id)
 );
 
+CREATE TABLE workshop_phases
+(
+    year INTEGER NOT NULL,
+    number INTEGER NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+
+    PRIMARY KEY (year, number)
+);
+
+CREATE TABLE workshop_assignments
+(
+    booking_id INTEGER REFERENCES booking ON DELETE CASCADE,
+    phase SMALLINT NOT NULL,
+    workshop_id TEXT NOT NULL,
+
+    UNIQUE (booking_id, phase, workshop_id)
+);
+
 CREATE TABLE remarks
 (
     booking_id INTEGER REFERENCES booking ON DELETE CASCADE,
