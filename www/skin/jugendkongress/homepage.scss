@@ -337,3 +337,18 @@ div.bookings label input[type=checkbox]
     position: relative;
     top: -2px;
 }
+
+h5 small, h4 small
+{
+    font-size: 60%;
+}
+
+h5.workshop-title small.badge
+{
+    font-size: 60%;
+    position: relative;
+    top: -12px;
+    left: -3px;
+}
+
+
