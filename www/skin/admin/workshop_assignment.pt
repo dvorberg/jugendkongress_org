@@ -42,7 +42,7 @@
         </h4>
 
         <div class="row g-4">
-          <div class="col" tal:repeat="instance phases[wsp.number]">
+          <div class="col" tal:repeat="instance phases.get(wsp.number, [])">
             <h5 class="workshop-title text-nowrap">
               ${instance.workshop.titel}
               <small class="badge rounded-pill text-bg-success">
