@@ -426,7 +426,10 @@ class WorkshopInstance:
 
     def place(self, booking):
         self.bookings.append(booking)
-        booking.placed.add(self.workshop.id)
+        booking.placed.add(self)
+
+    def __hash__(self):
+        return hash((self.workshop.id, self.phase,))
 
 def workshop_zuordnung():
     congress = flask.g.congresses.current
@@ -447,7 +450,8 @@ def workshop_zuordnung():
         for instance in instances_of(workshop):
             if instance.available(len(group)):
                 for booking in group:
-                    instance.place(booking)
+                    if not instance.phase in [i.phase for i in booking.placed]:
+                        instance.place(booking)
                 return
 
         # We can’t place the group as a whole and will place
@@ -455,7 +459,8 @@ def workshop_zuordnung():
 
     def place_booking(workshop, booking):
         for instance in instances_of(workshop):
-            if instance.available(1):
+            if instance.available(1) \
+               and not instance.phase in [i.phase for i in booking.placed]:
                 instance.place(booking)
                 return
 
@@ -477,9 +482,25 @@ def workshop_zuordnung():
 
     for booking in bookings:
         for workshop_id in booking.workshop_choices:
-            if not workshop_id in booking.placed:
+            if not workshop_id in [i.workshop.id for i in booking.placed]:
                 workshop = workshop_by_id[workshop_id]
                 place_booking(workshop, booking)
+
+    # Assign random workshops to those who don’t have a booking
+    # in some phase.
+    def place_randomly(booking, phase):
+        for i in sorted(instances, key=lambda i: len(bookings)):
+            if i.phase == phase and i.available(1):
+                i.place(booking)
+                return
+
+    all_phases = set([p.number for p in congress.workshopphasen])
+    for booking in bookings:
+        phases = [ i.phase for i in booking.placed ]
+        for p in all_phases:
+            if p not in phases:
+                place_randomly(booking, p)
+
 
     # Store assignments in the db.
     values = []
