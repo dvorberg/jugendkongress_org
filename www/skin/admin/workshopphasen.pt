@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+      metal:use-macro="skin.main_template.macros.master">
+  <head>
+    <metal:block metal:fill-slot="head_slot">
+      <script src="${sref('jugendkongress/uiblocker.js')}"></script>
+      <script src="${sref('admin/admin.js')}"></script>
+    </metal:block>
+  </head>
+  
+  <body>
+    <metal:block metal:fill-slot="congress-menu">
+      <metal:block use-macro="skin.main_template.macros.admin_menu" />
+    </metal:block>
+    
+    <div metal:fill-slot="main" class="mt-4">
+      <h3 class="mb-3">
+        Workshophasen
+      </h3>
+
+      <form method="post" class="form">
+        <div class="row row-cols-3 mb-3 g-3">
+          <div class="col" tal:repeat="wsp congress.workshopphasen">
+            <div class="input-group">
+              <span class="input-group-text">${wsp.number}</span>
+              <input type="text" class="form-control"
+                     name="info${wsp.number}"
+                     placeholder="Zeitpunkt und Infos"
+                     value="${wsp.description}"/>
+            </div>
+          </div>
+        </div>
+        
+        <div class="row">
+          <div class="col">
+            <button class="btn btn-primary">
+              Speichern
+            </button>
+          </div>
+        </div>        
+      </form>      
+    </div>
+  </body>
+</html>

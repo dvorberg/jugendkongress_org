@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      xmlns:i18n="http://xml.zope.org/namespaces/i18n">
+  <head>
+    <link rel="stylesheet" type="text/css"
+	      href="${sref('admin/workshop_druckansicht.scss')}" />    
+  </head>
+
+  <body>
+    <div class="mb-3" tal:repeat="wsp congress.workshopphasen">
+      <div class="row g-4">
+        <div class="col" tal:repeat="instance phases[wsp.number]">
+          <h1 class="workshop-title text-nowrap">
+            ${instance.workshop.titel}<br />
+            <small>${wsp.description}</small>
+          </h1>
+
+          <ol>
+            <li tal:repeat="booking instance.bookings">
+              <span>${booking.name}</span>
+            </li>
+
+            <li tal:repeat="x range(instance.workshop.teilnehmer_max-len(instance.bookings))">
+            </li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

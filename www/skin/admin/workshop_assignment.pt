@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+      metal:use-macro="skin.main_template.macros.master">
+  <head>
+    <metal:block metal:fill-slot="head_slot">
+      <script src="${sref('jugendkongress/uiblocker.js')}"></script>
+      <script src="${sref('admin/admin.js')}"></script>
+    </metal:block>
+  </head>
+  
+  <body>
+    <metal:block metal:fill-slot="congress-menu">
+      <metal:block use-macro="skin.main_template.macros.admin_menu" />
+    </metal:block>
+    
+    <div metal:fill-slot="main" class="mt-4 workshopverteilung">
+      <h3 class="mb-3">
+        Workshops
+      </h3>
+
+      <h3>Phasen</h3>
+      <div class="row row-cols-3 mb-2 g-3">
+        <div class="col" tal:repeat="wsp congress.workshopphasen">
+          <div>
+            <span class="badge text-bg-secondary">${wsp.number}</span>
+            <span>${wsp.description}</span>
+          </div>
+        </div>
+      </div>
+      <a href="/admin/workshopphasen.py">Ändern</a>
+
+      <h3 class="mt-5 mb-3">Verteilung</h3>
+
+      <div class="mb-3" tal:repeat="wsp congress.workshopphasen">
+        <h4>
+          <span class="badge text-bg-secondary">${wsp.number}</span>
+          ${wsp.description}
+        </h4>
+
+        <div class="row g-4">
+          <div class="col" tal:repeat="instance phases[wsp.number]">
+            <h5 class="workshop-title text-nowrap">
+              ${instance.workshop.titel}
+              <small class="badge rounded-pill text-bg-success">
+                ${len(instance.bookings)}              
+              </small>
+            </h5>
+
+            <ol>
+              <li tal:repeat="booking instance.bookings">
+                <span>${booking.name}</span>
+              </li>
+
+              <li tal:repeat="x range(instance.workshop.teilnehmer_max-len(instance.bookings))">
+              </li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+      <form method="post" action="/admin/reset_workshop_assignment.py">
+        <button class="btn btn-primary">
+          Verteilung zurücksetzen
+        </button>
+
+        <a href="/admin/workshop_assignment.py?druckansicht=ja"
+           class="btn btn-success" target="_new">
+          Druckansicht
+        </a>
+      </form>
+      
+    </div>
+  </body>
+</html>
