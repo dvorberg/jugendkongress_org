@@ -31,7 +31,9 @@ from t4.sendmail import sendmail
 from sqlclasses import sql
 
 from .db import execute, query_one, insert_from_dict, commit
-from .model.congress import Booking, Change, Congress, Room, resolve_room_mates
+from .model.congress import (Booking, BookingForWorkshopAssignment,
+                             Change, Congress, Room, resolve_room_mates,
+                             Workshop)
 
 @gets_parameters_from_request
 def create_booking(congress, email="", firstname=None, lastname=None,
@@ -261,6 +263,42 @@ def zimmer_zuordnung():
     unassignable = assign_rooms(rooms_by_no, bookings)
     return rooms_by_no.values(), unassignable
 
+def find_groups_among(bookings):
+    groups = []
+
+    def find_friends(booking):
+        group = set()
+
+        def add(b):
+            if b in group:
+                return
+
+            group.add(b)
+            for a in b.found_room_mates:
+                add(a)
+
+            for a in bookings:
+                if b in a.found_room_mates:
+                    add(a)
+
+        add(booking)
+
+        return list(group)
+
+    def ingroup(booking):
+        for group in groups:
+            if booking in group:
+                return group
+        return None
+
+    for booking in bookings:
+        if not ingroup(booking):
+            group = find_friends(booking)
+            if len(group) > 1:
+                groups.append(group)
+
+    return groups
+
 def assign_rooms(rooms_by_no, bookings):
     year = flask.g.congress.year
     unassignable = []
@@ -317,39 +355,7 @@ def assign_rooms(rooms_by_no, bookings):
         unassignable.append(booking)
         bookings.remove(booking)
 
-    def find_friends(booking):
-        group = set()
-
-        def add(b):
-            if b in group:
-                return
-
-            group.add(b)
-            for a in b.found_room_mates:
-                add(a)
-
-            for a in bookings:
-                if b in a.found_room_mates:
-                    add(a)
-
-        add(booking)
-
-        return list(group)
-
-    groups = []
-
-    def ingroup(booking):
-        for group in groups:
-            if booking in group:
-                return group
-        return None
-
-    for booking in bookings:
-        if not ingroup(booking):
-            group = find_friends(booking)
-            if len(group) > 1:
-                groups.append(group)
-
+    groups = find_groups_among(bookings)
 
     def genders_match(group):
         gender = group[0].gender
@@ -399,3 +405,89 @@ def zimmer_zeigen(rooms):
 
                 print("  ", booking.name, friends)
             print()
+
+def groups_for_workshop(groups, workshop_id):
+    for group in groups:
+        group = [ booking
+                  for booking in group
+                  if workshop_id in booking.workshop_choices ]
+        if len(group) > 1:
+            yield group
+
+@dataclasses.dataclass
+class WorkshopInstance:
+    workshop: Workshop
+    phase: int
+    bookings: list
+
+    def available(self, booking_count):
+        max = self.workshop.teilnehmer_max
+        return (len(self.bookings) + booking_count <= max)
+
+    def place(self, booking):
+        self.bookings.append(booking)
+        booking.placed.add(self.workshop.id)
+
+def workshop_zuordnung():
+    congress = flask.g.congresses.current
+    year = congress.year
+
+    instances = []
+    workshop_by_id = {}
+    for workshop in congress.workshops:
+        workshop_by_id[workshop.id] = workshop
+        for phase in workshop.phasen:
+            instances.append(WorkshopInstance(workshop, phase, []))
+
+    def instances_of(workshop):
+        return sorted([ i for i in instances if i.workshop == workshop ],
+                      key=lambda i: len(i.bookings))
+
+    def place_group(workshop, group):
+        for instance in instances_of(workshop):
+            if instance.available(len(group)):
+                for booking in group:
+                    instance.place(booking)
+                return
+
+        # We can’t place the group as a whole and will place
+        # single members later on.
+
+    def place_booking(workshop, booking):
+        for instance in instances_of(workshop):
+            if instance.available(1):
+                instance.place(booking)
+                return
+
+        ic("Can’t place", booking, workshop)
+
+    bookings = Booking.select(sql.where("year=%i " % year,
+                                        " AND ",
+                                        "role = 'attendee'"))
+    for booking in bookings:
+        booking.placed = set()
+
+    resolve_room_mates(bookings)
+    groups = find_groups_among(bookings)
+
+    for workshop in congress.workshops:
+        for group in groups_for_workshop(groups, workshop.id):
+            place_group(workshop, group)
+
+    for booking in bookings:
+        for workshop_id in booking.workshop_choices:
+            if not workshop_id in booking.placed:
+                workshop = workshop_by_id[workshop_id]
+                place_booking(workshop, booking)
+
+    # Store assignments in the db.
+    values = []
+    for instance in instances:
+        for booking in instance.bookings:
+            values.append( (booking.id,
+                            instance.phase,
+                            sql.string_literal(instance.workshop.id),) )
+
+    execute(sql.insert("workshop_assignments",
+                       ( "booking_id", "phase", "workshop_id",),
+                       values))
