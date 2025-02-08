@@ -182,6 +182,29 @@ class Workshop(DocumentFolder):
 
         return zip(referenten, info)
 
+    @property
+    def phasen(self):
+        w = self.get_meta("workshopphasen", "")
+        try:
+            return [ int(a) for a in w.split(",") if a ]
+        except ValueError:
+            raise ValueError("Ungültige Workshoppphase in %s: %s" % (
+                self.id, repr(w)))
+
+    @property
+    def teilnehmer_max(self):
+        return int(self.get_meta("Teilnehmer-Max", 15))
+
+    def __eq__(self, other):
+        return (isinstance(other, self.__class__) and other.id == self.id)
+
+    def __repr__(self):
+        return f"<WS:{self.id}>"
+
+@dataclasses.dataclass
+class Workshopphase:
+    number: int
+    description: str
 
 class Congress(DocumentFolder):
     def __init__(self, congresses, path):
@@ -292,6 +315,28 @@ class Congress(DocumentFolder):
         else:
             return None
 
+    @property
+    def workshopphasen(self):
+        ret = getattr(flask.g, "congress_workshopphasen", None)
+
+        if ret is None:
+            phasen = set()
+            for workshop in self.workshops:
+                for phase in workshop.phasen:
+                    phasen.add(phase)
+
+            numbers = list(phasen)
+            numbers.sort()
+
+            cursor = execute("SELECT number, description FROM workshop_phases "
+                             "WHERE year = %i" % self.year)
+            info = dict(cursor.fetchall())
+
+            ret = [ Workshopphase(number, info.get(number, ""))
+                    for number in numbers ]
+            flask.g.congress_workshopphasen = ret
+
+        return ret
 
 congress_directory_re = re.compile(r"(\d{4}).*")
 class Congresses(object):
@@ -619,7 +664,13 @@ class Booking(dbobject):
                 return "danger"
 
     def __repr__(self):
-        return "<" + self.name + ">"
+        if hasattr(self, "role"):
+            return f"<{self.role[:4]}:{self.name}>"
+        else:
+            return f"<{self.name}>"
+
+class BookingForWorkshopAssignment(Booking):
+    __view__ = "workshop_assignment_info"
 
 def resolve_room_mates(bookings):
     # Create a dict matching (lower case) names and email-addresses
