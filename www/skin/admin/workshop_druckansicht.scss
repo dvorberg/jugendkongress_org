@@ -16,11 +16,15 @@ h1
     }
 }
 
+div.phase:last-child div.instance:last-child ol
+{
+    page-break-after: auto;
+}                         
+
 ol
 {
     page-break-after: always;
 }
-
 
 
 li

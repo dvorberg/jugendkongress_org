@@ -10,9 +10,9 @@
   </head>
 
   <body>
-    <div class="mb-3" tal:repeat="wsp congress.workshopphasen">
+    <div class="mb-3 phase" tal:repeat="wsp congress.workshopphasen">
       <div class="row g-4">
-        <div class="col" tal:repeat="instance phases[wsp.number]">
+        <div class="col instance" tal:repeat="instance phases[wsp.number]">
           <h1 class="workshop-title text-nowrap">
             ${instance.workshop.titel}<br />
             <small>${wsp.description}</small>
@@ -20,7 +20,8 @@
 
           <ol>
             <li tal:repeat="booking instance.bookings">
-              <span>${booking.name}</span>
+              ${booking.firstname}
+              <strong>${booking.lastname}</strong>
             </li>
 
             <li tal:repeat="x range(instance.workshop.teilnehmer_max-len(instance.bookings))">
