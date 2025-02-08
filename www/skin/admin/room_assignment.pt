@@ -56,7 +56,7 @@
                 <td>
                   <div class="mb-1" tal:repeat="b room.occupants">
                     <div class="name text-nowrap">
-                      ${b.name}
+                      ${b.name} <small>(${b.room_preference_html})</small>
                       <div style="width: 60px; float: right">
                         <span class="pull-right badge rounded-pill role ${b.role}">id=${b.id}</span>
                       </div>
