@@ -48,6 +48,14 @@ CREATE VIEW room_info AS
 
 GRANT SELECT ON room_info TO jugendkongress; 
 
+DROP VIEW IF EXISTS workshop_assignment_info CASCADE;
+CREATE VIEW workshop_assignment_info AS
+     SELECT booking_id, phase, workshop_id,
+            year, firstname, lastname, email, room_mates
+       FROM workshop_assignments
+       LEFT JOIN booking ON booking.id = booking_id;
+
+GRANT SELECT ON workshop_assignment_info TO jugendkongress;
 
 
 COMMIT;
