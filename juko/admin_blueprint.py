@@ -644,6 +644,7 @@ def modify_booking(id:int, what):
         return abort(404)
 
 @bp.route("/room_assignment.py", methods=("POST", "GET",))
+@authentication.login_required
 def room_assignment():
     template = g.skin.load_template("skin/admin/room_assignment.pt")
     congress = g.congresses.current
@@ -694,6 +695,7 @@ def room_assignment():
                     unassigned=unassigned)
 
 @bp.route("/swap_rooms.py", methods=("POST", "GET",))
+@authentication.login_required
 @gets_parameters_from_request
 def swap_rooms(left:int, right:int):
     year = g.congresses.current.year
@@ -711,6 +713,7 @@ def swap_rooms(left:int, right:int):
     return redirect(get_site_url() + "/admin/room_assignment.py")
 
 @bp.route("/move_to_room.py", methods=("POST", "GET",))
+@authentication.login_required
 @gets_parameters_from_request
 def move_to_room(booking_id:int, room_no):
     # Check the room_no.
@@ -726,3 +729,76 @@ def move_to_room(booking_id:int, room_no):
     commit()
 
     return redirect(get_site_url() + "/admin/room_assignment.py")
+
+@bp.route("/workshopphasen.py", methods=("POST", "GET",))
+@authentication.login_required
+def workshopphasen():
+    congress = g.congresses.current
+
+    if request.method == "POST":
+        execute("DELETE FROM workshop_phases WHERE year = %i" % congress.year)
+
+        values = []
+        for wsp in congress.workshopphasen:
+            info = request.form.get("info%i" % wsp.number, "").strip()
+            if info:
+                values.append( (congress.year, wsp.number,
+                                sql.string_literal(info),) )
+
+        execute(sql.insert("workshop_phases",
+                           ("year", "number", "description",),
+                           values))
+        commit()
+
+        return redirect(get_site_url() + "/admin/workshop_assignment.py")
+    else:
+        template = g.skin.load_template("skin/admin/workshopphasen.pt")
+        return template(congress=congress)
+
+@bp.route("/workshop_assignment.py", methods=("POST", "GET",))
+@authentication.login_required
+@gets_parameters_from_request
+def workshop_assignment(druckansicht=False):
+    if druckansicht:
+        tp = "skin/admin/workshop_verteilung_druckansicht.pt"
+    else:
+        tp = "skin/admin/workshop_assignment.pt"
+
+    template = g.skin.load_template(tp)
+    congress = g.congresses.current
+    year = congress.year
+
+    bookings = model.congress.BookingForWorkshopAssignment.select(
+        sql.where("year=%i " % year),
+        sql.orderby("phase, workshop_id, lastname, firstname"))
+    model.congress.resolve_room_mates(bookings)
+
+    workshops_by_id = dict([ (w.id, w) for w in congress.workshops ])
+
+    instances = {}
+    for booking in bookings:
+        key = ( booking.phase, booking.workshop_id, )
+        if not key in instances:
+            instances[key] = controllers.WorkshopInstance(
+                workshops_by_id[booking.workshop_id],
+                booking.phase, [])
+        instances[key].bookings.append(booking)
+
+    phases = itertools.groupby(instances.values(),
+                               lambda instance: instance.phase)
+    phases = dict( [(n, list(sorted(i, key=lambda i: i.workshop.titel)),)
+                    for n, i in phases] )
+
+    return template(congress=congress, phases=phases)
+
+@bp.route("/reset_workshop_assignment.py", methods=("POST",))
+@authentication.login_required
+def reset_workshop_assignment():
+    execute("DELETE FROM workshop_assignments "
+            " WHERE booking_id IN ( SELECT id FROM booking WHERE year = %s )",
+            ( g.congresses.current.year, ))
+
+    controllers.workshop_zuordnung()
+    commit()
+
+    return redirect(get_site_url() + "/admin/workshop_assignment.py")
