@@ -489,7 +489,7 @@ def workshop_zuordnung():
     # Assign random workshops to those who don’t have a booking
     # in some phase.
     def place_randomly(booking, phase):
-        for i in sorted(instances, key=lambda i: len(bookings)):
+        for i in sorted(instances, key=lambda i: len(i.bookings)):
             if i.phase == phase and i.available(1):
                 i.place(booking)
                 return
