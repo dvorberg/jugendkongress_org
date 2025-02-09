@@ -20,7 +20,8 @@
 ##
 ##  I have added a copy of the GPL in the file LICENSE
 
-import re, string, datetime, json, itertools, dataclasses
+import re, string, datetime, json, itertools, dataclasses, csv
+from io import StringIO
 
 from flask import (Blueprint, g, request, session, abort, redirect,
                    make_response, url_for)
@@ -802,3 +803,91 @@ def reset_workshop_assignment():
     commit()
 
     return redirect(get_site_url() + "/admin/workshop_assignment.py")
+
+
+@bp.route("/bookings_csv.py", methods=("GET",))
+@authentication.login_required
+def bookings_csv():
+    congress = g.congresses.current
+
+    headings = { "id": "ID",
+                 "firstname": "Vorname",
+                 "lastname": "Nachname",
+                 "address": "Adresse",
+                 "zip": "PLZ",
+                 "city": "Ort",
+                 "phone": "Tel.",
+                 "email": "e-Mail",
+                 "dob": "GebTag",
+                 "gender": "Geschlecht",
+                 "food_preference": "Essen",
+                 "remarks": "Bemerkungen",
+                 "lactose_intolerant": "Laktose?",
+                 "room_preference": "Zimmer",
+                 "room_mates": "Zimmerpartner",
+                 "ride_sharing_option": "Fahrt",
+                 "ride_sharing_start": "Ab",
+                 "musical_instrument": "Musik",
+                 "room_overwrite": "Zimmer von Hand",
+                 "room": "Zimmer autom.",
+                 "ctime": "Angelegt",
+                 "role": "Rolle",
+                 "has_payed": "Bezahlt?",
+                 "payment_remarks": "Bemerkungen zu Geld",
+                 "slug": "Link",
+                }
+
+    bookings = model.congress.Booking.select(
+        sql.where("year=%i" % congress.year),
+        sql.orderby("lower(lastname), lower(firstname)"))
+
+    fp = StringIO()
+    writer = csv.writer(fp, quoting=csv.QUOTE_NONNUMERIC)
+
+    for workshop in congress.workshops:
+        headings[workshop.id] = workshop.titel + " WS"
+
+    writer.writerow(headings.values())
+
+    for booking in bookings:
+        info = booking.as_dict()
+
+        info["slug"] = booking.href
+
+        for workshop in congress.workshops:
+            if workshop.id in booking.workshop_choices:
+                info[workshop.id] = 1
+            else:
+                info[workshop.id] = 0
+
+        row = dict([ (field, info[field],)
+                     for field in headings.keys() ])
+
+        for key, value in row.items():
+            if type(value) is bool:
+                row[key] = int(value)
+            elif value is None:
+                row[key] = ""
+            elif value == "none":
+                row[key] = ""
+
+        if row["room_overwrite"]:
+            row["room_overwrite"] = booking.room_overwrite.upper()
+        row["room"] = booking.ROOM
+        row["food_preference"] = booking.food_preference_html
+
+        phone = row["phone"].strip().replace(" ", "").replace("-", "")
+
+        if phone.startswith("0"):
+            phone = "+49 " + phone[1:]
+        elif phone.startswith("+49"):
+            phone = "+49 " + phone[3:]
+        row["phone"] = phone
+
+        writer.writerow(row.values())
+
+    response = make_response(fp.getvalue(), 200)
+    response.headers["Content-Type"] = "text/csv; charset=UTF8"
+    response.headers["Content-Disposition"] = \
+        f'attachment; filename="juko-{congress.year}.csv"'
+    return response
