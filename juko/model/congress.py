@@ -193,7 +193,7 @@ class Workshop(DocumentFolder):
 
     @property
     def teilnehmer_max(self):
-        return int(self.get_meta("Teilnehmer-Max", 15))
+        return int(self.get_meta("teilnehmer-max", 15))
 
     def __eq__(self, other):
         return (isinstance(other, self.__class__) and other.id == self.id)
