@@ -63,13 +63,14 @@
       </div>
 
       <form method="post" action="/admin/reset_workshop_assignment.py">
-        <button class="btn btn-primary">
+        <button class="btn btn-danger"
+                onclick="return confirm('Die aktuelle Verteilung wird gelöscht. Fortfahren?')">
           Verteilung zurücksetzen
         </button>
 
         <a href="/admin/workshop_assignment.py?druckansicht=ja"
            class="btn btn-success" target="_new">
-          Druckansicht
+          🖨️ Druckansicht
         </a>
       </form>
       
