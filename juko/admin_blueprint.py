@@ -1005,7 +1005,7 @@ def send_info_mail(booking_id:int):
     send_info_email_to(booking)
     #return json_response(sent="ok")
 
-    return redirect(request.referrer,
+    return redirect(request.referrer.split("?")[0],
                     site_message=(f"Eine e-Mail an {booking.email} "
                                   f"wurde versandt."),
                     __ensure_reload=str(time.time()))
