@@ -43,20 +43,33 @@
                   <strong tal:attributes="class test(room.overwrite,
                                                      'text-danger')"
                           tal:content="room.NO" />
-                  <div>
-                    <small><s tal:omit-tag="not:room.beds_overwrite"
-                    >${room.beds} Bett</s></small>
+                  <div class="${test(room.full,
+                                     'text-danger', 'text-success')}">
+                    <div>
+                      <strong tal:omit-tag="not:room.overfull">
+                        ${len(room.occupants)} von
+                      </strong>
+                    </div>
+                    <div>
+                      <small><s tal:omit-tag="not:room.beds_overwrite"
+                                >${room.beds} Bttn</s></small>
+                    </div>
                   </div>
                   <div>
                     <small tal:condition="room.beds_overwrite"
                            class="text-danger"
-                           >${room.beds_overwrite} Bett</small>
+                           >${room.beds_overwrite} Bttn</small>
+                  </div>
+
+                  <div class="mt-1" tal:condition="room.overfull">
+                    <img src="/skin/admin/achtung.svg" class="achtung" />
                   </div>
                 </td>
                 <td>
                   <div class="mb-1" tal:repeat="b room.occupants">
                     <div class="name text-nowrap">
-                      ${b.name} <small>(${b.room_preference_html})</small>
+                      ${b.name} <small tal:content="structure
+                                                    b.room_preference_html" />
                       <div style="width: 60px; float: right">
                         <span class="pull-right badge rounded-pill role ${b.role}">id=${b.id}</span>
                       </div>
@@ -88,9 +101,15 @@
       </div>
       
       <form class="form mt-4" method="post">
-        <button type="submit" class="btn btn-primary"
-                onclick="return confirm('Alle Zuordnungen werden gelöscht. Sicher?')">
+        <button tal:condition="rooms_are_assigned"
+                type="submit" class="btn btn-danger"
+                onclick="return confirm('Alle Zuordnungen werden ' +
+                         'gelöscht. Sicher?')">
           Automatik zurücksetzen
+        </button>
+        <button tal:condition="not:rooms_are_assigned"
+                type="submit" class="btn btn-success">
+          Automatisch verteilen
         </button>
       </form>
 
