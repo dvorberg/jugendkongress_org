@@ -213,6 +213,10 @@ class Congress(DocumentFolder):
         self.reset()
 
     @property
+    def anmeldung_from_name(self):
+        return self.get_meta("anmeldungs-from-name")
+
+    @property
     def congress(self):
         return self
 
@@ -223,13 +227,19 @@ class Congress(DocumentFolder):
         self._md = None
         self._rtime = None
 
-        self._workshops = [ Workshop(path, self)
+        workshops = [ Workshop(path, self)
                             for path in self.abspath.glob("*.workshop") ]
-        self._workshops.sort(key=lambda w: w.sort_key)
+        workshops.sort(key=lambda w: w.sort_key)
+
+        self._workshops = dict( [(workshop.id, workshop,)
+                                 for workshop in workshops] )
 
     @property
     def workshops(self):
-        return self._workshops
+        return self._workshops.values()
+
+    def workshop_by_id(self, workshop_id):
+        return self._workshops[workshop_id]
 
     @cached_property
     def anmeldeschluss(self):
@@ -555,7 +565,7 @@ class Booking(dbobject):
     @property
     def room_preference_html(self):
         if self.room_preference is None:
-            return '<strong class="text-danver">0</strong>'
+            return '<strong class="text-danger">∅</strong>'
         else:
             return self.room_preference.split(" ")[0]
 
@@ -710,6 +720,14 @@ class Room(dbobject):
     @property
     def NO(self):
         return self.no.upper()
+
+    @property
+    def full(self):
+        return (len(self.occupants) >= (self.beds_overwrite or self.beds))
+
+    @property
+    def overfull(self):
+        return (len(self.occupants) > (self.beds_overwrite or self.beds))
 
 if __name__ == "__main__":
     # Test this.
