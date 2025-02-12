@@ -956,7 +956,7 @@ def send_info_email_to(booking):
 
     anfang = process_template(anfang, **locals())
 
-    message = MIMEMultipart("related")
+    message = MIMEMultipart()
     message.attach(MIMEText(anfang, "plain", "utf-8"))
 
     imagepath = pathlib.Path(g.skin.resource_path("skin/admin/room_maps"),
@@ -975,9 +975,7 @@ def send_info_email_to(booking):
         workshops = ("\nEs ist bisher keine Workshop-Belegung "
                      "für Dich vorgesehen.\n\n")
 
-    message.attach(MIMEText("\n\n" + workshops, "plain", "utf-8"))
-
-    message.attach(MIMEText(schluss, "plain", "utf-8"))
+    message.attach(MIMEText("\n\n" + workshops + schluss, "plain", "utf-8"))
 
     dirpath = pathlib.Path(congress.abspath, "kurz_vorher_mail_attachments")
 
