@@ -130,7 +130,7 @@ from .model.congress import Congresses
 flask.g.congresses = Congresses()
 flask.g.congress = flask.g.congresses.current
 
-flask.g.skin = skinning.Skin(config["SKIN_PATH"])
+flask.g.skin = skinning.Skin(config["WWW_PATH"])
 
 from .model.users import User
 def get_user(user_class=User):
