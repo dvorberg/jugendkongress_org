@@ -5,6 +5,7 @@ Nummer: 23
 Datum: 21.–23. Februar 2025
 Anmeldeschluss: 2025-2-1
 Startdatum: 2025-2-21
+Anmeldungs-From-Name: Diedrich Vorberg
 
 !titelbild_einsetzen("titelbild.webp", "titelbild-mobil.webp")
 
