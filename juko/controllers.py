@@ -233,7 +233,7 @@ def get_rooms_for(year):
                      f"( SELECT lower(room_overwrite) "
                      f"    FROM booking "
                      f"   WHERE year = {year} "
-                     f"      AND room_overwrite IS NOT NULL)"
+                     f"      AND room_overwrite IS NOT NULL) "
                      f"ORDER BY beds DESC")
 
     rooms = [ AssignableRoom(no, section, beds, o)
@@ -253,8 +253,9 @@ def get_room_data_for(year, include_overwritten=False):
     # If rooms are already set, transfer the info to the list.
     for booking in bookings:
         if booking.room:
-            room = rooms_by_no[booking.room]
-            room.append(booking)
+            room = rooms_by_no.get(booking.room, None)
+            if room is not None:
+                room.append(booking)
 
     return rooms_by_no, bookings
 
