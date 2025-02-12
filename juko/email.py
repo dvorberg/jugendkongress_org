@@ -86,16 +86,9 @@ def sendmail_template(template_filename,
     if "%(" in subject: subject = subject % fields
     if "{" in subject: subject = subject.format(**fields)
 
-    if "roboter" in from_name.lower():
-        bcc.append("roboter-kopie@bluetenlese-gottesdienste.de")
-
     sendmail(from_name, from_email,
              to_name, to_email,
              subject,
              message,
              multipart_subtype="alternative",
              headers=headers, bcc=bcc)
-
-    if debug:
-        # This should be a logger, of course.
-        print(f"Mail sent to {to_name} ‹{to_email}›", file=sys.stderr)
