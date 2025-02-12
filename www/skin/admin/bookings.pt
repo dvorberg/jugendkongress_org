@@ -105,7 +105,7 @@
         </thead>
         
         <tbody class="filters text-secondary"
-               tal:condition="'rolle' in active_colsets or 'misc' in active_colsets">
+               tal:condition="'rolle' in active_colsets or 'misc' in active_colsets or 'zimmer' in active_colsets">
           <tr>
             <th></th><!--Role marker-->
             <th class="align-middle text-secondary">
@@ -272,7 +272,8 @@
                   <span class="room ${test(b.room_overwrite, 'overwritten')}"
                         tal:content="b.ROOM">
                   </span>
-                  <a href="#" style="text-decoration: none"
+                  <a tal:condition="not:rooms_are_assigned"
+                     href="#" style="text-decoration: none"
                      class="ms-3 room-overwrite-link">✎</a>
                 </td>
                 <td tal:content="structure b.make_room_mates_html()" />
@@ -354,6 +355,11 @@
                 <a href="${b.href}" class="btn btn-sm btn-primary"
                    target="_new">
                   <img src="/skin/admin/pen.svg" />                  
+                </a>
+                <a href="/admin/send_info_mail.py?booking_id=${b.id}"
+                   class="btn btn-sm btn-warning"
+                   target="_new">
+                  <img src="/skin/admin/envelope.svg" />
                 </a>
               </td>              
             </tr>
