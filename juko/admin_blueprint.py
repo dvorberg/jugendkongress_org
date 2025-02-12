@@ -20,8 +20,13 @@
 ##
 ##  I have added a copy of the GPL in the file LICENSE
 
-import re, string, datetime, json, itertools, dataclasses, csv
+import re, string, datetime, json, itertools, dataclasses, csv, pathlib, time
 from io import StringIO
+
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
+from email.mime.application import MIMEApplication
 
 from flask import (Blueprint, g, request, session, abort, redirect,
                    make_response, url_for)
@@ -39,11 +44,12 @@ from sqlclasses import sql
 from . import controllers
 from .form_feedback import FormFeedback, NullFeedback
 from .db import cursor, commit, execute, query_one
-from .email import sendmail_template
+from .email import sendmail, sendmail_template
 
 from . import authentication, model
 from .utils import (get_site_url, gets_parameters_from_request, redirect,
-                    rget, rchecked, OrderByHandler, get_site_url)
+                    rget, rchecked, OrderByHandler, get_site_url,
+                    process_template)
 from .ptutils import js_string_literal
 
 
@@ -502,12 +508,15 @@ def bookings():
             "%i unvollständige Anmeldungen" % gender_counts[None],
             class_="text-danger")))
 
+    rooms_are_assigned = query_if_rooms_are_assigned(congress.year)
+
     return template(congress=congress, bookings=bookings,
                     active_colsets=active_colsets,
                     food_preference_html=food_preference_html,
                     gender_info_html=gender_info_html,
                     role_counts=role_counts,
-                    filter=filter)
+                    filter=filter,
+                    rooms_are_assigned=rooms_are_assigned)
 
 @bp.route("/booking_name_form.py", methods=("GET", "POST",))
 @authentication.login_required
@@ -546,31 +555,32 @@ def booking_name_form(id:int, firstname=None, lastname=None, email=None):
 @authentication.login_required
 def rooms():
     congress = g.congresses.current
+    year = congress.year
     template = g.skin.load_template("skin/admin/rooms.pt")
 
     rooms = model.congress.Room.select(
-        sql.where( "year = %i OR year IS NULL" % congress.year),
+        sql.where( "year = %i OR year IS NULL" % year),
         sql.orderby("section, no"))
 
     if request.method == "POST":
         numbers = []
         for room in rooms:
             if request.form.get("room-" + room.no):
-                numbers.append( (congress.year,
+                numbers.append( (year,
                                  sql.string_literal(room.no),) )
                 room.booked = True
-        execute("DELETE FROM booked_rooms WHERE year = %i" % congress.year)
+        execute("DELETE FROM booked_rooms WHERE year = %i" % year)
         if numbers:
             execute(sql.insert("booked_rooms", ("year", "room_no",), numbers))
 
         # If rooms have been removed frmo the roster, remove them from
         # the referencing bookings.
         update = sql.update("booking",
-                            sql.where("year = %i" % congress.year,
+                            sql.where("year = %i" % year,
                                       " AND ",
                                       "room NOT IN (",
                                       "SELECT room_no FROM booked_rooms "
-                                      " WHERE year = %i"  % congress.year,
+                                      " WHERE year = %i"  % year,
                                       ")"),
                             {"room": None})
         execute(update)
@@ -584,7 +594,8 @@ def rooms():
 
 
     return template(congress=congress, sections=rooms.sections,
-                    site_message=site_message, site_message_class=smc)
+                    site_message=site_message, site_message_class=smc,
+                    rooms_are_assigned=query_if_rooms_are_assigned(year))
 
 
 def json_response(**kw):
@@ -644,6 +655,11 @@ def modify_booking(id:int, what):
     else:
         return abort(404)
 
+def query_if_rooms_are_assigned(year):
+    count, = query_one(f"SELECT COUNT(*) FROM booking "
+                       f"WHERE year = {year} AND room IS NOT NULL")
+    return (count > 0)
+
 @bp.route("/room_assignment.py", methods=("POST", "GET",))
 @authentication.login_required
 def room_assignment():
@@ -651,12 +667,19 @@ def room_assignment():
     congress = g.congresses.current
     year = congress.year
 
+    rooms_are_assigned = query_if_rooms_are_assigned(year)
 
     if request.method == "POST":
-        execute("UPDATE booking SET room = NULL WHERE year = %i" % year)
-        execute("UPDATE booked_rooms SET beds_overwrite = NULL "
-                " WHERE year = %s", (year,))
-        controllers.zimmer_zuordnung()
+        if rooms_are_assigned:
+            execute("UPDATE booking SET room = NULL WHERE year = %i" % year)
+            execute("UPDATE booked_rooms SET beds_overwrite = NULL "
+                    " WHERE year = %s", (year,))
+
+            rooms_are_assigned = False
+        else:
+            controllers.zimmer_zuordnung()
+            rooms_are_assigned = True
+
         commit()
 
     rooms = model.congress.Room.select(
@@ -693,7 +716,8 @@ def room_assignment():
 
     return template(congress=congress,
                     sections=rooms.sections,
-                    unassigned=unassigned)
+                    unassigned=unassigned,
+                    rooms_are_assigned=rooms_are_assigned)
 
 @bp.route("/swap_rooms.py", methods=("POST", "GET",))
 @authentication.login_required
@@ -891,3 +915,99 @@ def bookings_csv():
     response.headers["Content-Disposition"] = \
         f'attachment; filename="juko-{congress.year}.csv"'
     return response
+
+
+def send_info_email_to(booking):
+    congress = g.congresses.current
+    year = congress.year
+
+    def load_template(name):
+        path = pathlib.Path(congress.abspath, name)
+        return path.open().read()
+
+    anfang = load_template("kurz_vorher_mail_anfang.txt")
+    schluss = load_template("kurz_vorher_mail_schluss.txt")
+
+    room = booking.room_overwrite or booking.room
+    if room is None:
+        raise ValueError("Can’t send info mail because no room is set.")
+
+    room_section, = query_one(f"SELECT section FROM room WHERE no = %s",
+                              (room,))
+
+    cursor = execute(f"SELECT firstname, lastname FROM booking "
+                     f" WHERE year = %s "
+                     f"   AND (room = %s OR room_overwrite = %s)"
+                     f"   AND id <> %s",
+                     ( year, room, room, booking.id, ))
+    zimmerpartner = [ fn + " " + ln for (fn, ln) in cursor.fetchall() ]
+    if zimmerpartner:
+        zimmerpartner = " zusammen mit: " + ", ".join(zimmerpartner) + "."
+    else:
+        zimmerpartner = "."
+
+    cursor = execute(
+        "SELECT number, description, workshop_id "
+        "  FROM workshop_assignments "
+        "  LEFT JOIN workshop_phases "
+        "    ON workshop_phases.number = workshop_assignments.phase"
+        " WHERE booking_id = %s ORDER BY number",
+        ( booking.id,))
+
+    anfang = process_template(anfang, **locals())
+
+    message = MIMEMultipart("related")
+    message.attach(MIMEText(anfang, "plain", "utf-8"))
+
+    imagepath = pathlib.Path(g.skin.resource_path("skin/admin/room_maps"),
+                             room + ".jpg")
+    if imagepath.exists:
+        message.attach(MIMEImage(imagepath.open("rb").read()))
+
+    workshops = [(number, description, congress.workshop_by_id(workshop_id),)
+                  for (number, description, workshop_id,) in cursor.fetchall()]
+
+    if workshops:
+        txt = "Folgende Workshop-Belegung schlägt das System für Dich vor:\n"
+        workshops = [ f"{n}) {d}: {ws.titel}" for ( n, d, ws) in workshops ]
+        workshops = txt + "\n".join(workshops) + "\n\n"
+    else:
+        workshops = ("\nEs ist bisher keine Workshop-Belegung "
+                     "für Dich vorgesehen.\n\n")
+
+    message.attach(MIMEText("\n\n" + workshops, "plain", "utf-8"))
+
+    message.attach(MIMEText(schluss, "plain", "utf-8"))
+
+    dirpath = pathlib.Path(congress.abspath, "kurz_vorher_mail_attachments")
+
+    for filepath in sorted(dirpath.glob("*"), key=lambda p:p.name.lower()):
+        part = MIMEApplication(filepath.open("rb").read())
+        part.add_header("Content-Disposition", "attachment",
+                        filename=filepath.name)
+        message.attach(part)
+
+    subject = (f"Letzte Infos zum {congress.nummer}. "
+               f"Lutherischen Jugendkongress "
+               f"{congress.year}")
+    sendmail(congress.anmeldung_from_name,
+             "anmeldung@jugendkongress.org",
+             booking.name,
+             booking.email,
+             subject,
+             message)
+
+
+
+@bp.route("/send_info_mail.py", methods=("GET",))
+@authentication.login_required
+@gets_parameters_from_request
+def send_info_mail(booking_id:int):
+    booking = model.congress.Booking.select_by_primary_key(booking_id)
+    send_info_email_to(booking)
+    #return json_response(sent="ok")
+
+    return redirect(request.referrer,
+                    site_message=(f"Eine e-Mail an {booking.email} "
+                                  f"wurde versandt."),
+                    __ensure_reload=str(time.time()))
