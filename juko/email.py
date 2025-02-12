@@ -33,10 +33,10 @@ def sendmail(from_name, from_email,
             print("Cc not used:", headers["Cc"])
             del headers["Cc"]
 
-        t4_sendmail(from_name, from_email,
-                    to_name, to_email,
-                    subject, message, attachments, headers, bcc,
-                    text_subtype, encoding, multipart_subtype)
+    t4_sendmail(from_name, from_email,
+                to_name, to_email,
+                subject, message, attachments, headers, bcc,
+                text_subtype, encoding, multipart_subtype)
 
     if debug:
         # This should be a logger, of course.
