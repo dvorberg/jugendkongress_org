@@ -48,7 +48,7 @@ Lutherische Kongresse für Jugendarbeit bieten:
 
 **Anreise**
 Bahn: bis „Witzenhausen-Nord“ bzw. „Witzenhausen“ (es gibt nur einen Bahnhof!), von dort abholen lassen.
-PKW: direkt an der B 27 zwischen Witzenhausen und Bad Sooden-Allendorf. → Karte.
+PKW: direkt an der B 27 zwischen Witzenhausen und Bad Soden-Allendorf. → Karte.
 
 **Beginn**: Fr, 21. Februar 2025, Anmeldung ab 16:00 Uhr, Veranstaltung ab 17:00 Uhr
 
