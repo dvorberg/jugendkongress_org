@@ -5,9 +5,9 @@ bald ist es so weit und wir sehen uns beim ${congress.nummer}. Lutherischen Juge
   ${congress.titel}
   (${congress.untertitel})
 
-Anreise: Wenn Du vom Bahnhof Witzenhausen Nord abgeholt werden möchtest, koordiniere Dich bitte mit Noah Rothfuchs. Du erreichst ihn telefonisch hier: ‭+49 176 95465617‬. Bitte melde Dich bis zum 19.2.!
+Anreise: Wenn Du vom Bahnhof Witzenhausen Nord abgeholt werden möchtest, koordiniere Dich bitte mit Noah Rothfuchs. Du erreichst ihn telefonisch hier: ‭+4917695465617‬. Bitte melde Dich bis zum 19.2.!
 
-Wenn Du neben der Anreise andere Schwierigkeiten haben solltest, wende Dich gerne an mich, Diedrich Vorberg, +49 151 58858733. Ich kriege auch die Mail, wenn Du „antworten“ klickst.
+Wenn Du neben der Anreise andere Schwierigkeiten haben solltest, wende Dich gerne an mich, Diedrich Vorberg, +4915158858733. Ich kriege auch die Mail, wenn Du „antworten“ klickst.
 
 Zimmer: Du übernachtest in Zimmer ${booking.ROOM} im ${room_section}${zimmerpartner}
 
