@@ -194,7 +194,8 @@ window.addEventListener("load", function(event) {
 
 		get name()
 		{
-			this.row.querySelector(".name").innerText;
+			return this.row.querySelector(".name").innerText.replace(
+				"✎", "").trim();
 		}
 	}
 	
@@ -557,7 +558,7 @@ window.addEventListener("load", function(event) {
 	{
 		on_click(event)
 		{
-			if (confirm(this.name + ' wirklich auschecken?'))
+			if (confirm(this.name + ' wirklich wieder auschecken?'))
 			{
 				this.modify_booking("checkout");
 			}
