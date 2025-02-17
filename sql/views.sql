@@ -18,7 +18,8 @@ CREATE VIEW booking_info AS
           musical_instrument,
           wsc.workshop_choices,
           ctime, (mtime <> ctime) AS completed,
-          has_payed, payment_remarks
+          has_payed, payment_remarks,
+          checkin, checkin_remarks
      FROM booking
      LEFT JOIN wsc ON booking_id = booking.id;
 
