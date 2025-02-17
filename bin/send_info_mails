@@ -1,0 +1,32 @@
+#!/usr/bin/env python
+
+import sys
+
+from juko import plastic_bottle
+import flask
+
+from sqlclasses import sql
+
+from juko.model.congress import Booking
+from juko.admin_blueprint import send_info_email_to
+from juko.email import sendmail
+
+def main():
+    congress = flask.g.congresses.current
+    year = congress.year
+
+    collected_sendmail_calls = []
+    def collect_sendmail_calls(*args, **kw):
+        collected_sendmail_calls.append( (args, kw,) )
+
+    for counter, booking in enumerate(
+            Booking.select(sql.where(f"year = {year}"))):
+        send_info_email_to(booking, sendmail=collect_sendmail_calls)
+        print(counter, end="\r")
+    print(" "*80, end="\r")
+
+    for args, kw in collected_sendmail_calls:
+        print(args[1])
+        sendmail(*args, **kw)
+
+main()

@@ -37,6 +37,9 @@
     <link rel="stylesheet" type="text/css"
 	      href="${sref('jugendkongress/homepage.scss')}" />
 
+    <link href="/skin/jugendkongress/favicon.ico"
+          rel="shortcut icon" type="image/vnd.microsoft.icon" />
+
     <script tal:content="string:var portal_url = '${skin.site_url}';">
     </script>
     <script src="/skin/bootstrap/js/bootstrap.bundle.min.js"></script>
