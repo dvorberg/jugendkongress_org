@@ -917,7 +917,7 @@ def bookings_csv():
     return response
 
 
-def send_info_email_to(booking):
+def send_info_email_to(booking, sendmail=sendmail):
     congress = g.congresses.current
     year = congress.year
 
