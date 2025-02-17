@@ -425,9 +425,24 @@ class WorkshopInstance:
         max = self.workshop.teilnehmer_max
         return (len(self.bookings) + booking_count <= max)
 
-    def place(self, booking):
-        self.bookings.append(booking)
-        booking.placed.add(self)
+    def available_for(self, booking) -> bool:
+        if not self.available(1):
+            return False
+        else:
+            for instance in booking.placed:
+                if (instance.workshop == self.workshop
+                    or instance.phase == self.phase):
+                    return False
+
+        return True
+
+    def place(self, booking) -> bool:
+        if self.available_for(booking):
+            self.bookings.append(booking)
+            booking.placed.add(self)
+            return True
+        else:
+            return True
 
     def __hash__(self):
         return hash((self.workshop.id, self.phase,))
@@ -451,8 +466,7 @@ def workshop_zuordnung():
         for instance in instances_of(workshop):
             if instance.available(len(group)):
                 for booking in group:
-                    if not instance.phase in [i.phase for i in booking.placed]:
-                        instance.place(booking)
+                    instance.place(booking)
                 return
 
         # We can’t place the group as a whole and will place
@@ -460,9 +474,7 @@ def workshop_zuordnung():
 
     def place_booking(workshop, booking):
         for instance in instances_of(workshop):
-            if instance.available(1) \
-               and not instance.phase in [i.phase for i in booking.placed]:
-                instance.place(booking)
+            if instance.place(booking):
                 return
 
         ic("Can’t place", booking, workshop)
@@ -492,8 +504,8 @@ def workshop_zuordnung():
     def place_randomly(booking, phase):
         for i in sorted(instances, key=lambda i: len(i.bookings)):
             if i.phase == phase and i.available(1):
-                i.place(booking)
-                return
+                if i.place(booking):
+                    return
 
     all_phases = set([p.number for p in congress.workshopphasen])
     for booking in bookings:

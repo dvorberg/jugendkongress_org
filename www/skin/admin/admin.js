@@ -191,6 +191,11 @@ window.addEventListener("load", function(event) {
 		{
 			// pass
 		}
+
+		get name()
+		{
+			this.row.querySelector(".name").innerText;
+		}
 	}
 	
 	class RoomOverwriteLinkController extends TableRowBasedController
@@ -365,75 +370,203 @@ window.addEventListener("load", function(event) {
 	document.querySelectorAll("input[name=has_payed]").forEach( a => {
 		new HasPayedCheckboxController(a);
 	});
+
+	//////////////////////////////////////////////////////////////////////
+
 	
-	const paymend_dialog = document.querySelector("#payment-remarks-dialog");
-	if (paymend_dialog)
-	{
-		const payment_modal = new bootstrap.Modal(paymend_dialog);
+	const remarks_dialog = document.querySelector("#remarks-dialog"),
+		  remarks_modal = remarks_dialog && new bootstrap.Modal(remarks_dialog);
 
-		paymend_dialog.querySelectorAll("button.close").forEach(button => {
-			button.addEventListener("click", event => { payment_modal.hide(); })
-		});
+	remarks_dialog.querySelectorAll("button.close").forEach(button => {
+		button.addEventListener("click", event => { remarks_modal.hide(); })
+	});
 		
-		class PaymentRemarksController extends TableRowBasedController
+	class RemarksController extends TableRowBasedController
+	{		
+		constructor(a)
 		{
-			constructor(a)
-			{
-				super();
-				this.a = a;
-				this.a.addEventListener("click", this.on_click.bind(this));
+			super();
+			this.a = a;
+			this.a.addEventListener("click", this.on_click.bind(this));
 
-				// add/remove EventListeners needs the listener to be identical.
-				this.bound_on_save = this.on_save.bind(this);
-			}
-
-			get node()
-			{
-				return this.a;
-			}
-
-			get dialog_textarea()
-			{
-				return paymend_dialog.querySelector("textarea#payment-remarks");
-			}
-
-			get save_button()
-			{
-				return paymend_dialog.querySelector("button.save");
-			}
-			
-			get span()
-			{
-				return this.row.querySelector("small.paymend-remarks");
-			}
-			
-			on_click(event)
-			{
-				this.dialog_textarea.value = this.span.innerText;
-				this.save_button.addEventListener("click", this.bound_on_save);
-				
-				payment_modal.show();
-			}
-
-			on_save(event)
-			{			
-				this.save_button.removeEventListener("click", this.bound_on_save);
-				
-				this.modify_booking("payment_remarks",
-									{payment_remarks: this.dialog_textarea.value});
-			}
-
-			on_json_fetched(result)
-			{
-				payment_modal.hide();
-				this.span.innerText = result.payment_remarks;
-			}
+			// add/remove EventListeners needs the listener to be identical.
+			this.bound_on_save = this.on_save.bind(this);
 		}
 
-		document.querySelectorAll("a.edit-paymend-remarks").forEach( a => {
-			new PaymentRemarksController(a);
-		});
+		get node()
+		{
+			return this.a;
+		}
+
+		get dialog_textarea()
+		{
+			return remarks_dialog.querySelector("textarea#remarks");
+		}
+
+		get save_button()
+		{
+			return remarks_dialog.querySelector("button.save");
+		}
+
+		get dialog_title()
+		{
+			return remarks_dialog.querySelector(".modal-title");
+		}
+		
+		on_click(event)
+		{
+			this.dialog_textarea.value = this.span.innerText;
+			this.save_button.addEventListener("click", this.bound_on_save);
+			this.dialog_title.innerText = this.title;
+			remarks_modal.show();
+		}
+
+		on_save(event)
+		{			
+			this.save_button.removeEventListener(
+				"click", this.bound_on_save);
+			this.save();
+		}
+
+		get title()
+		{
+			throw "Not implemented";
+		}
+		
+		get span()
+		{
+			throw "Not implemented";
+		}
+		
+		save()
+		{
+			throw "Not implemented";
+		}
+		
+		on_json_fetched(result)
+		{
+			throw "Not Implemented";
+		}
 	}
+	
+	class PaymentRemarksController extends RemarksController
+	{
+		get title()
+		{
+			return "Bezahlen";
+		}
+		
+		get span()
+		{
+			return this.row.querySelector(".payment-remarks");
+		}
+		
+		save()
+		{
+			this.modify_booking(
+				"payment_remarks",
+				{payment_remarks: this.dialog_textarea.value});
+		}			
+
+		on_json_fetched(result)
+		{
+			remarks_modal.hide();
+			this.span.innerText = result.payment_remarks;
+		}
+	}
+
+	document.querySelectorAll("a.edit-paymend-remarks").forEach( a => {
+		new PaymentRemarksController(a);
+	});
+	
+	class CheckinRemarksController extends RemarksController
+	{
+		get title()
+		{
+			return "Checkin";
+		}
+		
+		get span()
+		{
+			return this.row.querySelector(".checkin-remarks");
+		}
+		
+		save()
+		{
+			this.modify_booking(
+				"checkin_remarks",
+				{checkin_remarks: this.dialog_textarea.value});
+		}			
+
+		on_json_fetched(result)
+		{
+			remarks_modal.hide();
+			this.span.innerText = result.checkin_remarks;
+		}
+	}
+
+	document.querySelectorAll("a.edit-checkin-remarks").forEach( a => {
+		new CheckinRemarksController(a);
+	});
+	
+	//////////////////////////////////////////////////////////////////////
+	class CheckinButtonController extends TableRowBasedController
+	{
+		constructor(button)
+		{
+			super();
+			this.button = button
+			this.button.addEventListener("click", this.on_click.bind(this));
+		}
+
+		get node()
+		{
+			return this.button;
+		}
+
+		on_click(event)
+		{
+			this.modify_booking("checkin");
+		}
+
+		on_json_fetched(result)
+		{
+			if (result.checkin)
+			{
+				this.row.querySelector("button.checkin").style = "display:none";
+				this.row.querySelector("span.checkout").style = null;
+			}
+			else
+			{
+				this.row.querySelector("button.checkin").style = null;
+				this.row.querySelector("span.checkout").style = "display:none";
+			}
+
+			this.row.querySelector(".pretty-checkin-time").innerText =
+				result.pretty_checkin_time;
+			this.row.querySelector(".checkin-remarks").innerText =
+				result.checkin_remarks;
+		}
+	}
+
+	document.querySelectorAll("button.checkin").forEach( a => {
+		new CheckinButtonController(a);
+	});
+
+	class CheckoutButtonController extends CheckinButtonController
+	{
+		on_click(event)
+		{
+			if (confirm(this.name + ' wirklich auschecken?'))
+			{
+				this.modify_booking("checkout");
+			}
+		}		
+	}
+	
+	document.querySelectorAll("button.checkout").forEach( a => {
+		new CheckoutButtonController(a);
+	});
 	//////////////////////////////////////////////////////////////////////
 
 	class FilterController

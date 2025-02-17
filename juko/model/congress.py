@@ -673,6 +673,17 @@ class Booking(dbobject):
             else:
                 return "danger"
 
+    @staticmethod
+    def format_pretty_checkin_time(checkin):
+        if checkin is None:
+            return ""
+        else:
+            return checkin.strftime("%a %H.%M")
+
+    @property
+    def pretty_checkin_time(self):
+        return self.format_pretty_checkin_time(self.checkin)
+
     def __repr__(self):
         if hasattr(self, "role"):
             return f"<{self.role[:4]}:{self.name}>"

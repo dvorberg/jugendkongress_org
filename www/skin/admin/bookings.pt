@@ -56,6 +56,10 @@
           Geld
         </label>        
         <label class="ms-3">
+          <input type="checkbox" />
+          Checkin
+        </label>        
+        <label class="ms-3">
           <input type="checkbox" value="bemerkungen" />
           Bem.
         </label>
@@ -94,6 +98,11 @@
                 Geld
               </th>
             </tal:block>
+            <tal:block tal:condition="'checkin' in active_colsets">
+              <th>
+                Checkin
+              </th>
+            </tal:block>
             <tal:block tal:condition="'bemerkungen' in active_colsets">
               <th>
                 Bemerkungen
@@ -105,7 +114,7 @@
         </thead>
         
         <tbody class="filters text-secondary"
-               tal:condition="'rolle' in active_colsets or 'misc' in active_colsets or 'zimmer' in active_colsets">
+               tal:condition="'rolle' in active_colsets or 'misc' in active_colsets or 'zimmer' in active_colsets or 'geld' in active_colsets">
           <tr>
             <th></th><!--Role marker-->
             <th class="align-middle text-secondary">
@@ -193,6 +202,20 @@
             </tal:block>
             <tal:block tal:condition="'geld' in active_colsets">
               <th>
+                <label class="form-label">
+                  <input type="checkbox" value="on"
+                         data-filter-name="geld_fehlt" />
+                  fehlt
+                </label>                
+              </th>
+            </tal:block>
+            <tal:block tal:condition="'checkin' in active_colsets">
+              <th>
+                <label class="form-label">
+                  <input type="checkbox" value="on"
+                         data-filter-name="noshow" />
+                  No Show
+                </label>                
               </th>
             </tal:block>
             <tal:block tal:condition="'bemerkungen' in active_colsets">
@@ -216,8 +239,8 @@
                                            'table-' + b.paymentcls)">
               <td class="role ${b.role}"></td>
               <td>
-                <div class="text-nowrap ${test(not b.completed,
-                                               'text-danger')}">
+                <div class="text-nowrap name
+                            ${test(not b.completed, 'text-danger')}">
                   <span tal:content="b.firstname"/>
                   <strong tal:content="b.lastname"
                           /> <a href="/admin/booking_name_form.py?id=${b.id}"
@@ -338,11 +361,28 @@
                     bezahlt
                   </label>
                   
-                  <small class="paymend-remarks text-danger"
+                  <small class="payment-remarks text-danger"
                         tal:content="b.payment_remarks" />
                   <a href="javascript:{}"
                      class="edit-paymend-remarks text-decoration-none">✎</a>
                 </tal:block>
+              </td>
+
+              <td tal:condition="'checkin' in active_colsets">
+                <button class="btn btn-sm btn-danger checkin"
+                        style="${test(b.checkin is not None, 'display:none')}">
+                  Checkin
+                </button>
+                <span style="${test(b.checkin is None, 'display:none')}"
+                     class="checkout">
+                  <button class="btn btn-sm btn-success checkout">Da!</button>
+                  <small class="text-success pretty-checkin-time"
+                         tal:content="b.pretty_checkin_time" />
+                </span>
+                <small class="checkin-remarks text-danger"
+                       tal:content="b.checkin_remarks" />
+                <a href="javascript:{}"
+                     class="edit-checkin-remarks text-decoration-none">✎</a>
               </td>
               
               <td tal:condition="'bemerkungen' in active_colsets">
@@ -413,6 +453,7 @@
           </tal:block>
           
           <td tal:condition="'geld' in active_colsets"></td>
+          <td tal:condition="'checkin' in active_colsets"></td>
           <td><!--buttons--></td>
           <td tal:condition="'bemerkungen' in active_colsets"><!--remarks-->
           </td>
@@ -430,7 +471,7 @@
       </div>
 
 
-      <div class="modal" id="payment-remarks-dialog" tabindex="-1">
+      <div class="modal" id="remarks-dialog" tabindex="-1">
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header">
@@ -441,10 +482,10 @@
             <div class="modal-body">
               <form>
                 <div class="mb-3">
-                  <label for="payment-remarks"
+                  <label for="remarks"
                          class="col-form-label">Bemerkungen</label>
                     <textarea class="form-control"
-                              id="payment-remarks"></textarea>
+                              id="remarks"></textarea>
                   </div>
                 </form>
               </div>

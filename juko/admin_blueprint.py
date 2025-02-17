@@ -419,6 +419,8 @@ class Filter:
     musik: bool = False
     remarks: bool = False
     room_overwrite: bool = False
+    geld_fehlt: bool = False
+    noshow: bool = False
 
     @classmethod
     def from_cookie(cls):
@@ -446,6 +448,12 @@ class Filter:
 
         if self.room_overwrite:
             where.append(sql.where("room_overwrite IS NOT NULL"))
+
+        if self.geld_fehlt:
+            where.append(sql.where("role='attendee' AND has_payed IS FALSE"))
+
+        if self.noshow:
+            where.append(sql.where("checkin IS NULL"))
 
         if where:
             return sql.where.and_(*where)
@@ -607,6 +615,22 @@ def json_response(**kw):
 @authentication.login_required
 @gets_parameters_from_request
 def modify_booking(id:int, what):
+    def checkinfo():
+        checkin, checkin_remarks = query_one(
+            "SELECT checkin, checkin_remarks "
+            "  FROM booking "
+            " WHERE id = %s", (id,))
+
+        pct = model.congress.Booking.format_pretty_checkin_time(checkin)
+
+        if checkin:
+            checkin = checkin.isoformat()
+
+        return json_response(checkin=checkin,
+                             checkin_remarks=checkin_remarks,
+                             pretty_checkin_time=pct)
+
+
     if what == "room_overwrite":
         # We should check whether the room is in our current set of rooms.
 
@@ -652,6 +676,21 @@ def modify_booking(id:int, what):
 
         return json_response(payment_remarks=payment_remarks)
 
+    elif what == "checkin":
+        execute("UPDATE booking SET checkin=NOW() WHERE id = %i" % id)
+        commit()
+        return checkinfo()
+    elif what == "checkout":
+        execute("UPDATE booking SET checkin=NULL WHERE id = %i" % id)
+        commit()
+        return checkinfo()
+    elif what == "checkin_remarks":
+        checkin_remarks = request.form["checkin_remarks"];
+
+        execute("UPDATE booking SET checkin_remarks = %s "
+                " WHERE id = %s", ( checkin_remarks, id, ))
+        commit()
+        return checkinfo()
     else:
         return abort(404)
 
