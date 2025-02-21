@@ -301,7 +301,9 @@ class dbobject(object, metaclass=SQLRepresentation):
 
     def as_json(self):
         def custom_json(obj):
-            if isinstance(obj, (datetime.date, datetime.datetime,)):
+            if isinstance(obj, (datetime.date,
+                                datetime.datetime,
+                                datetime.time)):
                 return { "type": obj.__class__.__name__,
                          "isoformat": obj.isoformat() }
             elif isinstance(obj, set):
