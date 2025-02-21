@@ -25,12 +25,11 @@
       <div class="row">
         <div class="col">
           <h4>Anreise</h4>
-
-          <table tal:replace="structure arrivals" />
-          
+          <table tal:replace="structure arrivals" />          
         </div>
         <div class="col">
           <h4>Abreise</h4>
+          <table tal:replace="structure departures" />          
         </div>
       </div>
       
