@@ -1068,3 +1068,62 @@ def send_info_mail(booking_id:int):
                     site_message=(f"Eine e-Mail an {booking.email} "
                                   f"wurde versandt."),
                     __ensure_reload=str(time.time()))
+
+@dataclasses.dataclass
+class RailTime:
+    time: datetime.time
+    name: str
+
+    @property
+    def hour(self):
+        return self.time.hour
+
+    @property
+    def hour_key(self):
+        return self.hour, int(self.time.minute // 15 * 15)
+
+    @property
+    def pretty_hour_key(self):
+        return "%02i.%02i" % self.hour_key
+
+    @property
+    def pretty_time(self):
+        return self.time.strftime("%H.%M")
+
+@bp.route("/travel.py", methods=("GET",))
+@authentication.login_required
+def travel():
+    congress = g.congresses.current
+    year = congress.year
+
+    template = g.skin.load_template("skin/admin/travel.pt")
+
+    def query_bookings(timecol):
+        cursor = execute(f"SELECT {timecol}, firstname || ' ' || lastname "
+                         f"  FROM booking"
+                         f" WHERE year = %s AND {timecol} IS NOT NULL"
+                         f" ORDER BY {timecol}",
+                         ( year, ))
+        return [ RailTime(*tpl) for tpl in cursor.fetchall() ]
+
+    def table(times):
+        hours = itertools.groupby(times, lambda t: t.hour_key)
+
+        tbody = html.tbody()
+        for key, bookings in hours:
+            bookings = list(bookings)
+            tbody.append(html.tr(html.th(bookings[0].pretty_hour_key, " Uhr",
+                                         rowspan=len(bookings),
+                                         class_="text-end"),
+                                 html.td(bookings[0].pretty_time, " Uhr",
+                                         class_="text-end"),
+                                 html.td(bookings[0].name)))
+            for booking in bookings[1:]:
+                tbody.append(html.tr(html.td(booking.pretty_time, " Uhr",
+                                             class_="text-end"),
+                                     html.td(booking.name)))
+
+        return html.table(tbody, class_="table")
+
+    return template(arrivals=table(query_bookings("rail_arrival_time")),
+                    departures=table(query_bookings("rail_departure_time")))
