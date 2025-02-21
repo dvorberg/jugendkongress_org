@@ -235,6 +235,7 @@
         <tbody class="table-striped">
           <tal:block tal:repeat="b bookings">
             <tr data-id="${b.id}"
+                data-room="${b.ROOM}"
                 tal:attributes="class test('geld' in active_colsets,
                                            'table-' + b.paymentcls)">
               <td class="role ${b.role}"></td>

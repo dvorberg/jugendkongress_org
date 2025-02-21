@@ -548,13 +548,12 @@ window.addEventListener("load", function(event) {
 			this.row.querySelector(".checkin-remarks").innerText =
 				result.checkin_remarks;
 
-			const room = this.row.querySelector(".room").innerText;
+			const room = this.row.getAttribute("data-room");
 			
-			this.row.parentNode.querySelectorAll("span.room").forEach(span => {
-				const row = span.parentNode.parentNode,
-					  id = parseInt(row.getAttribute("data-id"));
+			this.row.parentNode.querySelectorAll("tr").forEach(row => {
+				const id = parseInt(row.getAttribute("data-id"));
 
-				if (span.innerText == room)
+				if (row.getAttribute("data-room") == room)
 				{
 					if (result.key_holder)
 					{
