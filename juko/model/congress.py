@@ -537,7 +537,7 @@ class Booking(dbobject):
                     change.confirm(name)
 
         for name in ("gender", "food_preference", "room_preference",
-                     "ride_sharing_option"):
+                     "mode_of_travel"):
             if name in change:
                 if not change[name]:
                     change.report(name, "Bitte triff eine Auswahl.")
@@ -545,9 +545,20 @@ class Booking(dbobject):
                     change.confirm(name)
 
         for name in ("phone", "lactose_intolerant", "remarks",
-                     "room_mates", "ride_sharing_start", "musical_instrument"):
+                     "room_mates", "ride_sharing_start",
+                     "musical_instrument",
+                     "rail_arrival_time", "rail_departure_time",):
             if name in change:
                 change.confirm(name)
+
+        for name in ("rail_arrival_time", "rail_departure_time",
+                     "ride_sharing_start"):
+            if name in change:
+                v = getattr(change, name)
+                if v is not None:
+                    v = v.strip()
+                if not v:
+                    setattr(change, name, None)
 
         return change
 
@@ -683,6 +694,14 @@ class Booking(dbobject):
     @property
     def pretty_checkin_time(self):
         return self.format_pretty_checkin_time(self.checkin)
+
+    @property
+    def pretty_rail_arrival_time(self):
+        return self.rail_arrival_time.strftime("%H.%M") + " Uhr"
+
+    @property
+    def pretty_rail_departure_time(self):
+        return self.rail_departure_time.strftime("%H.%M") + " Uhr"
 
     def __repr__(self):
         if hasattr(self, "role"):

@@ -169,7 +169,7 @@
                 
               </th>
               <th class="align-middle text-nowrap"><!--Musik-->
-                <label class="form-label">
+                <label class="form-label" tal:replace="nothing">
                   <input type="checkbox" value="on"
                          data-filter-name="musik"/>
                   Angaben
@@ -314,7 +314,23 @@
               
               <tal:block tal:condition="'misc' in active_colsets">
                 <td>
-                  <strong tal:content="b.ride_sharing_start" />
+                  <tal:block tal:condition="b.mode_of_travel == 'car'">
+                    <b>Auto</b>
+                    <div tal:condition="b.ride_sharing_start">
+                      Mitfahrgelegenheit ab
+                      <b class="text-success"
+                         tal:content="b.ride_sharing_start" />
+                    </div>
+                  </tal:block>
+                  <tal:block tal:condition="b.mode_of_travel == 'rail'">
+                    <b>Bahn</b>
+                    <div tal:condition="b.rail_arrival_time">
+                      Ankunft: ${b.pretty_rail_arrival_time}
+                    </div>
+                    <div tal:condition="b.rail_departure_time">
+                      Abfahrt: ${b.pretty_rail_departure_time}
+                    </div>
+                  </tal:block>
                 </td>
                 
                 <td tal:content="b.musical_instrument">

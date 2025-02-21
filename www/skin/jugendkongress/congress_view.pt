@@ -310,20 +310,6 @@
                     </div>
                   </div>
                   
-                  <div class="row mb-3">
-                    <label>Bemerkungen/Sonstiges</label>
-                    
-                    <div class="col">
-                      <textarea class="form-control" rows="4"
-                                id="remarks"></textarea>
-                      <div id="remarks-help" class="form-text">
-                        Weitere Angaben (zum Essen oder sonstige Bemerkungen)
-                      </div>
-                      <div class="invalid-feedback" data-for="remarks">
-                      </div> 
-                    </div><!--col-->
-                  </div>
-
                   <div class="mb-3">
                     <label for="musical-instrument"
                            class="form-label">Musikinstrument</label>
@@ -339,55 +325,139 @@
                   </div>
 
                   <div class="mb-3">
-                    <label>Mitfahrgelegenheit</label>
+                    <label>Anreise</label>
 
                     <div class="mt-1 mb-1 row">
-                      <div class="col-2">
-                        Ich
-                      </div>
-                      <div class="col-10">
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio"
-                                 name="ride-sharing-option"
-                                 value="seek" id="seek" />
-                          <label class="form-check-label" for="seek">
-                            … suche
-                          </label>
-                        </div>
-                        
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio"
-                                 name="ride-sharing-option"
-                                 value="offer" id="offer" />
-                          <label class="form-check-label" for="offer">
-                            biete
-                          </label>
-                        </div>
-                        
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio"
-                                 name="ride-sharing-option"
-                                 value="none" id="none" />
-                          <label class="form-check-label" for="none">
-                            <i>keins</i>
-                          </label>
-                        </div>                      
+                      <div class="col form-text">
+                        Diese Angeben kannst du noch bis zum Schluss ändern,
+                        zum Beispiel wenn dein Zug Verspätung hat usw. 
                       </div>
                     </div>
-                    <div class="row">
-                      <div class="col-2">
-                        <label class="col-form-label">
-                          ab
-                        </label>
+                    
+                    <div class="mt-1 mb-1 row">
+                      <div class="col">
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="radio"
+                                 id="mode-of-travel-null"
+                                 name="mode_of_travel" value="null" />
+                          <label class="form-check-label"
+                                 for="mode-of-travel-null">k.A.</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="radio"
+                                 id="mode-of-travel-car"
+                                 name="mode_of_travel" value="car" />
+                          <label class="form-check-label"
+                                 for="mode-of-travel-car">Auto</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="radio"
+                                 id="mode-of-travel-rail"
+                                 name="mode_of_travel" value="rail" />
+                          <label class="form-check-label"
+                                 for="mode-of-travel-rail">Bahn</label>
+                        </div>
                       </div>
+                    </div>
 
-                      <div class="col-10">
-                        <input type="text" class="form-control"
-                               id="ride-sharing-start" />
-                      </div>                      
-                    </div><!--row-->                    
+                    <div class="road-travel">
+                      <div class="mt-1 mb-1 row">
+                        <div class="col">
+                          Ich biete eine Mitfahrgelegenheit
+                        </div>                      
+                      </div>
+                      
+                      <div class="row">
+                        <div class="col-2">
+                          <label class="col-form-label">
+                            ab
+                          </label>
+                        </div>
+
+                        <div class="col-10">
+                          <input type="text" class="form-control"
+                                 id="ride-sharing-start" />
+                        </div>                      
+                      </div><!--row-->
+                      
+                      <div class="row">
+                        <div class="col-2">
+                        </div>
+                        <div class="col-10 form-text text-danger">
+                          Angebote für Mitfahrgelegenheiten werden
+                          <a href="#mitfahrgelegenheiten">unten</a>
+                          Seite für die anderen Teilis anonymisiert
+                          veröffentlicht, so dass sie dich kontaktieren
+                          können.
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div class="rail-travel">
+                      <div class="mt-1 row">
+                        <label>Fahrzeiten Bahn</label>
+                      </div>
+                      <div class="row form-text mb-1">
+                        <div class="col">
+                          <p>
+                            Wir bemühen uns, Teilis vom Bahnhof
+                            Witzenhausen-Nord abzuholen und
+                            hinzubringen. Das gilt bei der Anreise
+                            <emp class="text-danger">zwei Stunden vor
+                            Beginn bis Beginn</emp> und bei der
+                            Abreise <emp class="text-danger">vom Ende
+                            bis zwei Stunden nach dem Ende</emp> des
+                            Kongresses.  Außerhalb dieser Zeiten seid
+                            Ihr für den Transfer vom und zum Bahnhof
+                            selbst verantwortlich.
+                          </p>
+                        </div>
+                      </div>
+                      <div class="row mb-3">                      
+                        <div class="col">
+                          <div class="input-group">
+                            <span class="input-group-text">Ankunft</span>
+                            <input type="time" class="form-control"
+                                   name="rail_arrival_time" />
+                            <span class="input-group-text">Uhr</span>
+                          </div>
+                          <div class="form-text">
+                            am Freitag Nachmittag
+                          </div>
+                          <div class="invalid-feedback"
+                               data-for="rail_arrival_time"></div>
+                        </div>                      
+                        <div class="col">
+                          <div class="input-group">    
+                            <span class="input-group-text">Abfahrt</span>
+                            <input type="time" class="form-control"
+                                   name="rail_departure_time" />
+                            <span class="input-group-text">Uhr</span>
+                          </div> 
+                          <div class="form-text">
+                            am Sonntag Mittag
+                          </div>
+                          <div class="invalid-feedback"
+                               data-for="rail_departure_time"></div>
+                        </div>
+                      </div>
+                    </div>                  
                   </div>
-
+                  
+                  <div class="row mb-3">
+                    <label>Bemerkungen/Sonstiges</label>
+                    
+                    <div class="col">
+                      <textarea class="form-control" rows="4"
+                                id="remarks"></textarea>
+                      <div id="remarks-help" class="form-text">
+                        Weitere Angaben (zum Essen oder sonstige Bemerkungen)
+                      </div>
+                      <div class="invalid-feedback" data-for="remarks">
+                      </div> 
+                    </div><!--col-->
+                  </div>
+                  
                   <div class="mt-3 form-text">                    
                     Die Vorauswahl für drei Workshops kannst du unter
                     den Workshop-Beschreibungen treffen.

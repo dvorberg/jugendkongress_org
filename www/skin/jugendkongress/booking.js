@@ -340,7 +340,7 @@ class BookingFormController extends BookingController
 		}
 
 		this.div.querySelectorAll("input").forEach(input => {
-			if ( ["text", "email", "date"].includes(input.type ))
+			if ( ["text", "email", "date", "time"].includes(input.type ))
 			{
 				input.addEventListener("blur", event => {
 					self.send_from_input(input);
@@ -355,14 +355,15 @@ class BookingFormController extends BookingController
 					
 					if (event.keyCode == 13)
 					{
-						console.log(input);
 						self.send_from_input(input);
 					}
 				});
 
 				if (booking[input.id])
 				{
-					if (input.type == "text" || input.type == "email")
+					if (input.type == "text"
+						|| input.type == "email"
+						|| input.type == "time")
 					{
 						input.value = booking[input.id];
 					}
@@ -432,8 +433,31 @@ class BookingFormController extends BookingController
 		document.querySelectorAll("div.workshop.card").forEach(div => {
 			new WorkshopController(div, this.booking);
 		});
+
+		this.update_travel_if();
 	}
 
+	update_travel_if()
+	{
+		const active = this.div.querySelector(
+			'input[name=mode_of_travel]:checked').value;
+		if (active == "null")
+		{
+			this.div.querySelector("div.road-travel").style="display:none";
+			this.div.querySelector("div.rail-travel").style="display:none";
+		}
+		else if (active == "car")
+		{
+			this.div.querySelector("div.road-travel").style="display:block";
+			this.div.querySelector("div.rail-travel").style="display:none";
+		}
+		else if (active == "rail")
+		{
+			this.div.querySelector("div.road-travel").style="display:none";
+			this.div.querySelector("div.rail-travel").style="display:block";
+		}
+	}
+	
 
 	on_beforeunload(event)
 	{
@@ -451,13 +475,14 @@ class BookingFormController extends BookingController
 	{
 		const change = {};
 
-		if (["text", "email", "date"].includes(input.type))
+		if (["text", "email", "date", "time"].includes(input.type))
 		{
-			change[input.id] = input.value;
+			change[input.id || input.name] = input.value;
 		}
 		else if (input.type == "radio")
 		{
 			change[input.name] = input.value;
+			this.update_travel_if();
 		}
 		else if (input.type == "checkbox")
 		{

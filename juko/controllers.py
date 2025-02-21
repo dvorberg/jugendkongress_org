@@ -23,6 +23,7 @@ import re, dataclasses
 import flask
 from .utils import (gets_parameters_from_request, process_template,
                     rget, redirect)
+from . import debug
 
 from t4.res import email_re
 from t4.passwords import random_password
@@ -74,13 +75,17 @@ def create_booking(congress, email="", firstname=None, lastname=None,
         count = -1
         while count != 0:
             slug = random_password(9, use_specials=False)
+            rsslug = random_password(9, use_specials=False)
             count, = query_one(f"SELECT COUNT(*) FROM booking "
                                f" WHERE year = {congress.year} "
-                               f"   AND slug = %s", (slug,))
+                               f"   AND slug = %s"
+                               f"   OR  ride_sharing_slug = %s",
+                               (slug, rsslug))
 
         booking = { "year": congress.year,
                     "email": email,
                     "slug": slug,
+                    "ride_sharing_slug": rsslug,
                     "firstname": firstname,
                     "lastname": lastname,
                     "user_agent": flask.request.headers.get("User-Agent")}
@@ -135,7 +140,9 @@ def modify_booking(congress, slug):
     # The values dict will contain only fields that are explicitly
     # validated.
     values = change.validated
-    values["user_agent"] = flask.request.headers.get("User-Agent")
+    if not debug:
+        values["user_agent"] = flask.request.headers.get("User-Agent")
+
     if (values):
         Booking.update_by_slug(congress.year, slug, **values)
         commit()
