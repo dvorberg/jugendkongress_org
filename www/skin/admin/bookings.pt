@@ -383,6 +383,21 @@
                        tal:content="b.checkin_remarks" />
                 <a href="javascript:{}"
                      class="edit-checkin-remarks text-decoration-none">✎</a>
+                  <div>
+                    <small class="key-holder"
+                           tal:define="key_holder key_holders.get(b.room, None)">
+                      <tal:block tal:condition="key_holder is not None">
+                        <b class="text-success"
+                           tal:condition="key_holder.id == b.id">
+                          🔑 selbst
+                        </b>
+                        <span class="text-warning"
+                              tal:condition="key_holder.id != b.id">
+                          🔑 ${key_holder.name}
+                        </span>
+                      </tal:block>
+                    </small>
+                  </div>                
               </td>
               
               <td tal:condition="'bemerkungen' in active_colsets">

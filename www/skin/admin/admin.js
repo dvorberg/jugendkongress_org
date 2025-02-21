@@ -547,6 +547,39 @@ window.addEventListener("load", function(event) {
 				result.pretty_checkin_time;
 			this.row.querySelector(".checkin-remarks").innerText =
 				result.checkin_remarks;
+
+			const room = this.row.querySelector(".room").innerText;
+			
+			this.row.parentNode.querySelectorAll("span.room").forEach(span => {
+				const row = span.parentNode.parentNode,
+					  id = parseInt(row.getAttribute("data-id"));
+
+				if (span.innerText == room)
+				{
+					if (result.key_holder)
+					{
+						let name = result.key_holder.name,
+							tag = "span",
+							cls = "warning";
+						
+						if (result.key_holder.id == id)
+						{
+							name = "selbst";
+							tag = "b";
+							cls = "success";
+						}
+						
+						row.querySelector(".key-holder").innerHTML =
+							`<${tag} class="text-${result.key_holder.cls}">` + 
+							`🔑 ${name}` +
+							`</${tag}>`;
+					}
+					else
+					{
+						row.querySelector(".key-holder").innerHTML = "";
+					}
+				}
+			});
 		}
 	}
 

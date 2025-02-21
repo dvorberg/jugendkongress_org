@@ -518,13 +518,19 @@ def bookings():
 
     rooms_are_assigned = query_if_rooms_are_assigned(congress.year)
 
+    if "checkin" in active_colsets:
+        key_holders = controllers.query_key_holders(congress.year)
+    else:
+        key_holders = None
+
     return template(congress=congress, bookings=bookings,
                     active_colsets=active_colsets,
                     food_preference_html=food_preference_html,
                     gender_info_html=gender_info_html,
                     role_counts=role_counts,
                     filter=filter,
-                    rooms_are_assigned=rooms_are_assigned)
+                    rooms_are_assigned=rooms_are_assigned,
+                    key_holders=key_holders)
 
 @bp.route("/booking_name_form.py", methods=("GET", "POST",))
 @authentication.login_required
@@ -615,11 +621,21 @@ def json_response(**kw):
 @authentication.login_required
 @gets_parameters_from_request
 def modify_booking(id:int, what):
+    year = g.congresses.current.year
+
     def checkinfo():
-        checkin, checkin_remarks = query_one(
-            "SELECT checkin, checkin_remarks "
+        checkin, checkin_remarks, room = query_one(
+            "SELECT checkin, checkin_remarks, room "
             "  FROM booking "
             " WHERE id = %s", (id,))
+
+        key_holder = controllers.query_key_holder_for(year, room)
+        if key_holder is None:
+            key_holder = None
+        else:
+            key_holder = { "id": key_holder.id,
+                           "room": key_holder.room,
+                           "name": key_holder.name }
 
         pct = model.congress.Booking.format_pretty_checkin_time(checkin)
 
@@ -628,7 +644,8 @@ def modify_booking(id:int, what):
 
         return json_response(checkin=checkin,
                              checkin_remarks=checkin_remarks,
-                             pretty_checkin_time=pct)
+                             pretty_checkin_time=pct,
+                             key_holder=key_holder)
 
 
     if what == "room_overwrite":

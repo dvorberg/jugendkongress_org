@@ -526,3 +526,40 @@ def workshop_zuordnung():
     execute(sql.insert("workshop_assignments",
                        ( "booking_id", "phase", "workshop_id",),
                        values))
+
+key_holder_query = """\
+WITH
+first_checkins AS (
+    SELECT room, MIN(checkin) AS first_show
+      FROM booking
+     WHERE year = %s
+     GROUP BY room
+)
+SELECT booking.room,
+       id,
+       firstname || ' ' || lastname AS name
+  FROM first_checkins
+  LEFT JOIN booking ON first_checkins.room = booking.room
+                    AND first_show = booking.checkin
+ WHERE year = %s AND checkin IS NOT NULL
+"""
+
+@dataclasses.dataclass
+class KeyHolder:
+    id: int
+    name: str
+    room: str
+
+def query_key_holders(year):
+    cursor = execute(key_holder_query, ( year, year, ))
+    return dict([ (room, KeyHolder(id, name, room),)
+                   for (room, id, name,) in cursor.fetchall() ])
+
+def query_key_holder_for(year, room):
+    tpl = query_one(key_holder_query + " AND booking.room = %s",
+                    ( year, year, room, ))
+    if tpl is None:
+        return None
+    else:
+        room, id, name = tpl
+        return KeyHolder(id, name, room)
