@@ -488,7 +488,14 @@
           </tal:block>
           
           <td tal:condition="'geld' in active_colsets"></td>
-          <td tal:condition="'checkin' in active_colsets"></td>
+          <td tal:condition="'checkin' in active_colsets">
+            <div class="text-success">
+              ${checked_in_count} eingecheckt
+            </div>
+            <div class="text-danger">
+              ${noshow_count} NO SHOW
+            </div>
+          </td>
           <td><!--buttons--></td>
           <td tal:condition="'bemerkungen' in active_colsets"><!--remarks-->
           </td>
