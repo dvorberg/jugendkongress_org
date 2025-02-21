@@ -465,12 +465,13 @@ class Filter:
 @authentication.login_required
 def bookings():
     congress = g.congresses.current
+    year = congress.year
 
     active_colsets = set(request.cookies.get("details", "").split(","))
 
     filter = Filter.from_cookie()
 
-    where = sql.where("year=%i" % congress.year)
+    where = sql.where("year=%i" % year)
     bookings = model.congress.Booking.select(
         where.and_(filter.where_for(active_colsets)),
         sql.orderby("lower(lastname), lower(firstname)"))
@@ -479,7 +480,7 @@ def bookings():
 
     cursor = execute(f"SELECT food_preference, COUNT(*) AS count "
                      f"  FROM booking "
-                     f" WHERE year = {congress.year} "
+                     f" WHERE year = {year} "
                      f" GROUP BY food_preference")
 
     food_preference_html = html.table()
@@ -493,8 +494,7 @@ def bookings():
 
     cursor = execute("SELECT gender, count(*) "
                      "  FROM booking "
-                     " WHERE year = %s GROUP BY gender",
-                     (congress.year,))
+                     " WHERE year = %s GROUP BY gender", (year,))
     gender_counts = dict(cursor.fetchall())
     for gender in ("male", "female", "nn"):
         if gender not in gender_counts:
@@ -506,8 +506,7 @@ def bookings():
 
     cursor = execute("SELECT role, count(*) "
                      "  FROM booking "
-                     " WHERE year = %s GROUP BY role",
-                     (congress.year,))
+                     " WHERE year = %s GROUP BY role", (year,))
     role_counts = dict(cursor.fetchall())
 
     gender_info_html = html.div(html.small(gender_info))
@@ -517,21 +516,20 @@ def bookings():
             "%i unvollständige Anmeldungen" % gender_counts[None],
             class_="text-danger")))
 
-    rooms_are_assigned = query_if_rooms_are_assigned(congress.year)
+    rooms_are_assigned = query_if_rooms_are_assigned(year)
 
     if "checkin" in active_colsets:
-        key_holders = controllers.query_key_holders(congress.year)
+        key_holders = controllers.query_key_holders(year)
     else:
         key_holders = None
 
-    return template(congress=congress, bookings=bookings,
-                    active_colsets=active_colsets,
-                    food_preference_html=food_preference_html,
-                    gender_info_html=gender_info_html,
-                    role_counts=role_counts,
-                    filter=filter,
-                    rooms_are_assigned=rooms_are_assigned,
-                    key_holders=key_holders)
+    if "checkin" in active_colsets:
+        checked_in_count, = query_one("SELECT COUNT(*) FROM booking "
+                                      " WHERE checkin IS NOT NULL "
+                                      "   AND year = %s", ( year, ))
+        noshow_count = len(bookings) - checked_in_count
+
+    return template(**locals())
 
 @bp.route("/booking_name_form.py", methods=("GET", "POST",))
 @authentication.login_required
