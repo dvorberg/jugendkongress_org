@@ -555,7 +555,7 @@ class Booking(dbobject):
                      "ride_sharing_start"):
             if name in change:
                 v = getattr(change, name)
-                if v is not None:
+                if v is not None and hasattr(v, "strip"):
                     v = v.strip()
                 if not v:
                     setattr(change, name, None)
