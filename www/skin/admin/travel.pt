@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+      metal:use-macro="skin.main_template.macros.master">
+  <head>
+    <metal:block metal:fill-slot="head_slot">
+      <script src="${sref('jugendkongress/uiblocker.js')}"></script>
+      <script src="${sref('admin/admin.js')}"></script>
+    </metal:block>
+  </head>
+  
+  <body>
+    <metal:block metal:fill-slot="congress-menu">
+      <metal:block use-macro="skin.main_template.macros.admin_menu" />
+    </metal:block>
+    
+    <div metal:fill-slot="main" class="mt-4 travel">
+      <h3 class="mb-3">
+        An- und Abreise per Bahn
+      </h3>
+
+      <div class="row">
+        <div class="col">
+          <h4>Anreise</h4>
+
+          <table tal:replace="structure arrivals" />
+          
+        </div>
+        <div class="col">
+          <h4>Abreise</h4>
+        </div>
+      </div>
+      
+    </div>
+  </body>
+</html>
