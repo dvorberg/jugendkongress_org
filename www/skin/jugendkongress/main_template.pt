@@ -175,6 +175,12 @@
       </a>
     </li>
     <li class="nav-item">
+      <a class="nav-link ${test('travel' in request.url, 'active')}"
+         href="/admin/travel.py">
+        Bahnzeiten
+      </a>
+    </li>
+    <li class="nav-item">
       <a class="nav-link ${test('user' in request.url, 'active')}"
          href="/admin/users.py">
         Benutzerverwaltung
