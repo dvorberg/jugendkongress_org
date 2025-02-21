@@ -527,7 +527,9 @@ def bookings():
         checked_in_count, = query_one("SELECT COUNT(*) FROM booking "
                                       " WHERE checkin IS NOT NULL "
                                       "   AND year = %s", ( year, ))
-        noshow_count = len(bookings) - checked_in_count
+        noshow_count, = query_one("SELECT COUNT(*) FROM booking "
+                                  " WHERE checkin IS NULL "
+                                  "   AND year = %s", ( year, ))
 
     return template(**locals())
 
