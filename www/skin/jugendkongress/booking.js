@@ -359,15 +359,15 @@ class BookingFormController extends BookingController
 					}
 				});
 
+				
 				if (booking[input.id])
 				{
 					if (input.type == "text"
-						|| input.type == "email"
-						|| input.type == "time")
+						|| input.type == "email")
 					{
 						input.value = booking[input.id];
 					}
-					else if (input.type == "date")
+					else if (input.type == "date" || input.type == "time")
 					{
 						input.value = booking[input.id].isoformat;
 					}

@@ -418,6 +418,7 @@
                           <div class="input-group">
                             <span class="input-group-text">Ankunft</span>
                             <input type="time" class="form-control"
+                                   id="rail_arrival_time"
                                    name="rail_arrival_time" />
                             <span class="input-group-text">Uhr</span>
                           </div>
@@ -431,6 +432,7 @@
                           <div class="input-group">    
                             <span class="input-group-text">Abfahrt</span>
                             <input type="time" class="form-control"
+                                   id="rail_departure_time"
                                    name="rail_departure_time" />
                             <span class="input-group-text">Uhr</span>
                           </div> 
