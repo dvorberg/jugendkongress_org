@@ -489,10 +489,10 @@
           
           <td tal:condition="'geld' in active_colsets"></td>
           <td tal:condition="'checkin' in active_colsets">
-            <div class="text-success">
+            <div class="text-success text-nowrap">
               ${checked_in_count} eingecheckt
             </div>
-            <div class="text-danger">
+            <div class="text-danger text-nowrap">
               ${noshow_count} NO SHOW
             </div>
           </td>
