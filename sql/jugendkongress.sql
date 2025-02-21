@@ -17,6 +17,8 @@ CREATE TYPE food_preference AS ENUM ('meat', 'vegetarian', 'vegan');
 CREATE TYPE room_preference AS ENUM  ('4-8 beds', '2-3 beds');
 CREATE TYPE ride_sharing_option AS ENUM  ('offer', 'seek', 'none');
 CREATE TYPE role AS ENUM ('team', 'speaker', 'attendee');
+CREATE TYPE mode_of_travel AS ENUM  ('car', 'rail');
+
 
 CREATE TABLE booking
 (

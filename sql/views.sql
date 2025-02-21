@@ -13,13 +13,14 @@ CREATE VIEW booking_info AS
           firstname, lastname, 
           address, zip, city, phone, dob,
           gender, food_preference, remarks, lactose_intolerant,
-          room, room_preference, room_mates, room_overwrite,
-          ride_sharing_option, ride_sharing_start,
+          room, room_preference, room_mates, room_overwrite,          
           musical_instrument,
           wsc.workshop_choices,
           ctime, (mtime <> ctime) AS completed,
           has_payed, payment_remarks,
-          checkin, checkin_remarks
+          checkin, checkin_remarks,
+          mode_of_travel, ride_sharing_start,
+          rail_arrival_time, rail_departure_time
      FROM booking
      LEFT JOIN wsc ON booking_id = booking.id;
 

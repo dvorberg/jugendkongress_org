@@ -433,9 +433,10 @@ class Filter:
         if self.role and "rolle" in active_colsets:
             where.append(sql.where("role = ", sql.string_literal(self.role)))
 
-        if self.anreise:
-            where.append(sql.where("ride_sharing_option = ",
-                                   sql.string_literal(self.anreise)))
+        #if self.anreise:
+        #    pass
+        #    where.append(sql.where("ride_sharing_option = ",
+        #                           sql.string_literal(self.anreise)))
 
         if self.musik:
             where.append(sql.where("musical_instrument <> ''"
@@ -905,8 +906,6 @@ def bookings_csv():
                  "lactose_intolerant": "Laktose?",
                  "room_preference": "Zimmer",
                  "room_mates": "Zimmerpartner",
-                 "ride_sharing_option": "Fahrt",
-                 "ride_sharing_start": "Ab",
                  "musical_instrument": "Musik",
                  "room_overwrite": "Zimmer von Hand",
                  "room": "Zimmer autom.",
@@ -915,6 +914,10 @@ def bookings_csv():
                  "has_payed": "Bezahlt?",
                  "payment_remarks": "Bemerkungen zu Geld",
                  "slug": "Link",
+                 "mode_of_travel": "Anreise",
+                 "ride_sharing_start": "Fährt ab",
+                 "rail_arrival_time": "Ankunft (Zug)",
+                 "rail_departure_time": "Abfahrt (Zug)",
                 }
 
     bookings = model.congress.Booking.select(

@@ -313,16 +313,8 @@
               </tal:block>
               
               <tal:block tal:condition="'misc' in active_colsets">
-                <td class="ride-sharing-${b.ride_sharing_option}">
-                  <tal:block tal:condition="b.ride_sharing_option == 'offer'">
-                    biete
-                  </tal:block>
-                  <tal:block tal:condition="b.ride_sharing_option == 'seek'">
-                    suche
-                  </tal:block>
-                  <div tal:condition="b.ride_sharing_option != 'none'">
-                    <strong tal:content="b.ride_sharing_start" />
-                  </div>
+                <td>
+                  <strong tal:content="b.ride_sharing_start" />
                 </td>
                 
                 <td tal:content="b.musical_instrument">
