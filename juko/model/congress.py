@@ -519,7 +519,7 @@ class Booking(dbobject):
     def age_then(self):
         if self.congress.startdatum and self.dob:
             delta = self.congress.startdatum - self.dob
-            return int(delta.days / 364.25)
+            return int(delta.days / 365.25)
         else:
             return None
 
