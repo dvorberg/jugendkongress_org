@@ -378,9 +378,12 @@ window.addEventListener("load", function(event) {
 	const remarks_dialog = document.querySelector("#remarks-dialog"),
 		  remarks_modal = remarks_dialog && new bootstrap.Modal(remarks_dialog);
 
-	remarks_dialog.querySelectorAll("button.close").forEach(button => {
-		button.addEventListener("click", event => { remarks_modal.hide(); })
-	});
+	if (remarks_dialog)
+	{
+		remarks_dialog.querySelectorAll("button.close").forEach(button => {
+			button.addEventListener("click", event => { remarks_modal.hide(); })
+		});
+	}
 		
 	class RemarksController extends TableRowBasedController
 	{		
