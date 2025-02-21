@@ -414,7 +414,7 @@
                         </div>
                       </div>
                       <div class="row mb-3">                      
-                        <div class="col">
+                        <div class="col-10 col-lg-10 col-xl-8 col-xxl-6">
                           <div class="input-group">
                             <span class="input-group-text">Ankunft</span>
                             <input type="time" class="form-control"
@@ -428,7 +428,7 @@
                           <div class="invalid-feedback"
                                data-for="rail-arrival-time"></div>
                         </div>                      
-                        <div class="col">
+                        <div class="col-10 col-lg-10 col-xl-8 col-xxl-6">
                           <div class="input-group">    
                             <span class="input-group-text">Abfahrt</span>
                             <input type="time" class="form-control"
