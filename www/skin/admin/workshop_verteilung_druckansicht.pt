@@ -13,11 +13,18 @@
     <div class="mb-3 phase" tal:repeat="wsp congress.workshopphasen">
       <div class="row g-4">
         <div class="col instance" tal:repeat="instance phases[wsp.number]">
-          <h1 class="workshop-title text-nowrap">
-            ${instance.workshop.titel}<br />
+          <h1 class="workshop-title">
+            ${instance.workshop.titel}
+            <small>
+              (${', '.join(instance.workshop.referenten)})
+            </small>
+            <br />
             <small>${wsp.description}</small>
           </h1>
 
+          <h2 class="ort">
+          </h2>
+          
           <ol>
             <li tal:repeat="booking instance.bookings">
               ${booking.firstname}
