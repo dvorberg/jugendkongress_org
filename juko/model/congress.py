@@ -277,7 +277,7 @@ class Congress(DocumentFolder):
 
     @property
     def registration_is_open(self):
-        return ( self.congresses.latest_year == self.year
+        return ( self.congresses.latest_year >= self.year
                  and self.anmeldeschluss is not None
                  and self.anmeldeschluss >= datetime.date.today() )
 
