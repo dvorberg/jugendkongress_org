@@ -72,6 +72,8 @@ def create_booking(congress, email="", firstname=None, lastname=None,
     if errors:
         return { "errors": errors }
     else:
+        email = email.lower()
+
         count = -1
         while count != 0:
             slug = random_password(9, use_specials=False)
@@ -89,6 +91,22 @@ def create_booking(congress, email="", firstname=None, lastname=None,
                     "firstname": firstname,
                     "lastname": lastname,
                     "user_agent": flask.request.headers.get("User-Agent")}
+
+        cursor = execute("SELECT address, city, zip, phone, dob, gender, "
+                         "       food_preference, lactose_intolerant, "
+                         "       room_preference, room_mates, "
+                         "       musical_instrument, "
+                         "       ride_sharing_start, mode_of_travel "
+                         "  FROM booking "
+                         " WHERE email = %s "
+                         "   AND year = ( SELECT MAX(year) FROM booking "
+                         "                 WHERE email = %s )",
+                         ( email, email, ))
+        row = cursor.fetchone()
+        if row:
+            for column, value in zip(cursor.description, row):
+                booking[column.name] = value
+
         insert_from_dict("booking", booking, retrieve_id=False)
         commit()
 
