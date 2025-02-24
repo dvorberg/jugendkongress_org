@@ -164,10 +164,8 @@ class Result(list):
                     self.where = clause
                     break
 
-        def generator():
-            for tpl in cursor:
-                yield dbobject_class(cursor.description, tpl)
-        list.__init__(self, generator())
+        list.__init__(self, [ dbobject_class(cursor.description, tpl)
+                              for tpl in cursor ])
 
     def __getitem__(self, key):
         if isinstance(key, slice):
@@ -309,7 +307,7 @@ class dbobject(object, metaclass=SQLRepresentation):
             elif isinstance(obj, set):
                 return list(obj)
             else:
-                raise TypeError(f'Cannot serialize object of {type(obj)}')
+                raise TypeError(f"Cannot serialize object of {type(obj)}")
 
         return json.dumps(self.as_dict(), default=custom_json)
 
@@ -485,3 +483,28 @@ def query_one(command, parameters=()):
     with cursor() as cc:
         cc.execute(command, parameters)
         return cc.fetchone()
+
+class with_(classmethod):
+    def __init__(self, with_f):
+        self.with_f = with_f
+        super().__init__(self.__call__)
+
+    def __call__(self, dbclass, *args, **kw):
+        with_f = self.with_f
+
+        class wrapper:
+            def select_query(self, *clauses):
+                return sql.Query( with_f(dbclass, *args, **kw), " ",
+                                  dbclass.select_query(*clauses), )
+
+            def select(self, *clauses):
+                with cursor() as c:
+                    query = self.select_query(*clauses)
+                    query, params = rollup_sql(query)
+                    c.execute(query, params)
+                    return dbclass.__result_class__(c, dbclass, clauses)
+
+            def __getattr__(self, name):
+                return getattr(dbclass, name)
+
+        return wrapper()

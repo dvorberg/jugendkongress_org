@@ -573,8 +573,7 @@ def rooms():
     year = congress.year
     template = g.skin.load_template("skin/admin/rooms.pt")
 
-    rooms = model.congress.Room.select(
-        sql.where( "year = %i OR year IS NULL" % year),
+    rooms = model.congress.Room.with_year(year).select(
         sql.orderby("section, no"))
 
     if request.method == "POST":
@@ -739,8 +738,7 @@ def room_assignment():
 
         commit()
 
-    rooms = model.congress.Room.select(
-        sql.where( "year = %i" % congress.year ),
+    rooms = model.congress.Room.with_year(year).select(
         sql.orderby("section, no"))
 
     bookings = model.congress.Booking.select(

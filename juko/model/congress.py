@@ -2,7 +2,7 @@ import pathlib, dataclasses, re, datetime, json, tomllib, itertools
 from functools import cached_property
 
 from .. import config
-from ..db import dbobject, execute, Result
+from ..db import dbobject, execute, Result, with_
 from ..markdown import MarkdownResult
 from ..markdown.macros import MacroContext
 from ..utils import PathSet
@@ -747,6 +747,19 @@ class Room(dbobject):
     __view__ = "room_info"
     __result_class__ = RoomResult
 
+    @with_
+    def with_year(self, year):
+        return sql.with_(("room_info",
+                          sql.select( ("room.*",
+                                       sql.expression("(year = %i)" % year,
+                                                      " AS booked"),
+                                       "beds_overwrite",),
+                                      ( "room", ),
+                                      sql.left_join(
+                                          "booked_rooms",
+                                          "room_no = room.no "
+                                          "AND year = %i" % year)),))
+
     @property
     def NO(self):
         return self.no.upper()
@@ -758,6 +771,12 @@ class Room(dbobject):
     @property
     def overfull(self):
         return (len(self.occupants) > (self.beds_overwrite or self.beds))
+
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__} {self.NO}>"
+
+
 
 if __name__ == "__main__":
     # Test this.
