@@ -2,7 +2,7 @@ import socket, os
 
 hostname = socket.gethostname().split(".")[0]
 
-SECRET_KEY="2FK-wi8-HLT-nhk"
+SECRET_KEY=os.getenv("secret_key")
 
 if hostname == "leela":
     SITE_URL=f"http://juko.{hostname}.tux4web.de"
