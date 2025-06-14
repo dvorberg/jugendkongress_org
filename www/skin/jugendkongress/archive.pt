@@ -32,12 +32,14 @@
 
     <metal:block metal:fill-slot="main">
       <div class="mt-4">
-        <div class="row row-cols-1 row-cols-md-2 g-4">
+        <div class="row row-cols-1 row-cols-md-2 g-4 archive">
           <div class="col" tal:repeat="congress g.congresses.archive">
             <div class="card">
-              <a href="${congress.href}" class="stretched-link">
+              <a href="${congress.href}"
+                 class="stretched-link og-image">
                 <img tal:condition="congress.og_image_url"
-                     tal:attributes="src congress.og_image_url"
+                     tal:attributes="src congress.og_image_url;
+                                     data-size congress.og_image_size"
                      class="card-img-top" />
               </a>
               <div class="card-body">                  

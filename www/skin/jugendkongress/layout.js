@@ -41,6 +41,33 @@ window.addEventListener("load", function(event) {
     document.querySelectorAll("form input").forEach(id_to_name);
     document.querySelectorAll("form textarea").forEach(id_to_name);
     document.querySelectorAll("form select").forEach(id_to_name);
+
+	const size_re = /\((\d+), (\d+)\)/;
+	function on_resize()
+	{
+		document.querySelectorAll("div.archive a.og-image").forEach(a => {
+			const img = a.querySelector("img"),
+				  size_py = img && img.getAttribute("data-size"),
+				  match = size_py && size_py.match(size_re),
+				  card = a.parentNode;
+			if (match)
+			{
+				const w = parseInt(match[1]),
+					  h = parseInt(match[2]),
+					  W = card.clientWidth,
+					  H = W / w * h;
+
+				a.style.width = W + "px";
+				a.style.height = H + "px";
+				
+				// img.setAttribute("width", W);
+				// img.setAttribute("height", H);
+			}
+		});
+	}
+
+	window.addEventListener("resize", on_resize);
+	on_resize();
 });
 
 function send_user_email(login)

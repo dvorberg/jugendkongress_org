@@ -367,3 +367,13 @@ img.achtung
     width: 90%;
     height: auto;
 }
+
+div.archive a.og-image
+{
+    img
+    {
+        max-width: 100%;
+    }
+    
+    display: block;
+}
