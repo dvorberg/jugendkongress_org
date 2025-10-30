@@ -1,0 +1,17 @@
+@media (min-width: 992px)
+{      
+    div.titelbild
+    {
+        h1, div.datum
+        {
+            display: block ! important;
+            visibility: visible ! important;
+        }
+
+        
+        picture, img
+        {
+            max-height: 45rem;
+        }
+    }
+}    

@@ -1,0 +1,38 @@
+# Das Format dieser Datei
+# • Leere Zeilen und alles, was hinter einem „#“ steht wird ignoriert und gilt
+#   als Kommentar.
+# • Zeilen mit einem einzelnen Wort „Freitag“, „Samstag“ oder „Sonntag“.
+# • Zeilen mit dem Aufbau Uhrzeit-Leerzeichen-Text
+#    - „Uhrzeit“ kann im Format hh.mm sein oder das Wort „anschl.“
+#    - Leerzeichen
+#    - Text bis zum Ende der Zeile mit der Möglichkeit *kursiv* und **fett**
+#      zu schreiben
+
+
+Freitag
+16.00   **Empfang**
+17.00   Ankommen mit Liedern
+17.30   Warm Up, Organisatorisches
+18.30   Abendessen
+19.45   Einstieg, Vortrag
+21.00   Abendandacht
+anschl. Nachtcafé und/oder Sauna (ab 18)
+
+Samstag
+07.30   Frühstück
+08.30   Morgenandacht
+09.15   **1. Workshop-Phase**
+13.00   Mittagessen, Mittagspause
+14.45   **2. Workshop-Phase**
+18.30   Abendessen
+20.00   Gesprächsrunde
+anschl. Nachtcafé und/oder Sauna  (ab 18)
+
+Sonntag
+08.30   Frühstück
+10.00   Abendmahlsgottesdienst
+12.30   Mittagessen
+13.30   Cool Down
+anschl. *Shake Hands*
+anschl. Café & Kuchen
+
