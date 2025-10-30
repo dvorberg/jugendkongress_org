@@ -7,7 +7,7 @@ Anmeldeschluss: 2026-2-5
 Startdatum: 2026-2-27
 Anmeldungs-From-Name: Diedrich Vorberg
 
-!titelbild_einsetzen("hands.webp", "hands.webp")
+!titelbild_einsetzen("Hands.webp", "Hands.webp")
 
 ## Das Thema
 
