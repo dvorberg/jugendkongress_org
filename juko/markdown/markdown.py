@@ -264,7 +264,7 @@ class NeverMatch(object):
 class CacheEntry(object):
     def __init__(self, paths:set, result:MarkdownResult):
         if debug:
-            # In development mode we make sure all the paths are absolute
+            # In development mode, we make sure all the paths are absolute
             # paths.
             for path in paths:
                 if not path.is_absolute:
