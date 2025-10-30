@@ -22,7 +22,6 @@ class DocumentFolder(object):
 
         self.pathset = pathset
         self.pathset.register(self.abspath)
-
         self._md = None
         self._meta = None
         self._rtime = None
@@ -206,6 +205,25 @@ class Workshopphase:
     number: int
     description: str
 
+@dataclasses.dataclass
+class CustomStyling:
+    relpath: str
+    mtime: float
+
+    def __init__(self, path, congress):
+        congress.pathset.register(path)
+        relpath = path.relative_to(congress.abspath)
+        self.relpath = str(relpath)
+        self.mtime = path.stat().st_mtime
+
+    @property
+    def html(self):
+        url = self.relpath + "?t=" + str(self.mtime)
+        if self.relpath.endswith(".scss"):
+            return f'<link rel="stylesheet" type="text/css" href="{url}" />'
+        elif self.relpath.endswith(".js"):
+            return f'<script src="{url}"></script>'
+
 class Congress(DocumentFolder):
     def __init__(self, congresses, path):
         super().__init__(path)
@@ -228,11 +246,16 @@ class Congress(DocumentFolder):
         self._rtime = None
 
         workshops = [ Workshop(path, self)
-                            for path in self.abspath.glob("*.workshop") ]
+                      for path in self.abspath.glob("*.workshop") ]
         workshops.sort(key=lambda w: w.sort_key)
 
         self._workshops = dict( [(workshop.id, workshop,)
                                  for workshop in workshops] )
+
+        style_paths = itertools.chain(self.abspath.glob("custom*.scss"),
+                                      self.abspath.glob("custom*.js"))
+        self._custom_styling = [ CustomStyling(path, self)
+                                 for path in style_paths ]
 
     @property
     def workshops(self):
@@ -240,6 +263,10 @@ class Congress(DocumentFolder):
 
     def workshop_by_id(self, workshop_id):
         return self._workshops[workshop_id]
+
+    @property
+    def custom_styling(self):
+        return self._custom_styling
 
     @cached_property
     def anmeldeschluss(self):
