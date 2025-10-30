@@ -207,21 +207,21 @@ class Workshopphase:
 
 @dataclasses.dataclass
 class CustomStyling:
-    relpath: str
+    href: str
     mtime: float
 
     def __init__(self, path, congress):
         congress.pathset.register(path)
         relpath = path.relative_to(congress.abspath)
-        self.relpath = str(relpath)
+        self.href = congress.href + str(relpath)
         self.mtime = path.stat().st_mtime
 
     @property
     def html(self):
-        url = self.relpath + "?t=" + str(self.mtime)
-        if self.relpath.endswith(".scss"):
+        url = self.href + "?t=" + str(self.mtime)
+        if self.href.endswith(".scss"):
             return f'<link rel="stylesheet" type="text/css" href="{url}" />'
-        elif self.relpath.endswith(".js"):
+        elif self.href.endswith(".js"):
             return f'<script src="{url}"></script>'
 
 class Congress(DocumentFolder):
