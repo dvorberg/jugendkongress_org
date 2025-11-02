@@ -68,6 +68,19 @@ window.addEventListener("load", function(event) {
 
 	window.addEventListener("resize", on_resize);
 	on_resize();
+
+	// Activate dark mode for bootstrap enabled sites if it is indicated
+	// as a user preference by the browser. 
+	function update_color_scheme()
+	{
+		const theme = window.matchMedia(
+			"(prefers-color-scheme: dark)").matches ? "dark" : "light";
+		document.documentElement.setAttribute( "data-bs-theme", theme);
+	}
+
+	window.matchMedia('(prefers-color-scheme: dark)').addEventListener(
+		"change", update_color_scheme);
+    update_color_scheme()
 });
 
 function send_user_email(login)

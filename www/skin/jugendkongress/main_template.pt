@@ -140,7 +140,11 @@
         <div class="col">
           <a href="http://www.selk-jugend.de" target="_new">
             <img src="/skin/jugendkongress/selk-jugend.png"
-                 width="250" height="102" alt="SELK Jugendwerk" />
+                 width="250" height="102" alt="SELK Jugendwerk"
+                 class="for-light" />
+            <img src="/skin/jugendkongress/selk-jugend-for-dark-bg.png"
+                 width="250" height="102" alt="SELK Jugendwerk"
+                 class="for-dark" />
           </a>
         </div>
       </div>

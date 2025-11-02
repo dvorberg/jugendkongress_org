@@ -377,3 +377,19 @@ div.archive a.og-image
     
     display: block;
 }
+
+@media (prefers-color-scheme: dark) {
+    .for-light
+    {
+        display: none;
+        visibility: hidden;
+    }
+}
+
+@media (prefers-color-scheme: light) {
+    .for-dark
+    {
+        display: none;
+        visibility: hidden;
+    }
+}
