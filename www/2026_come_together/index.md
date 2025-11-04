@@ -24,11 +24,11 @@ Der Kongress bietet die Möglichkeit, neue Methoden zu erlernen, wie gegenseitig
 
 ## Die Veranstaltung
 
-Lutherischer Jugendkongresse fördern die kirchliche Arbeit an und mit Jugendlichen, damit die Botschaft von der Gnade Gottes immer mehr junge Menschen erreicht.
+Lutherische Jugendkongresse fördern die kirchliche Arbeit an und mit Jugendlichen, damit die Botschaft von der Gnade Gottes immer mehr junge Menschen erreicht.
 
-Lutherischer Jugendkongresse finden jährlich im Frühjahr statt.
+Lutherische Jugendkongresse finden jährlich im Frühjahr statt.
 
-Lutherischer Jugendkongresse richten sich an alle, die sich für die kirchliche Arbeit an und mit jungen Menschen engagieren (wollen): Mitarbeitende im JuMiG, Jugendliche ab 16 Jahren (nach Absprache auch jünger!), junge Erwachsene, ehrenamtliche Mitarbeiter/-innen, Kirchenvorsteher/-innen, Diakone/-innen, Vikare, Pfarrer.
+Lutherische Jugendkongresse richten sich an alle, die sich für die kirchliche Arbeit an und mit jungen Menschen engagieren (wollen): Mitarbeitende im JuMiG, Jugendliche ab 16 Jahren (nach Absprache auch jünger!), junge Erwachsene, ehrenamtliche Mitarbeiter/-innen, Kirchenvorsteher/-innen, Diakone/-innen, Vikare, Pfarrer.
 
 Lutherische Kongresse für Jugendarbeit bieten:
 
