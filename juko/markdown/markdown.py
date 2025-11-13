@@ -317,6 +317,9 @@ class MarkdownCache(object):
                     macros.MacroContext(
                         markdown_file_path=abspath,
                         pathset=paths))
+
+                result.convert()
+
                 self._cache[abspath] = CacheEntry(paths, result)
 
         return self._cache[abspath].result
@@ -328,6 +331,6 @@ def view_func(infile_path:str):
     www_root = Path(config["WWW_PATH"])
 
     abspath = Path(www_root, infile_path)
-    entry = markdown_cache.get_or_render(abspath)
+    result = markdown_cache.get_or_render(abspath)
     template = g.skin.load_template("skin/jugendkongress/markdown_view.pt")
-    return template(html=entry.html)
+    return template(html=result.html)
