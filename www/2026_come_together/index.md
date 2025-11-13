@@ -51,7 +51,7 @@ PKW: direkt an der B 27 zwischen Witzenhausen und Bad Soden-Allendorf. → Karte
 
 **Beginn**: Fr, 27. Februar 2026, Anmeldung ab 16.00 Uhr, Veranstaltung ab 17.00 Uhr
 
-**Ende**: So, 23. Februar 2025, Abreise ab 14.30 Uhr
+**Ende**: So, 1. März 2026, Abreise ab 14.30 Uhr
 
 **Kosten**
 80,– € / 120,— € inkl. Verpflegung und Übernachtung im 4–8-Bett-Zimmer
