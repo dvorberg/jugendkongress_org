@@ -378,7 +378,8 @@ div.archive a.og-image
     display: block;
 }
 
-@media (prefers-color-scheme: dark) {
+html[data-bs-theme="dark"]
+{
     .for-light
     {
         display: none;
@@ -386,8 +387,9 @@ div.archive a.og-image
     }
 }
 
-@media (prefers-color-scheme: light) {
-    .for-dark
+html[data-bs-theme="light"]
+{
+    .for-dark   
     {
         display: none;
         visibility: hidden;
