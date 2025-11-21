@@ -39,6 +39,7 @@ class figure(_html): pass
 class figcaption(_html): pass
 
 class span(_html): pass
+class strong(_html): pass
 class small(_html): pass
 class a(_html): pass
 class img(_html): pass
