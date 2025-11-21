@@ -234,7 +234,7 @@
                                name="room-preference"
                                value="4-8 beds" id="4-8 beds" />
                         <label class="form-check-label" for="4-8 beds">
-                          4–8-Bett-Zimmer (80,– €)
+                          4–8-Bett-Zimmer
                         </label>
                       </div>
                       
@@ -243,15 +243,24 @@
                                name="room-preference"
                                value="2-3 beds" id="2-3 beds" />
                         <label class="form-check-label" for="2-3 beds">
-                          2–3-Bett-Zimmer (95,– €)
+                          2–3-Bett-Zimmer
                         </label>
                       </div>                      
                       <div class="invalid-feedback"
                            data-for="room-preference">
                       </div>
                       <div class="mt-1 form-text">
-                        Freiwillig kann man einen Solipreis von 130,– €
-                        leisten. 
+                        <p>
+                          80,– € / 120,– € inkl. Verpflegung und Übernachtung im 4–8-Bett-Zimmer
+                        </p>
+                        <p>
+                          90,– € / 140,– € bei Übernachtung im
+                          2–3-Bett-Zimmer mit Waschbecken
+                        </p>
+                        <p>
+                          Die höheren Preise gelten jeweils, wenn man
+                          voll verdient.  
+                        </p>
                       </div>
                     </div><!--col-->
 
@@ -260,9 +269,10 @@
                                 id="room-mates"></textarea>
                       <div id="room-mates-help" class="form-text">
                         Zimmerpartner, ein Name oder e-Mail-Adresse
-                        pro Zeile, sonst nichts. Spitznahmen funktionieren
+                        pro Zeile, sonst nichts. Die Zuordnung macht
+                        der Computer. D.h. Spitznahmen funktionieren
                         nur, wenn sich die Person auch mit Spitznamen
-                        anmeldet. 
+                        anmeldet.
                       </div>
                       <div class="invalid-feedback" data-for="room-mates">
                       </div> 

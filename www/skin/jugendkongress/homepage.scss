@@ -3,8 +3,8 @@ This file is part of the business logic for
 
   Jugendkongress
 
-Copyright 2014–24 by Diedrich Vorberg <diedrich@tux4web.de>
-Copyricht 2014–24 Jugendwerk der SELK <jugendwerk@selk.de>
+Copyright 2014–25 by Diedrich Vorberg <diedrich@tux4web.de>
+Copyricht 2014–25 Jugendwerk der SELK <jugendwerk@selk.de>
 
 All Rights Reserved
 
@@ -86,12 +86,32 @@ div.workshops
             color: white;
         }
     }
+
+    .card-body
+    {
+        hyphens: auto;
+
+        h5.card-title
+        {
+            font-size: 1rem;
+            line-height: 1.5rem;
+            font-weight: bold;
+        }
+
+        p
+        {
+            text-align: justify;
+        }
+    }
     
     div.referenten
     {
+        hyphens: auto;
         max-width: 300px;
+        
         img
         {
+        
         }
     }
     
