@@ -55,7 +55,7 @@ PKW: direkt an der B 27 zwischen Witzenhausen und Bad Soden-Allendorf. → Karte
 
 **Kosten**
 80,– € / 120,— € inkl. Verpflegung und Übernachtung im 4–8-Bett-Zimmer
-95,– € / 150,— € inkl. Verpflegung und Übernachtung im 2–3-Bett-Zimmer
+95,– € / 140,— € inkl. Verpflegung und Übernachtung im 2–3-Bett-Zimmer
 Die höheren Preise gelten jeweils, wenn man voll verdient.
 
 
