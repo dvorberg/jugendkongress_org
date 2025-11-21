@@ -257,15 +257,11 @@ class workshops_einsetzen(Macro):
             colname = f"text{no}"
 
             if workshop.untertitel:
-                untertitel = html.small(workshop.untertitel,
-                                        class_="text-muted")
+                untertitel = html.h5(workshop.untertitel, class_="card-title")
             else:
                 untertitel = None
 
-            main_text = html.div(html.h5(workshop.titel,
-                                         html.br(),
-                                         untertitel,
-                                         class_="card-title"),
+            main_text = html.div(untertitel,
                                  workshop.root_element,
                                  class_="collapse" ,
                                  id=colname)
@@ -295,7 +291,7 @@ class workshops_einsetzen(Macro):
                                       class_="card-body"),
                              class_="col-md-8")
 
-            card = html.div(html.h5("Workshop",
+            card = html.div(html.h5(workshop.titel or "Workshop",
                                     class_="card-header"),
                             html.div(texts, referenten,
                                      class_="row g-0"),
