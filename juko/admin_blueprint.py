@@ -1059,12 +1059,18 @@ def send_info_email_to(booking, sendmail=sendmail):
 @gets_parameters_from_request
 def send_info_mail(booking_id:int):
     booking = model.congress.Booking.select_by_primary_key(booking_id)
-    send_info_email_to(booking)
-    #return json_response(sent="ok")
+
+    try:
+        send_info_email_to(booking)
+        typ = "Kurz-Vorher Info-Mail"
+    except:
+        congress = g.congresses.current
+        controllers.send_booking_email(congress, booking, False)
+        typ = "e-Mail mit der Anmeldebestätigung"
 
     return redirect(request.referrer.split("?")[0],
-                    site_message=(f"Eine e-Mail an {booking.email} "
-                                  f"wurde versandt."),
+                    site_message=(f"Eine {typ} wurde an {booking.email} "
+                                  f"versendet."),
                     __ensure_reload=str(time.time()))
 
 @dataclasses.dataclass
