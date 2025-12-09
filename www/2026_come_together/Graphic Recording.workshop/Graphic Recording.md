@@ -1,7 +1,7 @@
 Titel: Graphic Recording
 Unteritel: Gruppenprozesse durch visuelle Elemente unterstützten
 Referent: Thorsten Ohler
-Referent-Info: mit seiner zu dem Zeitpunkt liebsten Möhre in der Fruchthalle
+Referent-Info: 
 Workshopphasen: 1, 2
 
 Ein gemeinsames Bild vor Augen zu haben – dafür muss man nicht einer Meinung sein. Mehr noch: Man muss dafür nicht einmal „malen“ können.
