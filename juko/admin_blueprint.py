@@ -858,6 +858,12 @@ def workshop_assignment(druckansicht=False):
     instances = {}
     for booking in bookings:
         key = ( booking.phase, booking.workshop_id, )
+
+        # In case a workshop was deleted or renamed,
+        # the booking is not associated here.
+        if booking.workshop_id not in workshops_by_id:
+            continue
+
         if not key in instances:
             instances[key] = controllers.WorkshopInstance(
                 workshops_by_id[booking.workshop_id],
