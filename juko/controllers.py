@@ -521,8 +521,9 @@ def workshop_zuordnung():
     for booking in bookings:
         for workshop_id in booking.workshop_choices:
             if not workshop_id in [i.workshop.id for i in booking.placed]:
-                workshop = workshop_by_id[workshop_id]
-                place_booking(workshop, booking)
+                if workshop_id in workshop_by_id:
+                    workshop = workshop_by_id[workshop_id]
+                    place_booking(workshop, booking)
 
     # Assign random workshops to those who don’t have a booking
     # in some phase.
