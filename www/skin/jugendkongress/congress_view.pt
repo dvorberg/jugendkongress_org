@@ -459,7 +459,8 @@
                         </div>
                       </div>
                     </div>
-
+                  </div>
+                  
                   <div class="mb-3">
                     <label>Abendessen am Freitag</label>
 
@@ -509,11 +510,13 @@
                     Die Vorauswahl für drei Workshops kannst du unter
                     den Workshop-Beschreibungen treffen.
                   </div>
-                  <div class="mt-3 form-text text-success">
+                  <div class="mt-3 form-text text-success"
+                       tal:replace="nothing">
                     Wo ein grüner Haken ist, ist alles gut und
                     alles gespeichert. 
                   </div>
-                  <div class="form-text text-danger">
+                  <div class="form-text text-danger"
+                       tal:replace="nothing">
                     Wenn etwas rot ist, schau bitte hin: Da wird eine
                     Eingabe benötigt. Falls die Webseite nicht mit dem Server
                     kommunizieren kann, gibt sie Fehlermeldungen aus. 
