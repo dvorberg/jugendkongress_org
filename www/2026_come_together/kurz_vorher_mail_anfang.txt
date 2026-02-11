@@ -5,6 +5,10 @@ bald ist es so weit und wir sehen uns beim ${congress.nummer}. Lutherischen Juge
   ${congress.titel}
   (${congress.untertitel})
 
+Abendessen am Freitag: Bitte trag auf der Webseite ein, ob Du planst, am Freitag Abend pünktlich zum Essen auf der Burg zu sein.
+
+    ${congress.booking_href(booking.slug)}
+
 Anreise mit der Bahn: Bitte tragt An- und Abfahrtzeiten nach Witzenhausen Nord auf der Webseite ein, damit wir die Shuttles organisieren können. Es gibt keinen Shuttleservice außerhalb der dort angegebenen Zeiten. Wir weisen auch in auf diesen tollen Dienst des Norhessischen Verkehrsverbundes: Das Anruf-Sammel-Taxi:
 
     https://www.nvv.de/fahrtinfo/verkehrsmittel/ast
