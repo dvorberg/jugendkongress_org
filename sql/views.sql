@@ -20,7 +20,8 @@ CREATE VIEW booking_info AS
           has_payed, payment_remarks,
           checkin, checkin_remarks,
           mode_of_travel, ride_sharing_start,
-          rail_arrival_time, rail_departure_time
+          rail_arrival_time, rail_departure_time,
+          friday_dinner
      FROM booking
      LEFT JOIN wsc ON booking_id = booking.id;
 

@@ -481,7 +481,8 @@ def bookings():
     cursor = execute(f"SELECT food_preference, COUNT(*) AS count "
                      f"  FROM booking "
                      f" WHERE year = {year} "
-                     f" GROUP BY food_preference")
+                     f" GROUP BY food_preference"
+                     f" ORDER BY food_preference")
 
     food_preference_html = html.table()
     for id, count in cursor.fetchall():
@@ -489,6 +490,20 @@ def bookings():
             html.td(count, style="text-align: right"),
             html.td("✕"),
             html.td(model.congress.food_preference_html(id))))
+
+    cursor = execute(f"SELECT friday_dinner, COUNT(*) AS count "
+                     f"  FROM booking "
+                     f" WHERE year = {year} "
+                     f" GROUP BY friday_dinner"
+                     f" ORDER BY friday_dinner")
+    friday_dinner_html = html.table()
+    for id, count in cursor.fetchall():
+        friday_dinner_html.append(html.tr(
+            html.td(count, style="text-align: right"),
+            html.td("✕"),
+            html.td({ None: html.span("∅", class_="text-danger"),
+                      True: html.span("Ja", class_="text-success"),
+                      False: html.span("Nein", class_="text-danger") }[id])))
 
     template = g.skin.load_template("skin/admin/bookings.pt")
 

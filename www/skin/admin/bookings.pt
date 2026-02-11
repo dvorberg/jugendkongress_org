@@ -323,16 +323,34 @@
               
               <tal:block tal:condition="'misc' in active_colsets">
                 <td>
+                  <tal:block tal:condition="b.mode_of_travel == 'null'">
+                    <b class="text-danger">k.A.</b>
+                  </tal:block>
                   <tal:block tal:condition="b.mode_of_travel == 'car'">
                     <b>Auto</b>
+                  </tal:block>
+                  <tal:block tal:condition="b.mode_of_travel == 'rail'">
+                    <b>Bahn</b>
+                  </tal:block>
+
+                    <small>
+                      Essen Fr. Abend: 
+                      <span tal:condition="b.friday_dinner is None"
+                            class="text-danger">∅</span>
+                      <span tal:condition="b.friday_dinner is True"
+                            class="text-success">Ja</span>
+                      <span tal:condition="b.friday_dinner is False">Nein</span>
+                    </small>
+                  
+                  <tal:block tal:condition="b.mode_of_travel == 'car'">
                     <div tal:condition="b.ride_sharing_start">
                       Mitfahrgelegenheit ab
                       <b class="text-success"
                          tal:content="b.ride_sharing_start" />
                     </div>
                   </tal:block>
+                  
                   <tal:block tal:condition="b.mode_of_travel == 'rail'">
-                    <b>Bahn</b>
                     <div tal:condition="b.rail_arrival_time">
                       Ankunft: ${b.pretty_rail_arrival_time}
                     </div>
@@ -463,8 +481,10 @@
             </td>
           </tal:block>
           <tal:block tal:condition="'misc' in active_colsets">
-            <td></td>
-            <td></td>
+            <td tal:content="friday_dinner_html">
+              <!--Anreise-->              
+            </td>
+            <td><!--Musik--></td>
           </tal:block>
           <tal:block tal:condition="'rolle' in active_colsets">
             <td>
