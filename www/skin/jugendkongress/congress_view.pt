@@ -18,6 +18,7 @@
 
   <head>
     <tal:block metal:fill-slot="head_slot">
+      <base href="${congress.href}" />
       <script>
         const controller_url = '${congress.controller_url}';
       </script>
@@ -397,10 +398,10 @@
                       <div class="row">
                         <div class="col-2">
                         </div>
-                        <div class="col-10 form-text text-danger">
+                        <div class="col-10 form-text text-info">
                           Angebote für Mitfahrgelegenheiten werden
                           <a href="#mitfahrgelegenheiten">unten</a>
-                          Seite für die anderen Teilis anonymisiert
+                          auf der Seite für die anderen Teilis anonymisiert
                           veröffentlicht, so dass sie dich kontaktieren
                           können.
                         </div>
@@ -457,7 +458,37 @@
                                data-for="rail_departure_time"></div>
                         </div>
                       </div>
-                    </div>                  
+                    </div>
+
+                  <div class="mb-3">
+                    <label>Abendessen am Freitag</label>
+
+                    <div class="mb-1 row">
+                      <div class="col form-text">
+                        Ich plane, am Freitag zum Abendessen da zu sein.
+                      </div>
+                    </div>
+
+                    <div class="row">
+                      <div class="col">
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="radio"
+                                 id="friday-dinner-yes"
+                                 name="friday-dinner" value="yes" />
+                          <label class="form-check-label"
+                                 for="friday-dinner-yes">Ja</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="radio"
+                                 id="friday-dinner-no"
+                                 name="friday-dinner" value="no" />
+                          <label class="form-check-label"
+                                 for="friday-dinner-no">Nein</label>
+                        </div>
+                      </div>
+                    </div>                    
+                    <div class="invalid-feedback"
+                         data-for="friday-dinner"></div>
                   </div>
                   
                   <div class="row mb-3">
@@ -493,8 +524,7 @@
                 <div class="row mt-3 mb-3">
                   <div class="col">
                     <button type="button" id="save-button"
-                            class="btn btn-primary main"
-                            style="display:none">
+                            class="btn btn-primary main">
                       Speichern
                     </button>
                     <img id="spinner" class="ms-1"

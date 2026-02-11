@@ -525,12 +525,15 @@ class Booking(dbobject):
     def as_dict(self):
         ret = super().as_dict()
         ret["workshop_choices"] = self.workshop_choices
+        ret["friday_dinner"] = self.friday_dinner
         return ret
 
     @classmethod
     def update_by_slug(cls, year, slug, **data):
         if "lactose_intolerant" in data:
             data["lactose_intolerant"] = (data["lactose_intolerant"] == "true")
+        if "friday_dinner" in data:
+            data["friday_dinner"] = (data["friday_dinner"] == "yes")
 
         command = sql.update(
             cls.__relation__,
@@ -564,7 +567,7 @@ class Booking(dbobject):
                     change.confirm(name)
 
         for name in ("gender", "food_preference", "room_preference",
-                     "mode_of_travel"):
+                     "mode_of_travel", "friday_dinner"):
             if name in change:
                 if not change[name]:
                     change.report(name, "Bitte triff eine Auswahl.")
@@ -729,6 +732,20 @@ class Booking(dbobject):
     @property
     def pretty_rail_departure_time(self):
         return self.rail_departure_time.strftime("%H.%M") + " Uhr"
+
+    @property
+    def friday_dinner(self):
+        ret = getattr(self, "_friday_dinner", None)
+        if ret is None:
+            return None
+        elif ret:
+            return "yes"
+        else:
+            return "no"
+
+    @friday_dinner.setter
+    def friday_dinner(self, value):
+        self._friday_dinner = value
 
     def __repr__(self):
         if hasattr(self, "role"):
