@@ -5,7 +5,20 @@ bald ist es so weit und wir sehen uns beim ${congress.nummer}. Lutherischen Juge
   ${congress.titel}
   (${congress.untertitel})
 
-Anreise: Wenn Du vom Bahnhof Witzenhausen Nord abgeholt werden möchtest, koordiniere Dich bitte mit Noah Rothfuchs. Du erreichst ihn telefonisch hier: ‭+4917695465617‬. Bitte melde Dich bis zum 19.2.!
+Anreise mit der Bahn: Bitte tragt An- und Abfahrtzeiten nach Witzenhausen Nord auf der Webseite ein, damit wir die Shuttles organisieren können. Es gibt keinen Shuttleservice außerhalb der dort angegebenen Zeiten. Wir weisen auch in auf diesen tollen Dienst des Norhessischen Verkehrsverbundes: Das Anruf-Sammel-Taxi:
+
+    https://www.nvv.de/fahrtinfo/verkehrsmittel/ast
+
+Erinnerung: Der Teilnahmebeitrag ist vorab zu überweisen. Bitte beachte, dass deine Anmeldung erst nach Eingang deines Teilnahmebetrages wirksam wird.
+ 
+Bankverbindung des Jugendwerkes:
+Selbständige Evangelisch-Lutherische Kirche
+IBAN: DE22 5206 2601 0004 6006 30
+VR PartnerBank eG Chattengau-Schwalm-Eder
+
+Verwendungszweck:
+${congress.year} Kongress ${booking.firstname} ${booking.lastname}
+
 
 Wenn Du neben der Anreise andere Schwierigkeiten haben solltest, wende Dich gerne an mich, Diedrich Vorberg, +4915158858733. Ich kriege auch die Mail, wenn Du „antworten“ klickst.
 
