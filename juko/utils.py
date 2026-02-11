@@ -32,7 +32,10 @@ def get_www_url(path, **kw):
     else:
         params = ""
 
-    return current_app.config["SITE_URL"] + params
+    if path and path[0] != "/":
+        path = "/" + path
+
+    return current_app.config["SITE_URL"] + path + params
 
 def get_site_url(**kw):
     return get_www_url("/", **kw)
