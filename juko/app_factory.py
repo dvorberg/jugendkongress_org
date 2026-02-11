@@ -1,4 +1,4 @@
-##  Copyright 2024 by Diedrich Vorberg <diedrich@tux4web.de>
+##  Copyright 2024-26 by Diedrich Vorberg <diedrich@tux4web.de>
 ##
 ##  All Rights Reserved.
 ##
@@ -62,7 +62,7 @@ module_load_lock = threading.Lock()
 def create_app(test_config=None):
     from . import config
     from . import db, authentication
-    from .utils import call_from_request, rget
+    from .utils import call_from_request, rget, get_www_url
 
     # create and configure the app
     app = flask.Flask(__name__, instance_relative_config=True)
@@ -185,6 +185,25 @@ def create_app(test_config=None):
     def root():
         # Forward the visitor to the youngest Kongress folder.
         return flask.redirect(congresses.current.href)
+
+    @app.route("/downloads/<slug>")
+    def downloads(slug):
+        found = None
+        for p in www_root.glob("*/[Dd]ownloads*"):
+            s = p.name.rsplit(".", 1)[-1]
+            if s == slug:
+                found = p
+                break
+
+        ic(found)
+        ic(slug)
+
+        if found is None:
+            return flask.abort(404)
+        else:
+            path = found.relative_to(www_root)
+
+        return flask.redirect(get_www_url(str(path) + "/"))
 
     @app.errorhandler(Unauthorized)
     def redirect_to_login(exception):
