@@ -1,4 +1,4 @@
-##  Copyright 2024–25 by Diedrich Vorberg <diedrich@tux4web.de>
+##  Copyright 2024–26 by Diedrich Vorberg <diedrich@tux4web.de>
 ##
 ##  All Rights Reserved
 ##
@@ -504,6 +504,7 @@ def bookings():
             html.td({ None: html.span("∅", class_="text-danger"),
                       True: html.span("Ja", class_="text-success"),
                       False: html.span("Nein", class_="text-danger") }[id])))
+    friday_dinner_html = xsc.Frag("Abendessen Freitag", friday_dinner_html)
 
     template = g.skin.load_template("skin/admin/bookings.pt")
 
