@@ -337,9 +337,10 @@
                       Essen Fr. Abend: 
                       <span tal:condition="b.friday_dinner is None"
                             class="text-danger">∅</span>
-                      <span tal:condition="b.friday_dinner is True"
+                      <span tal:condition="b.friday_dinner == 'yes'"
                             class="text-success">Ja</span>
-                      <span tal:condition="b.friday_dinner is False">Nein</span>
+                      <span tal:condition="b.friday_dinner == 'no'"
+                            class="text-danger">Nein</span>
                     </small>
                   
                   <tal:block tal:condition="b.mode_of_travel == 'car'">
