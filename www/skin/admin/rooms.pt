@@ -9,6 +9,7 @@
     <metal:block metal:fill-slot="head_slot">
       <script src="${sref('jugendkongress/uiblocker.js')}"></script>
       <script src="${sref('admin/admin.js')}"></script>
+      <script src="${sref('admin/rooms.js')}"></script>
     </metal:block>
   </head>
   
@@ -18,9 +19,8 @@
     </metal:block>
     
     <div metal:fill-slot="main" class="mt-4">
-      <h3 class="mb-3">
-        Zimmerauswahl für den Jugendkongress ${congress.year}
-      </h3>
+      <h3 class="mb-3"
+          >Zimmerauswahl für den Jugendkongress ${congress.year}</h3>
       
       <form class="form rooms row g-3" method="post">
         <fieldset class="col-2" tal:repeat="section sections">
@@ -30,8 +30,9 @@
             <input class="form-check-input"
                    type="checkbox"
                    tal:attributes="checked test(room.booked, 'checked');
-                                   disabled test(rooms_are_assigned, 'disabled')"
-                   name="room-${room.no}" value="on"                   
+                                   disabled test(room.no in occupied_rooms,
+                                                 'disabled')"
+                   name="${room.no}" value="on"
                    id="room-${room.no}"/>
             <label class="form-check-label" for="room-${room.no}">
               ${room.NO}
@@ -39,12 +40,6 @@
             </label>
           </div>
         </fieldset>
-
-        <div class="mt-3" >
-          <button tal:condition="not:rooms_are_assigned"
-                  class="btn btn-primary">Speichern</button>  
-          <a href="/admin/room_assignment.py">Zimmerverteilung</a>
-        </div>
       </form>
     </div>
   </body>

@@ -592,40 +592,37 @@ def rooms():
     rooms = model.congress.Room.with_year(year).select(
         sql.orderby("section, no"))
 
-    if request.method == "POST":
-        numbers = []
-        for room in rooms:
-            if request.form.get("room-" + room.no):
-                numbers.append( (year,
-                                 sql.string_literal(room.no),) )
-                room.booked = True
-        execute("DELETE FROM booked_rooms WHERE year = %i" % year)
-        if numbers:
-            execute(sql.insert("booked_rooms", ("year", "room_no",), numbers))
+    occupied_rooms=query_occupied_rooms(year)
 
-        # If rooms have been removed frmo the roster, remove them from
-        # the referencing bookings.
-        update = sql.update("booking",
-                            sql.where("year = %i" % year,
-                                      " AND ",
-                                      "room NOT IN (",
-                                      "SELECT room_no FROM booked_rooms "
-                                      " WHERE year = %i"  % year,
-                                      ")"),
-                            {"room": None})
-        execute(update)
-        commit()
+    return template(congress=congress,
+                    sections=rooms.sections,
+                    occupied_rooms=occupied_rooms)
 
-        site_message = "Auswahl gespeichert."
-        smc = "success"
+
+@bp.route("/modify_room_booking.py")
+@authentication.login_required
+@gets_parameters_from_request
+def modify_room_booking(room_no, booked:bool=False):
+    congress = g.congresses.current
+    year = congress.year
+
+    # Both possibilities may fail if two people are modifying the table
+    # at the same time. I neglect this possibility here.
+
+    if not booked:
+        # Plausibility is checed by the RDBM through the room_is_booked
+        # foreign key constraint on the booking table.
+        execute("DELETE FROM booked_rooms WHERE year = %s AND room_no = %s",
+                ( year, room_no, ))
     else:
-        site_message = None
-        smc = None
+        # Should this entry already exist, the unique constraint on
+        # booked_rooms will cause an error.
+        execute("INSERT INTO booked_rooms VALUES (%s, %s)",
+                ( year, room_no, ))
 
+    commit()
 
-    return template(congress=congress, sections=rooms.sections,
-                    site_message=site_message, site_message_class=smc,
-                    rooms_are_assigned=query_if_rooms_are_assigned(year))
+    return "ok"
 
 
 def json_response(**kw):
@@ -731,6 +728,12 @@ def query_if_rooms_are_assigned(year):
     count, = query_one(f"SELECT COUNT(*) FROM booking "
                        f"WHERE year = {year} AND room IS NOT NULL")
     return (count > 0)
+
+def query_occupied_rooms(year):
+    tpls = execute(f"SELECT room FROM booking WHERE year = {year}"
+                   f" GROUP BY room")
+    room_nos = [ tpl[0] for tpl in tpls ]
+    return set(room_nos)
 
 @bp.route("/room_assignment.py", methods=("POST", "GET",))
 @authentication.login_required
