@@ -755,6 +755,7 @@ def room_assignment():
         commit()
 
     rooms = model.congress.Room.with_year(year).select(
+        sql.where("booked"),
         sql.orderby("section, no"))
 
     bookings = model.congress.Booking.select(
