@@ -121,7 +121,7 @@
         </thead>
         
         <tbody class="filters text-secondary"
-               tal:condition="'rolle' in active_colsets or 'misc' in active_colsets or 'zimmer' in active_colsets or 'geld' in active_colsets">
+               tal:condition="'rolle' in active_colsets or 'misc' in active_colsets or 'zimmer' in active_colsets or 'geld' in active_colsets or 'checkin' in active_colsets">
           <tr>
             <th></th><!--Role marker-->
             <th class="align-middle text-secondary">
