@@ -540,14 +540,10 @@ def bookings():
         key_holders = None
 
     if "checkin" in active_colsets:
-        checked_in_count, = query_one("SELECT COUNT(*) FROM booking "
-                                      " WHERE checkin IS NOT NULL "
-                                      "   AND year = %s", ( year, ))
-        noshow_count, = query_one("SELECT COUNT(*) FROM booking "
-                                  " WHERE checkin IS NULL "
-                                  "   AND year = %s", ( year, ))
+        (checked_in_count, noshow_count,) = query_checkin_counts(year)
 
     return template(**locals())
+
 
 @bp.route("/booking_name_form.py", methods=("GET", "POST",))
 @authentication.login_required
@@ -642,6 +638,8 @@ def modify_booking(id:int, what):
             "  FROM booking "
             " WHERE id = %s", (id,))
 
+        checked_in_count, noshow_count = query_checkin_counts(year)
+
         key_holder = controllers.query_key_holder_for(year, room)
         if key_holder is None:
             key_holder = None
@@ -658,7 +656,9 @@ def modify_booking(id:int, what):
         return json_response(checkin=checkin,
                              checkin_remarks=checkin_remarks,
                              pretty_checkin_time=pct,
-                             key_holder=key_holder)
+                             key_holder=key_holder,
+                             checked_in_count=checked_in_count,
+                             noshow_count=noshow_count)
 
 
     if what == "room_overwrite":
@@ -734,6 +734,16 @@ def query_occupied_rooms(year):
                    f" GROUP BY room")
     room_nos = [ tpl[0] for tpl in tpls ]
     return set(room_nos)
+
+def query_checkin_counts(year):
+    checked_in_count, = query_one("SELECT COUNT(*) FROM booking "
+                                  " WHERE checkin IS NOT NULL "
+                                  "   AND year = %s", ( year, ))
+    noshow_count, = query_one("SELECT COUNT(*) FROM booking "
+                              " WHERE checkin IS NULL "
+                              "   AND year = %s", ( year, ))
+    return checked_in_count, noshow_count,
+
 
 @bp.route("/room_assignment.py", methods=("POST", "GET",))
 @authentication.login_required
@@ -1157,3 +1167,11 @@ def travel():
 
     return template(arrivals=table(query_bookings("rail_arrival_time")),
                     departures=table(query_bookings("rail_departure_time")))
+
+
+@bp.route("/get_checkin_counts.py", methods=("GET",))
+@authentication.login_required
+def get_checkin_counts():
+    year = g.congresses.current.year
+    a, b = query_checkin_counts(year)
+    return json_response(checked_in_count=a, noshow_count=b)

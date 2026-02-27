@@ -551,6 +551,11 @@ window.addEventListener("load", function(event) {
 			this.row.querySelector(".checkin-remarks").innerText =
 				result.checkin_remarks;
 
+			document.querySelector(".checked-in-count").innerText =
+				result.checked_in_count;
+			document.querySelector(".noshow-count").innerText =
+				result.noshow_count;
+			
 			const room = this.row.getAttribute("data-room");
 			
 			this.row.parentNode.querySelectorAll("tr").forEach(row => {
