@@ -68,7 +68,7 @@
       
       <ul class="navbar-nav ms-2"
           tal:condition="(congress.registration_is_open or user.is_authenticated) and not booking">
-        <li class="nav-item hide-on-mobile">
+        <li class="nav-item">
           <button type="button" class="btn ${test(congress.registration_is_open, 'btn-primary', 'btn-warning')}"
                   data-bs-toggle="modal"
                   data-bs-target="#anmelden-dialog">
