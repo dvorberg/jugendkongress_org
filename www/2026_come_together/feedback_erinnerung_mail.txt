@@ -1,0 +1,19 @@
+Liebe/r ${booking.firstname} ${booking.lastname},
+
+wie schön, dass Du beim ${congress.nummer}. Lutherischen Jugendkongress
+
+    ${congress.titel}
+    (${congress.untertitel})
+
+dabei warst!
+
+Ernie hat gesagt, ich soll allen noch mal eine Erinnerung schicken, dass sie bitte auf
+
+    https://feedback.jugendkongress.org
+
+gehen sollen, damit wir den Jugendkongress nächstes Jahr noch besser gestalten können als dieses Jahr. Das Team trifft sich demnächst zur Auswertung und da sind Eure Rückmeldungen total wertvoll für unsere Arbeit.
+
+Der 25. Jugendkongress findet statt vom 26.–28. Februar 2027.
+
+Gottes Segen Euch allen und bis bald
+Diedrich Vorberg

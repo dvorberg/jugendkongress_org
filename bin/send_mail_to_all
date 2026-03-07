@@ -1,0 +1,64 @@
+#!/usr/bin/env python
+
+import sys, argparse
+
+from juko import plastic_bottle
+import flask
+
+from sqlclasses import sql
+
+from juko.model.congress import Booking
+from juko.admin_blueprint import send_info_email_to
+from juko.email import sendmail as real_sendmail
+from juko.utils import process_template
+
+def send_email_to(booking, congress, subject, message, sendmail):
+    subject = process_template(subject, **locals())
+    message = process_template(message, **locals())
+
+    sendmail(congress.anmeldung_from_name,
+             "anmeldung@jugendkongress.org",
+             booking.name,
+             booking.email,
+             subject,
+             message)
+
+def main():
+    congress = flask.g.congresses.current
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--year", type=int, default=congress.year)
+    parser.add_argument("--subject", "-s",
+                        default=("Infos zum ${congress.nummer}. "
+                                 "Lutherischen Jugendkongress "
+                                 "${congress.year}"))
+    parser.add_argument("--to-all", action="store_true", default=False)
+    parser.add_argument("template_file", type=argparse.FileType("r"))
+
+    args = parser.parse_args()
+
+    if args.year != congress.year:
+        congress = flask.g.congresses[args.year]
+
+    template = args.template_file.read()
+
+    where = sql.where(f"year = {congress.year}")
+    if not args.to_all:
+        where = where.and_(sql.where("email = 'diedrich@tux4web.de'"))
+
+    bookings = Booking.select(where)
+
+    collected_sendmail_calls = []
+    def collect_sendmail_calls(*args, **kw):
+        collected_sendmail_calls.append( (args, kw,) )
+
+    for counter, booking in enumerate(bookings):
+        send_email_to(booking, congress,
+                      args.subject, template,
+                      sendmail=collect_sendmail_calls)
+
+    for args, kw in collected_sendmail_calls:
+        print(args[3])
+        real_sendmail(*args, **kw)
+
+main()
